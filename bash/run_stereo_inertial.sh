@@ -1,0 +1,3 @@
+#./Examples/Stereo-Inertial/stereo_inertial_tum_vi ./Vocabulary/ORBvoc.txt ./Examples/Stereo-Inertial/TUM-VI.yaml /home/ros-noetic/datasets/VSLAM-LAB/VSLAM-LAB-Benchmark/MADMAX_stereo/A6/stereo/left /home/ros-noetic/datasets/VSLAM-LAB/VSLAM-LAB-Benchmark/MADMAX_stereo/A6/stereo/right /home/ros-noetic/datasets/MADMAX/00A6/times.txt /home/ros-noetic/datasets/MADMAX/00A6/IMUData/A-6_imu_data.csv
+
+./Examples/Stereo-Inertial/stereo_inertial_tum_vi ./Vocabulary/ORBvoc.txt ./Examples/Stereo-Inertial/uye_umavi.yaml /home/ros-noetic/datasets/UMA-VI/conference-csc3/left /home/ros-noetic/datasets/UMA-VI/conference-csc3/right /home/ros-noetic/datasets/UMA-VI/conference-csc3/times.txt /home/ros-noetic/datasets/UMA-VI/conference-csc3/imu0/data.csv

@@ -74,14 +74,18 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
        exit(-1);
     }
 
+    std::cout<<"After3"<<std::endl;
     cv::FileNode node = fsSettings["File.version"];
+    std::cout<<"After4"<<std::endl;
     if(!node.empty() && node.isString() && node.string() == "1.0"){
+    //if(1){
         settings_ = new Settings(strSettingsFile,mSensor);
+        std::cout<<"After4.1"<<std::endl;
 
         mStrLoadAtlasFromFile = settings_->atlasLoadFile();
         mStrSaveAtlasToFile = settings_->atlasSaveFile();
 
-        cout << (*settings_) << endl;
+        //cout << (*settings_) << endl;
     }
     else{
         settings_ = nullptr;
@@ -97,6 +101,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
             mStrSaveAtlasToFile = (string)node;
         }
     }
+    std::cout<<"After5"<<std::endl;
 
     node = fsSettings["loopClosing"];
     bool activeLC = true;
@@ -237,8 +242,11 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
 
     // Fix verbosity
-    Verbose::SetTh(Verbose::VERBOSITY_QUIET);
-
+    //Verbose::SetTh(Verbose::VERBOSITY_QUIET);
+    //Verbose::SetTh(Verbose::VERBOSITY_NORMAL);
+    //Verbose::SetTh(Verbose::VERBOSITY_VERBOSE);
+    //Verbose::SetTh(Verbose::VERBOSITY_VERY_VERBOSE);
+    Verbose::SetTh(Verbose::VERBOSITY_DEBUG);
 }
 
 Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp, const vector<IMU::Point>& vImuMeas, string filename)
@@ -417,6 +425,8 @@ Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, 
         cv::resize(im,resizedIm,settings_->newImSize());
         imToFeed = resizedIm;
     }
+    
+    //std::cout<<"TrackMonocular"<<std::endl;
 
     // Check mode change
     {
@@ -469,6 +479,8 @@ Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, 
     mTrackingState = mpTracker->mState;
     mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
     mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
+    
+    //std::cout<<"TrackMonocular2"<<std::endl;
 
     return Tcw;
 }

@@ -20,6 +20,7 @@
 #include<algorithm>
 #include<fstream>
 #include<chrono>
+#include <csignal> // For signal handling
 
 #include<opencv2/core/core.hpp>
 
@@ -29,10 +30,31 @@ using namespace std;
 
 void LoadImages(const string &strFile, vector<string> &vstrImageFilenames,
                 vector<double> &vTimestamps);
+              
+struct Tuple {
+    double first;
+    float second;
+    float third;
+    int fourth;
+};
+
+// Global flag to indicate if Ctrl+C was pressed
+volatile sig_atomic_t g_signal_received = 0;
+
+void signal_handler(int signum) {
+    if (signum == SIGINT) {
+        std::cout << "\nCtrl+C detected! Shutting down gracefully..." << std::endl;
+        g_signal_received = 1; // Set the flag
+    }
+}
+
+
 
 int main(int argc, char **argv)
 {
-    if(argc != 4)
+    signal(SIGINT, signal_handler);
+    //if(argc != 4)
+    if(argc != 5)
     {
         cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_sequence" << endl;
         return 1;
@@ -63,11 +85,45 @@ int main(int argc, char **argv)
 
     // Main loop
     cv::Mat im;
-    for(int ni=0; ni<nImages; ni++)
+    cv::Mat imAux; //= cv::Mat::zeros(480, 640, CV_8U);
+    int mState;
+    
+    //added by claydergc
+    /*
+    std::ofstream mprFile("map_points_ratio.txt");
+    mprFile<<std::fixed<<std::setprecision(9);
+    std::vector<Tuple> mprVector;
+    float pitchPrev=0.0;
+    float pitchCurr=0.0;
+    float pitchDelta=0.0;
+    uint16_t nMapPoints=0;*/
+    
+    //cv::Rect topHalf(0, 0, 640, 130);
+    //cv::Rect topHalf(0, 0, 640, 90);
+    cv::Rect topHalf(0, 0, 640, 80);
+    //cv::Rect topHalf(0, 200, 640, 280);
+    
+    std::vector<cv::KeyPoint> kp0;
+    
+    for(int ni=0; ni<nImages && !g_signal_received; ni++)
     {
         // Read image from file
-        im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
+        
+        //std::cout<<string(argv[3])+"/"+vstrImageFilenames[ni]<<std::endl;
+        //im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);        
+        im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        
+        //std::cout<<im.cols<<std::endl;
+          
+        if(im.cols!=640 && im.rows!=480)
+          cv::resize(im, im, cv::Size(640, 480));
+                
         double tframe = vTimestamps[ni];
+
+        //im(topHalf) = 0;
+        cv::cvtColor(im, imAux, cv::COLOR_GRAY2BGR);
+
+        //std::cout<<im.rows<<" "<<im.cols<<std::endl;
 
         if(im.empty())
         {
@@ -78,6 +134,7 @@ int main(int argc, char **argv)
 
         if(imageScale != 1.f)
         {
+          //std::cout<<"HEY"<<std::endl;
 #ifdef REGISTER_TIMES
     #ifdef COMPILEDWITHC11
             std::chrono::steady_clock::time_point t_Start_Resize = std::chrono::steady_clock::now();
@@ -105,8 +162,45 @@ int main(int argc, char **argv)
         std::chrono::monotonic_clock::time_point t1 = std::chrono::monotonic_clock::now();
 #endif
 
+        //double alpha = 1.8; // contrast control (1.0 = no change)
+        //int beta = 20;      // brightness control (0 = no change)
+
+        // Apply transformation
+        //im.convertTo(im, -1, alpha, beta);
         // Pass the image to the SLAM system
         SLAM.TrackMonocular(im,tframe);
+        
+        //std::cout<<im.cols<<std::endl;
+                
+        
+        //Sophus::SE3f pose = SLAM.TrackMonocular(im,tframe).inverse();
+        
+        //std::cout<<SLAM.mTrackingState<<"->"<<pose.translation().transpose()<<std::endl;
+        //std::cout<<"HOLA"<<std::endl;
+        
+        //added by claydergc
+        /*
+        if(ni>0) {
+          pitchCurr = SLAM.mpTracker->mCurrentFrame.GetPose().rotationMatrix().transpose().eulerAngles(0,1,2)[1]*180.0/M_PI;
+          pitchDelta = abs(pitchCurr-pitchPrev);          
+          pitchPrev = pitchCurr;
+          
+          nMapPoints = 0;
+          
+          for(uint16_t i=0; i<SLAM.mpTracker->mCurrentFrame.mvpMapPoints.size(); ++i) {
+            if(SLAM.mpTracker->mCurrentFrame.mvpMapPoints[i]!=nullptr)
+              nMapPoints++;
+          }          
+          
+          if(pitchDelta!=0) {
+            mprVector.push_back({tframe, nMapPoints, pitchDelta, SLAM.mTrackingState});
+          }
+          
+        }
+        
+        if(ni==0) {
+          pitchPrev = SLAM.mpTracker->mCurrentFrame.GetPose().rotationMatrix().transpose().eulerAngles(0,1,2)[1]*180.0/M_PI;
+        }*/
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -129,13 +223,84 @@ int main(int argc, char **argv)
             T = vTimestamps[ni+1]-tframe;
         else if(ni>0)
             T = tframe-vTimestamps[ni-1];
+        
+        
+        //cv::DMatch myMatch(1,1,1.0f);
+        //std::vector<cv::DMatch> myMatches2;
+        //myMatches2.reserve(30);
+        
+        //myMatches2[0] = cv::DMatch(1,1,1.0f);
+        
+        //std::cout<<"MyMatch: "<<myMatches2[1].queryIdx<<std::endl;
+        
+        //if(ni==220) {
+        //if(false) {
+        //if(ni==40) {
+        /*if(ni==120) {
+          kp0 = SLAM.mpTracker->mCurrentFrame.mvKeysUn;
+        }
+        
+        //if(false) {
+        //if(ni>40) {
+        //if(ni>220) {
+        if(ni>120) {
+        
+          std::vector<cv::DMatch> myMatches = SLAM.mpTracker->matcher.myMatches;
+          std::vector<cv::KeyPoint> kp1 = SLAM.mpTracker->mCurrentFrame.mvKeys;
+          
+          //std::cout<<myMatches.size()<<std::endl;
+          
+          for (const auto& match : myMatches) {
+          
+            if(match.queryIdx<0)
+              continue;
+            //if(match.queryIdx>0)
+            //  std::cout<<match.queryIdx<<std::endl;
+            //continue;
+          
+            cv::Point2f pt0 = kp0[match.queryIdx].pt;
+            cv::Point2f pt1 = kp1[match.trainIdx].pt;
 
+            // Filter very large displacements (optional)
+            //if (cv::norm(pt0 - pt1) > 10.0 && cv::norm(pt0 - pt1) < 50.0)
+            //  isBigMatchDiff = true;
+            
+            //if(pt0!=nullptr && pt1!=nullptr)
+            //std::cout<<pt0.x<<" "<<pt1.x<<std::endl;
+            //std::cout<<kp0.size()<<" "<<match.queryIdx<<" "<<kp1.size()<<" "<<match.trainIdx<<std::endl;
+            
+            //if (cv::norm(pt0 - pt1) > 5.0 && cv::norm(pt0 - pt1) < 50.0) {
+                cv::line(imAux, pt0, pt1, cv::Scalar(0, 255, 0), 1);                
+            //}
+            
+            //points.push_back(pt1);
+          }
+          
+          kp0 = kp1;
+          
+          cv::imshow("imAUx", imAux);
+        }*/
+
+        
+        
+        //cv::waitKey(0); 
+        
         if(ttrack<T)
             usleep((T-ttrack)*1e6);
+            
+        
     }
 
     // Stop all threads
     SLAM.Shutdown();
+    
+    //cv::destroyAllWindows();
+
+    
+    /*for(uint16_t i=0; i<mprVector.size(); ++i)
+      mprFile<<mprVector[i].first<<" "<<mprVector[i].second<<" "<<mprVector[i].third<<" "<<mprVector[i].fourth<<"\n";
+    
+    mprFile.close();*/
 
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());
@@ -149,7 +314,9 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    // SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");  
+    //SLAM.SaveTrajectoryTUM("KeyFrameTrajectory.txt");
+    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[4]));
 
     return 0;
 }

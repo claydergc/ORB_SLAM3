@@ -83,7 +83,12 @@ int main(int argc, char **argv)
 
         cout << "LOADED!" << endl;
 
+        cout<<"END LOADING"<<endl;
+
         cout << "Loading IMU for sequence " << seq << "...";
+        cout<<"LOADING IMU"<<endl;
+        
+        
         LoadIMU(string(argv[4*(seq+1)+2]), vTimestampsImu[seq], vAcc[seq], vGyro[seq]);
         cout << "Total IMU meas: " << vTimestampsImu[seq].size() << endl;
         cout << "first IMU ts: " << vTimestampsImu[seq][0] << endl;
@@ -294,6 +299,9 @@ void LoadImagesTUMVI(const string &strPathLeft, const string &strPathRight, cons
     vTimeStamps.reserve(5000);
     vstrImageLeft.reserve(5000);
     vstrImageRight.reserve(5000);
+    
+    size_t idx = 0;
+    
     while(!fTimes.eof())
     {
         string s;
@@ -306,12 +314,21 @@ void LoadImagesTUMVI(const string &strPathLeft, const string &strPathRight, cons
 
             int pos = s.find(' ');
             string item = s.substr(0, pos);
+            
+            std::stringstream ss;
+            ss << std::setw(6) << std::setfill('0') << idx; // Ensure 6-digit zero padding
+            std::string str = ss.str();
+            
+            vstrImageLeft.push_back(strPathLeft + "/" + str + "_left.png");
+            vstrImageRight.push_back(strPathRight + "/" + str + "_right.png");
 
-            vstrImageLeft.push_back(strPathLeft + "/" + item + ".png");
-            vstrImageRight.push_back(strPathRight + "/" + item + ".png");
+            //vstrImageLeft.push_back(strPathLeft + "/" + item + ".png");
+            //vstrImageRight.push_back(strPathRight + "/" + item + ".png");
 
             double t = stod(item);
-            vTimeStamps.push_back(t/1e9);
+            //vTimeStamps.push_back(t/1e9);
+            vTimeStamps.push_back(t);
+            idx++;
         }
     }
 }
@@ -328,7 +345,8 @@ void LoadIMU(const string &strImuPath, vector<double> &vTimeStamps, vector<cv::P
     {
         string s;
         getline(fImu,s);
-        if (s[0] == '#')
+        //if (s[0] == '#')
+        if (s[0] == '%')
             continue;
 
         if(!s.empty())

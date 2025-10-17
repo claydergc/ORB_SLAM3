@@ -1449,7 +1449,9 @@ bool Tracking::GetStepByStep()
     return bStepByStep;
 }
 
-
+//bool started = false;
+//float pitchPrev=0.0;
+//float pitchCurr=0.0;
 
 Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const double &timestamp, string filename)
 {
@@ -1512,6 +1514,40 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
     //cout << "Tracking start" << endl;
     Track();
     //cout << "Tracking end" << endl;
+    
+    //Sophus::SE3f pose = 
+    
+    //float pitchPrev = 0.0;
+    
+    //if(mCurrentFrame.mpPrevFrame!=nullptr)
+      //pitchPrev = mCurrentFrame.mpPrevFrame->GetPose().rotationMatrix().eulerAngles(0,1,2)[1]*180.0/M_PI;
+    
+    
+    /*if(started) {
+      pitchCurr = mCurrentFrame.GetPose().rotationMatrix().eulerAngles(0,1,2)[1]*180.0/M_PI;
+      float pitchDelta = abs(pitchCurr-pitchPrev);
+      std::cout<<"Pitch curr: "<<pitchCurr<<", pitchPrev: "<<pitchPrev<<std::endl;
+      pitchPrev = pitchCurr;
+      
+      uint16_t nMapPoints = 0;
+      
+      for(uint16_t i=0; i<mCurrentFrame.mvpMapPoints.size(); ++i) {
+        if(mCurrentFrame.mvpMapPoints[i]!=nullptr)
+          nMapPoints++;
+      }
+      
+      //std::cout<<"Map points: "<<mCurrentFrame.mvpMapPoints.size()<<", pitchDelta: "<<pitchDelta<<". MP/PD: "<<mCurrentFrame.mvpMapPoints.size()/pitchDelta<<std::endl;
+      std::cout<<"Map points: "<<nMapPoints<<", pitchDelta: "<<pitchDelta<<". MP/PD: "<<nMapPoints/pitchDelta<<std::endl;
+      
+    }
+    
+    if(!started) {
+      pitchPrev = mCurrentFrame.GetPose().rotationMatrix().transpose().eulerAngles(0,1,2)[1]*180.0/M_PI;
+      started = true;
+    }*/
+    
+    //if(pitchDelta>3)
+    //std::cout<<"Map points: "<<mCurrentFrame.mvpMapPoints.size()<<", pitchDelta: "<<pitchDelta<<". MP/PD: "<<mCurrentFrame.mvpMapPoints.size()/pitchDelta<<std::endl;
 
     return mCurrentFrame.GetPose();
 }
@@ -1651,15 +1687,18 @@ void Tracking::PreintegrateIMU()
                 cout.precision(17);
                 if(m->t<mCurrentFrame.mpPrevFrame->mTimeStamp-mImuPer)
                 {
+                    //std::cout<<"Inserting IMU Data 0\n";
                     mlQueueImuData.pop_front();
                 }
                 else if(m->t<mCurrentFrame.mTimeStamp-mImuPer)
                 {
+                    //std::cout<<"Inserting IMU Data 1\n";
                     mvImuFromLastFrame.push_back(*m);
                     mlQueueImuData.pop_front();
                 }
                 else
                 {
+                    //std::cout<<"Inserting IMU Data\n";
                     mvImuFromLastFrame.push_back(*m);
                     break;
                 }
@@ -1673,6 +1712,8 @@ void Tracking::PreintegrateIMU()
         if(bSleep)
             usleep(500);
     }
+
+    //std::cout<<"mvIMU: "<<mvImuFromLastFrame.size()<<"\n";
 
     const int n = mvImuFromLastFrame.size()-1;
     if(n==0){
@@ -2853,7 +2894,8 @@ void Tracking::UpdateLastFrame()
 
 bool Tracking::TrackWithMotionModel()
 {
-    ORBmatcher matcher(0.9,true);
+    //ORBmatcher matcher(0.9,true);
+    matcher = ORBmatcher(0.9,true);
 
     // Update last frame pose according to its reference keyframe
     // Create "visual odometry" points if in Localization Mode
@@ -2883,6 +2925,8 @@ bool Tracking::TrackWithMotionModel()
     else
         th=15;
 
+    th_global = th;
+
     int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR || mSensor==System::IMU_MONOCULAR);
 
     // If few matches, uses a wider window search
@@ -2891,6 +2935,7 @@ bool Tracking::TrackWithMotionModel()
         Verbose::PrintMess("Not enough matches, wider window search!!", Verbose::VERBOSITY_NORMAL);
         fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
 
+        th_global = 2*th;
         nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,2*th,mSensor==System::MONOCULAR || mSensor==System::IMU_MONOCULAR);
         Verbose::PrintMess("Matches with wider search: " + to_string(nmatches), Verbose::VERBOSITY_NORMAL);
 

@@ -37,6 +37,8 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 
+#include "ORBmatcher.h"
+
 #include "GeometricCamera.h"
 
 #include <mutex>
@@ -368,6 +370,8 @@ protected:
 
 public:
     cv::Mat mImRight;
+    ORBmatcher matcher;
+    uint16_t th_global;
 };
 
 } //namespace ORB_SLAM

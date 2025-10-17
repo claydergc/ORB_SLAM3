@@ -1,0 +1,6 @@
+<launch>
+
+<node pkg="orb_slam3" type="imu_publisher" name="imu_publisher" output="screen"/>
+<node pkg="orb_slam3" type="img_publisher" name="img_publisher" output="screen"/>
+
+</launch>

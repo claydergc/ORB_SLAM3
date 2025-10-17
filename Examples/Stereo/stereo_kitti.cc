@@ -21,6 +21,8 @@
 #include<fstream>
 #include<iomanip>
 #include<chrono>
+#include <csignal> // For signal handling
+
 
 #include<opencv2/core/core.hpp>
 
@@ -31,8 +33,36 @@ using namespace std;
 void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
                 vector<string> &vstrImageRight, vector<double> &vTimestamps);
 
+// Helper to normalize angles to [-180, 180)
+inline float normalizeAngle(float angle_deg) {
+    if (angle_deg >= 180.0f) angle_deg -= 180.0f;
+    if (angle_deg < -180.0f) angle_deg += 180.0f;
+    return angle_deg;
+}
+
+struct Tuple {
+    double first;
+    float second;
+    float third;
+    uint16_t fourth;
+    int fifth;
+};
+
+// Global flag to indicate if Ctrl+C was pressed
+volatile sig_atomic_t g_signal_received = 0;
+
+void signal_handler(int signum) {
+    if (signum == SIGINT) {
+        std::cout << "\nCtrl+C detected! Shutting down gracefully..." << std::endl;
+        g_signal_received = 1; // Set the flag
+    }
+}
+
+
 int main(int argc, char **argv)
 {
+    signal(SIGINT, signal_handler);
+    
     if(argc != 4)
     {
         cerr << endl << "Usage: ./stereo_kitti path_to_vocabulary path_to_settings path_to_sequence" << endl;
@@ -43,17 +73,25 @@ int main(int argc, char **argv)
     vector<string> vstrImageLeft;
     vector<string> vstrImageRight;
     vector<double> vTimestamps;
+    std::cout<<"Before"<<std::endl;
     LoadImages(string(argv[3]), vstrImageLeft, vstrImageRight, vTimestamps);
-
+    std::cout<<"After"<<std::endl;
     const int nImages = vstrImageLeft.size();
-
+    std::cout<<"After1"<<std::endl;
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::STEREO,true);
+    std::cout<<"After2"<<std::endl;
     float imageScale = SLAM.GetImageScale();
+    std::cout<<"After3"<<std::endl;
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
     vTimesTrack.resize(nImages);
+    
+    std::ofstream mprFile("map_points_ratio.txt");
+    mprFile<<std::fixed<<std::setprecision(9);
+    std::vector<Tuple> mprVector;
+
 
     cout << endl << "-------" << endl;
     cout << "Start processing sequence ..." << endl;
@@ -61,14 +99,28 @@ int main(int argc, char **argv)
 
     double t_track = 0.f;
     double t_resize = 0.f;
+    
+
+    float pitchPrev=0.0;
+    float pitchCurr=0.0;
+    float pitchDelta=0.0;
+    uint16_t nMapPoints=0;
+
 
     // Main loop
     cv::Mat imLeft, imRight;
-    for(int ni=0; ni<nImages; ni++)
+    for(int ni=0; ni<nImages && !g_signal_received; ni++)
     {
         // Read left and right images from file
         imLeft = cv::imread(vstrImageLeft[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
         imRight = cv::imread(vstrImageRight[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
+        
+        
+        if(imLeft.cols!=640 && imLeft.rows!=480) {
+          cv::resize(imLeft, imLeft, cv::Size(640,480));
+          cv::resize(imRight, imRight, cv::Size(640,480));
+        }
+        
         double tframe = vTimestamps[ni];
 
         if(imLeft.empty())
@@ -110,6 +162,39 @@ int main(int argc, char **argv)
 
         // Pass the images to the SLAM system
         SLAM.TrackStereo(imLeft,imRight,tframe);
+        
+        if(ni>0) {
+          pitchCurr = SLAM.mpTracker->mCurrentFrame.GetPose().rotationMatrix().transpose().eulerAngles(0,1,2)[1]*180.0/M_PI;
+          pitchDelta = abs(pitchCurr-pitchPrev);
+          //float pitchDelta = abs(normalizeAngle(pitchCurr)-normalizeAngle(pitchPrev));
+          //std::cout<<"Pitch curr: "<<pitchCurr<<", pitchPrev: "<<pitchPrev<<std::endl;
+          pitchPrev = pitchCurr;
+          
+          nMapPoints = 0;
+          
+          for(uint16_t i=0; i<SLAM.mpTracker->mCurrentFrame.mvpMapPoints.size(); ++i) {
+            if(SLAM.mpTracker->mCurrentFrame.mvpMapPoints[i]!=nullptr)
+              nMapPoints++;
+          }
+          
+          //std::cout<<"Map points: "<<mCurrentFrame.mvpMapPoints.size()<<", pitchDelta: "<<pitchDelta<<". MP/PD: "<<mCurrentFrame.mvpMapPoints.size()/pitchDelta<<std::endl;
+          
+          if(pitchDelta!=0) {
+          
+            //std::cout<<"Map points: "<<nMapPoints<<", pitchDelta: "<<pitchDelta<<". MP/PD: "<<nMapPoints/pitchDelta<<std::endl;
+          
+            //mprFile<<tframe<<" "<<nMapPoints/pitchDelta<<"\n";
+            
+            //mprVector.push_back(std::make_pair(tframe, nMapPoints/pitchDelta));
+            //mprVector.push_back({tframe, nMapPoints/pitchDelta, SLAM.mTrackingState});
+            mprVector.push_back({tframe, nMapPoints, pitchDelta, SLAM.mpTracker->th_global, SLAM.mTrackingState});
+          }
+          
+        }
+        
+        if(ni==0) {
+          pitchPrev = SLAM.mpTracker->mCurrentFrame.GetPose().rotationMatrix().transpose().eulerAngles(0,1,2)[1]*180.0/M_PI;
+        }
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -136,9 +221,16 @@ int main(int argc, char **argv)
         if(ttrack<T)
             usleep((T-ttrack)*1e6);
     }
-
+    
+    //mprFile.close();
     // Stop all threads
     SLAM.Shutdown();
+    
+    
+    for(uint16_t i=0; i<mprVector.size(); ++i)
+      mprFile<<mprVector[i].first<<" "<<mprVector[i].second<<" "<<mprVector[i].third<<" "<<mprVector[i].fourth<<" "<<mprVector[i].fifth<<"\n";
+    
+    mprFile.close();
 
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());
@@ -177,8 +269,8 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
         }
     }
 
-    string strPrefixLeft = strPathToSequence + "/image_0/";
-    string strPrefixRight = strPathToSequence + "/image_1/";
+    string strPrefixLeft = strPathToSequence + "/left/";
+    string strPrefixRight = strPathToSequence + "/right/";
 
     const int nTimes = vTimestamps.size();
     vstrImageLeft.resize(nTimes);
@@ -188,7 +280,7 @@ void LoadImages(const string &strPathToSequence, vector<string> &vstrImageLeft,
     {
         stringstream ss;
         ss << setfill('0') << setw(6) << i;
-        vstrImageLeft[i] = strPrefixLeft + ss.str() + ".png";
-        vstrImageRight[i] = strPrefixRight + ss.str() + ".png";
+        vstrImageLeft[i] = strPrefixLeft + ss.str() + "_left.png";
+        vstrImageRight[i] = strPrefixRight + ss.str() + "_right.png";
     }
 }

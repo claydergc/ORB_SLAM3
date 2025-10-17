@@ -164,8 +164,9 @@ void Viewer::Run()
     mbFinished = false;
     mbStopped = false;
 
-    pangolin::CreateWindowAndBind("ORB-SLAM3: Map Viewer",1024,768);
-
+    auto &win = pangolin::CreateWindowAndBind("ORB-SLAM3: Map Viewer",1024,768);
+    win.Move(450,0);
+  
     // 3D Mouse handler requires depth testing to be enabled
     glEnable(GL_DEPTH_TEST);
 
@@ -205,6 +206,7 @@ void Viewer::Run()
     pangolin::OpenGlMatrix Ow; // Oriented with g in the z axis
     Ow.SetIdentity();
     cv::namedWindow("ORB-SLAM3: Current Frame");
+    cv::moveWindow("ORB-SLAM3: Current Frame", 0,0);
 
     bool bFollow = true;
     bool bLocalizationMode = false;
