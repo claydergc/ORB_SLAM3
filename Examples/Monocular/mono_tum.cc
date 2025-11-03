@@ -89,21 +89,23 @@ int main(int argc, char **argv)
     int mState;
     
     //added by claydergc
-    /*
+    
     std::ofstream mprFile("map_points_ratio.txt");
     mprFile<<std::fixed<<std::setprecision(9);
     std::vector<Tuple> mprVector;
     float pitchPrev=0.0;
     float pitchCurr=0.0;
     float pitchDelta=0.0;
-    uint16_t nMapPoints=0;*/
+    uint16_t nMapPoints=0;
     
-    //cv::Rect topHalf(0, 0, 640, 130);
+    cv::Rect topHalf(0, 0, 640, 130);
     //cv::Rect topHalf(0, 0, 640, 90);
-    cv::Rect topHalf(0, 0, 640, 80);
+    //cv::Rect topHalf(0, 0, 640, 80);
     //cv::Rect topHalf(0, 200, 640, 280);
     
     std::vector<cv::KeyPoint> kp0;
+    
+    cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
     
     for(int ni=0; ni<nImages && !g_signal_received; ni++)
     {
@@ -117,11 +119,34 @@ int main(int argc, char **argv)
           
         if(im.cols!=640 && im.rows!=480)
           cv::resize(im, im, cv::Size(640, 480));
+          
+        /*
+        if(ni>235 && ni<420 || ni>477 && ni<605) {
+            //cv::Mat adjusted;
+            //double alpha = 1.5; // contrast control (1.0 = no change)
+            double alpha = 1.7; // contrast control (1.0 = no change)
+            //int beta = 20;      // brightness control (0 = no change)
+            int beta = 15;      // brightness control (0 = no change)
+
+            // Apply transformation
+            im.convertTo(im, -1, alpha, beta);
+        }else  {
+        //cv::Mat adjusted;
+            double alpha = 2.0; // contrast control (1.0 = no change)
+            int beta = 30;      // brightness control (0 = no change)
+
+            // Apply transformation
+            im.convertTo(im, -1, alpha, beta);
+        }*/
                 
         double tframe = vTimestamps[ni];
 
         //im(topHalf) = 0;
-        cv::cvtColor(im, imAux, cv::COLOR_GRAY2BGR);
+        
+        clahe->apply(im,im);
+        //cv::cvtColor(im, imAux, cv::COLOR_GRAY2BGR);
+        
+        //cv::imshow("imAUx", im);
 
         //std::cout<<im.rows<<" "<<im.cols<<std::endl;
 
@@ -179,8 +204,8 @@ int main(int argc, char **argv)
         //std::cout<<"HOLA"<<std::endl;
         
         //added by claydergc
-        /*
-        if(ni>0) {
+        
+        /*if(ni>0) {
           pitchCurr = SLAM.mpTracker->mCurrentFrame.GetPose().rotationMatrix().transpose().eulerAngles(0,1,2)[1]*180.0/M_PI;
           pitchDelta = abs(pitchCurr-pitchPrev);          
           pitchPrev = pitchCurr;
@@ -233,10 +258,11 @@ int main(int argc, char **argv)
         
         //std::cout<<"MyMatch: "<<myMatches2[1].queryIdx<<std::endl;
         
+        /*
         //if(ni==220) {
         //if(false) {
         //if(ni==40) {
-        /*if(ni==120) {
+        if(ni==120) {
           kp0 = SLAM.mpTracker->mCurrentFrame.mvKeysUn;
         }
         
@@ -297,10 +323,11 @@ int main(int argc, char **argv)
     //cv::destroyAllWindows();
 
     
-    /*for(uint16_t i=0; i<mprVector.size(); ++i)
+    //added by claydergc
+    for(uint16_t i=0; i<mprVector.size(); ++i)
       mprFile<<mprVector[i].first<<" "<<mprVector[i].second<<" "<<mprVector[i].third<<" "<<mprVector[i].fourth<<"\n";
     
-    mprFile.close();*/
+    mprFile.close();
 
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());

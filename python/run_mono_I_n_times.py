@@ -101,19 +101,68 @@ record_cmd = [
 #folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20250925_2/KeyFrameTrajectory"
 
 #program[1] = "/home/ros-noetic/datasets/Polcam/Apt/20251002_1805/polcamI"
-#folder_video = "/home/claydergc/Videos/20251002_1805_bottom/polcamI/run_"
+#program[1] = "/home/ros-noetic/datasets/Polcam/Apt/20251002_1805/polcamI0"
+#program[1] = "/home/ros-noetic/datasets/Polcam/Apt/20251002_1805/polcamI45"
+#program[1] = "/home/ros-noetic/datasets/Polcam/Apt/20251002_1805/polcamI90"
+#folder_video = "/media/claydergc/DATA/Videos/20251002_1805/polcamI/run_"
+#folder_video = "/media/claydergc/DATA/Videos/20251002_1805_bottom/polcamI0/run_"
+#folder_video = "/media/claydergc/DATA/Videos/20251002_1805_bottom/polcamI45/run_"
+#folder_video = "/media/claydergc/DATA/Videos/20251002_1805_bottom/polcamI90/run_"
 #folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251002_1805_bottom/KeyFrameTrajectory"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251002_1805/polcamI/KeyFrameTrajectory"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251002_1805/polcamI90/KeyFrameTrajectory"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251002_1805_bottom/polcamI0/KeyFrameTrajectory"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251002_1805_bottom/polcamI45/KeyFrameTrajectory"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251002_1805_bottom/polcamI90/KeyFrameTrajectory"
 #folder_video = "/home/claydergc/Videos/20251002_1805/polcamI/run_"
 #folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251002_1805/KeyFrameTrajectory"
 #folder_video = "/home/claydergc/Videos/20251002_1805_top/polcamI/run_"
 #folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251002_1805_top/KeyFrameTrajectory"
 
-program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015_1723/polcamI45"
-folder_video = "/home/claydergc/Videos/20251015_1723_Yandiwanba/polcamI45/run_"
-folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1723_Yandiwanba/polcamI45/KeyFrameTrajectory"
+#program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015_1723/polcamI45"
+#folder_video = "/home/claydergc/Videos/20251015_1723_Yandiwanba/polcamI45/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1723_Yandiwanba/polcamI45/KeyFrameTrajectory"
 
-for j in range(20):
-#for j in range(0,4):
+
+#program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/polcamI"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725/polcamI/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba/polcamI/KeyFrameTrajectory"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_CLAHE/polcamI/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba_CLAHE/polcamI/KeyFrameTrajectory"
+
+
+#program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/polcamI0"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725/polcamI0/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba/polcamI0/KeyFrameTrajectory"
+
+#program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/polcamI45"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_CLAHE/polcamI45/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba_CLAHE/polcamI45/KeyFrameTrajectory"
+
+#program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/polcamI90"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_CLAHE/polcamI90/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba_CLAHE/polcamI90/KeyFrameTrajectory"
+
+program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/polcamI90I135"
+folder_video = "/media/claydergc/DATA/Videos/20251015/1725_CLAHE/polcamI90I135/run_"
+folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba_CLAHE/polcamI90I135/KeyFrameTrajectory"
+
+#program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/polcamI135"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725/polcamI135/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba/polcamI135/KeyFrameTrajectory"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_CLAHE/polcamI135/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba_CLAHE/polcamI135/KeyFrameTrajectory"
+
+
+#for j in range(20):
+for j in range(40):
+#for j in range(9,11):
+#for j in range(0,11):
+#for j in range(28,29):
+#for j in range(15,16):
+#for j in range(20, 40):
+#for j in range(37, 39):
+#for j in range(37, 39):
     
     output_file = folder_video + str(j) + ".mkv"
     record_cmd[12] = output_file 
