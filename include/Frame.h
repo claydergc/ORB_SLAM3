@@ -67,11 +67,22 @@ public:
     // Constructor for Monocular cameras.
     Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
 
+    // Constructor for Polarization cameras.
+    Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &timeStamp, ORBextractor* extractor, ORBextractor* extractorPolcam, ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
+    
+    
+
+
     // Destructor
     // ~Frame();
 
     // Extract ORB on the image. 0 for left image and 1 for right image.
     void ExtractORB(int flag, const cv::Mat &im, const int x0, const int x1);
+    
+    //added by claydergc
+    void ExtractORBPolcam(int flag, const cv::Mat &im, const int x0, const int x1);
+    
+    void computeFeatureOverlap(const std::vector<cv::KeyPoint>& kptsA, const std::vector<cv::KeyPoint>& kptsB, std::vector<cv::KeyPoint>& kptsC, const cv::Mat& mDescriptorsPolcam, std::vector<cv::Mat>& mDescriptorsDiff, double distance_thresh);
 
     // Compute Bag of Words representation.
     void ComputeBoW();
@@ -194,6 +205,7 @@ public:
 
     // Feature extractor. The right is used only in the stereo case.
     ORBextractor* mpORBextractorLeft, *mpORBextractorRight;
+    ORBextractor* mpORBextractorPolcam;
 
     // Frame timestamp.
     double mTimeStamp;
@@ -226,6 +238,7 @@ public:
     // In the stereo case, mvKeysUn is redundant as images must be rectified.
     // In the RGB-D case, RGB images can be distorted.
     std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
+    std::vector<cv::KeyPoint> mvKeysPolcam, mvKeysJoined; //added by claydergc
     std::vector<cv::KeyPoint> mvKeysUn;
 
     // Corresponding stereo coordinate and depth for each keypoint.
@@ -240,6 +253,7 @@ public:
 
     // ORB descriptor, each row associated to a keypoint.
     cv::Mat mDescriptors, mDescriptorsRight;
+    cv::Mat mDescriptorsPolcam, mDescriptorsJoined;
 
     // MapPoints associated to keypoints, NULL pointer if no association.
     // Flag to identify outlier associations.
@@ -309,6 +323,7 @@ private:
     // Only for the RGB-D case. Stereo must be already rectified!
     // (called in the constructor).
     void UndistortKeyPoints();
+    void UndistortKeyPointsPolcam();
 
     // Computes image bounds for the undistorted image (called in the constructor).
     void ComputeImageBounds(const cv::Mat &imLeft);
@@ -329,6 +344,7 @@ public:
     int Nleft, Nright;
     //Number of Non Lapping Keypoints
     int monoLeft, monoRight;
+    int monoPolcam;
 
     //For stereo matching
     std::vector<int> mvLeftToRightMatch, mvRightToLeftMatch;

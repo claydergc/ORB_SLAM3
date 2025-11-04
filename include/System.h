@@ -124,6 +124,10 @@ public:
   TrackMonocular(const cv::Mat &im, const double &timestamp,
                  const vector<IMU::Point> &vImuMeas = vector<IMU::Point>(),
                  string filename = "");
+                 
+  Sophus::SE3f
+  TrackMonocularPolcam(const cv::Mat &im, const cv::Mat &imPolcam, const double &timestamp,
+                       const vector<IMU::Point>& vImuMeas = vector<IMU::Point>(), string filename = "");
 
   // This stops local mapping thread (map building) and performs only camera
   // tracking.
