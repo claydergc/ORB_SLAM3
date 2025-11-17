@@ -162,14 +162,28 @@ record_cmd = [
 #folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba_CLAHE_Multicam/polcamI_I90/KeyFrameTrajectory"
 
 program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725"
-folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM/polcamI_I90/run_"
-folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba_Multicam/polcamI_I90/KeyFrameTrajectory"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM/polcamI_I90/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba_Multicam/polcamI_I90/KeyFrameTrajectory"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM/polcamI0_I45/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI0_I45/KeyFrameTrajectory"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM/polcamI0_I90/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI0_I90/KeyFrameTrajectory"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM_CLAHE/polcamI0_I135/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI0_I135/KeyFrameTrajectory"
 
-#for j in range(20):
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM_CLAHE/polcamI45_I90/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI45_I90/KeyFrameTrajectory"
+folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM_CLAHE/polcamI45_I135/run_"
+folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI45_I135/KeyFrameTrajectory"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM_CLAHE/polcamI90_I135/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI90_I135/KeyFrameTrajectory"
+
+
 for j in range(20):
-#for j in range(14,15):
-#for j in range(9,11):
-#for j in range(0,11):
+#for j in range(20):
+#for j in range(19,20):
+#for j in range(12,13):
+#for j in range(3,4):
 #for j in range(28,29):
 #for j in range(15,16):
 #for j in range(20, 40):

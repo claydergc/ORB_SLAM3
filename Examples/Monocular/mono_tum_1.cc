@@ -143,7 +143,7 @@ int main(int argc, char **argv)
 
         //im(topHalf) = 0;
         
-        //clahe->apply(im,im);
+        clahe->apply(im,im);
         //cv::cvtColor(im, imAux, cv::COLOR_GRAY2BGR);
         
         //cv::imshow("imAUx", im);

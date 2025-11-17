@@ -97,6 +97,10 @@ int main(int argc, char **argv)
     float pitchDelta=0.0;
     uint16_t nMapPoints=0;
     
+    std::ofstream file_n_keypoints_diff("n_keypoints_diff.txt");
+    file_n_keypoints_diff<<std::fixed<<std::setprecision(9);
+    std::vector<std::pair<double, float>> vec_n_keypoints_diff;
+    
     cv::Rect topHalf(0, 0, 640, 130);
     //cv::Rect topHalf(0, 0, 640, 90);
     //cv::Rect topHalf(0, 0, 640, 80);
@@ -114,8 +118,29 @@ int main(int argc, char **argv)
         //im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);        
         
         //im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        im = cv::imread(string(argv[3])+"/polcamI/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        
+        //im = cv::imread(string(argv[3])+"/polcamI/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        //imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        
+        //im = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        //imPolcam = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        
+        //im = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        //imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        
+        //im = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        //imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        
+        //im = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        //imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        
+        im = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        
+        //im = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        //imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        
+        //im = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         //imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         
         //std::cout<<im.cols<<std::endl;
@@ -146,7 +171,7 @@ int main(int argc, char **argv)
 
         //im(topHalf) = 0;
         
-        //clahe->apply(im,im);
+        clahe->apply(im,im);
         //cv::cvtColor(im, imAux, cv::COLOR_GRAY2BGR);
         
         //cv::imshow("imAUx", im);
@@ -197,6 +222,7 @@ int main(int argc, char **argv)
         //im.convertTo(im, -1, alpha, beta);
         // Pass the image to the SLAM system
         //SLAM.TrackMonocular(im,tframe);
+        //SLAM.TrackMonocularPolcam(im,imPolcam,tframe,vec_n_keypoints_diff);
         SLAM.TrackMonocularPolcam(im,imPolcam,tframe);
         
         //std::cout<<im.cols<<std::endl;
@@ -328,10 +354,13 @@ int main(int argc, char **argv)
 
     
     //added by claydergc
-    for(uint16_t i=0; i<mprVector.size(); ++i)
-      mprFile<<mprVector[i].first<<" "<<mprVector[i].second<<" "<<mprVector[i].third<<" "<<mprVector[i].fourth<<"\n";
+    //for(uint16_t i=0; i<mprVector.size(); ++i)
+      //mprFile<<mprVector[i].first<<" "<<mprVector[i].second<<" "<<mprVector[i].third<<" "<<mprVector[i].fourth<<"\n";
+    //mprFile.close();
     
-    mprFile.close();
+    //for(uint16_t i=0; i<vec_n_keypoints_diff.size(); ++i)
+    //  file_n_keypoints_diff<<vec_n_keypoints_diff[i].first<<" "<<vec_n_keypoints_diff[i].second<<"\n";
+    //file_n_keypoints_diff.close();
 
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());

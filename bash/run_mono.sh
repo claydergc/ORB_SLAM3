@@ -61,6 +61,8 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ros-noetic/Pangolin-0.9.2/build
 #/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/polcamI160 KeyframeTrajectory.txt
 
 
-/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/DoLP_AoLP KeyframeTrajectory.txt
+#/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/DoLP_AoLP KeyframeTrajectory.txt
+
+/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20251112/20251112_1723/polcamI KeyframeTrajectory.txt
 
 #/home/ros-noetic/src/ORB_SLAM3/WLightI90/KeyframeTrajectory.txt

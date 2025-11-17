@@ -487,7 +487,6 @@ Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, 
 
 //added by claydergc
 
-//Sophus::SE3f System::TrackMonocularPolcam(const cv::Mat &im, const cv::Mat &imPolcam, const double &timestamp, std::vector<std::pair<double, float>>& vec_n_keypoints_diff, const vector<IMU::Point>& vImuMeas, string filename)
 Sophus::SE3f System::TrackMonocularPolcam(const cv::Mat &im, const cv::Mat &imPolcam, const double &timestamp, const vector<IMU::Point>& vImuMeas, string filename)
 {
 
@@ -558,7 +557,6 @@ Sophus::SE3f System::TrackMonocularPolcam(const cv::Mat &im, const cv::Mat &imPo
         for(size_t i_imu = 0; i_imu < vImuMeas.size(); i_imu++)
             mpTracker->GrabImuData(vImuMeas[i_imu]);
 
-    //Sophus::SE3f Tcw = mpTracker->GrabImageMonocularPolcam(imToFeed,imPolcamToFeed,timestamp,filename,vec_n_keypoints_diff);
     Sophus::SE3f Tcw = mpTracker->GrabImageMonocularPolcam(imToFeed,imPolcamToFeed,timestamp,filename);
 
     unique_lock<mutex> lock2(mMutexState);

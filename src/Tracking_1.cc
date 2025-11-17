@@ -1654,7 +1654,6 @@ Sophus::SE3f Tracking::GrabImageMonocular(const cv::Mat &im, const double &times
 
 //added by claydergc
 
-//Sophus::SE3f Tracking::GrabImageMonocularPolcam(const cv::Mat &im, const cv::Mat &imPolcam, const double &timestamp, string filename, std::vector<std::pair<double, float>> &vec_n_keypoints_diff)
 Sophus::SE3f Tracking::GrabImageMonocularPolcam(const cv::Mat &im, const cv::Mat &imPolcam, const double &timestamp, string filename)
 {
     mImGray = im;
@@ -1679,7 +1678,6 @@ Sophus::SE3f Tracking::GrabImageMonocularPolcam(const cv::Mat &im, const cv::Mat
             mCurrentFrame = Frame(mImGray,timestamp,mpIniORBextractor,mpORBVocabulary,mpCamera,mDistCoef,mbf,mThDepth);
         else
             mCurrentFrame = Frame(mImGray,imPolcam,timestamp,mpORBextractorLeft,mpORBextractorPolcam,mpORBVocabulary,mpCamera,mDistCoef,mbf,mThDepth);
-            //mCurrentFrame = Frame(mImGray,imPolcam,timestamp,vec_n_keypoints_diff,mpORBextractorLeft,mpORBextractorPolcam,mpORBVocabulary,mpCamera,mDistCoef,mbf,mThDepth);
     }
     else if(mSensor == System::IMU_MONOCULAR)
     {
@@ -3001,7 +2999,6 @@ bool Tracking::TrackWithMotionModel()
     }
 
     if(nmatches<20)
-    //if(nmatches<5) //fails too much
     {
         Verbose::PrintMess("Not enough matches!!", Verbose::VERBOSITY_NORMAL);
         if (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)

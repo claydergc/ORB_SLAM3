@@ -383,7 +383,6 @@ Frame::Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extra
 
 //added by claydergc
 
-//Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &timeStamp, std::vector<std::pair<double, float>> &vec_n_keypoints_diff, ORBextractor* extractor, ORBextractor* extractorPolcam, ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF, const IMU::Calib &ImuCalib)
 Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &timeStamp, ORBextractor* extractor, ORBextractor* extractorPolcam, ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF, const IMU::Calib &ImuCalib)
     :mpcpi(NULL),mpORBvocabulary(voc),mpORBextractorLeft(extractor), mpORBextractorPolcam(extractorPolcam),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
      mTimeStamp(timeStamp), mK(static_cast<Pinhole*>(pCamera)->toK()), mK_(static_cast<Pinhole*>(pCamera)->toK_()), mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
@@ -423,11 +422,8 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     std::vector<cv::KeyPoint> mvKeysPolcamNonOverlapped;
     std::vector<cv::Mat> mDescriptorsDiff;
     cv::Mat mDescriptorsDiffMat;
-    computeFeatureOverlap(mvKeys, mvKeysPolcam, mvKeysPolcamNonOverlapped, mDescriptorsPolcam, mDescriptorsDiff, 4.0);
+    computeFeatureOverlap(mvKeys, mvKeysPolcam, mvKeysPolcamNonOverlapped, mDescriptorsPolcam, mDescriptorsDiff, 5.0);
     //std::cout<<"mvKeysPolcamNonOverlapped: "<<mvKeysPolcamNonOverlapped.size()<<std::endl;
-    
-    //vec_n_keypoints_diff.push_back(std::make_pair(timeStamp, (float)(mvKeysPolcamNonOverlapped.size())/(float)(mvKeysPolcam.size())));
-    //vec_n_keypoints_diff.push_back(std::make_pair(timeStamp, (float)(mvKeysPolcam.size()))); //they have to be matched features, not non-matched!!!
     
     mvKeysJoined=mvKeys;
     mvKeysJoined.insert(mvKeysJoined.end(), mvKeysPolcamNonOverlapped.begin(), mvKeysPolcamNonOverlapped.end());
