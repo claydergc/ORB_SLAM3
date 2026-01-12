@@ -90,7 +90,7 @@ int main(int argc, char **argv)
     
     //added by claydergc
     
-    std::ofstream mprFile("map_points_ratio.txt");
+    std::ofstream mprFile("map_points_delta_yaw.txt");
     mprFile<<std::fixed<<std::setprecision(9);
     std::vector<Tuple> mprVector;
     float pitchPrev=0.0;
@@ -98,16 +98,23 @@ int main(int argc, char **argv)
     float pitchDelta=0.0;
     uint16_t nMapPoints=0;
     
-    cv::Rect topHalf(0, 0, 640, 130);
+    //cv::Rect topHalf(0, 0, 640, 280);
+    cv::Rect topHalf(0, 0, 606, 254);
+    //cv::Rect topHalf(0, 0, 606, 280);
     //cv::Rect topHalf(0, 0, 640, 90);
     //cv::Rect topHalf(0, 0, 640, 80);
     //cv::Rect topHalf(0, 200, 640, 280);
+    
+    cv::Rect mask(0, 350, 640, 130);
     
     std::vector<cv::KeyPoint> kp0;
     
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
     
-    for(int ni=0; ni<nImages && !g_signal_received; ni++)
+    //for(int ni=0; ni<1409 && !g_signal_received; ni++)
+    //for(int ni=0; ni<nImages && !g_signal_received; ni++)
+    for(int ni=3670; ni<nImages && !g_signal_received; ni++)
+    //for(int ni=1200; ni<nImages && !g_signal_received; ni++)
     {
         // Read image from file
         
@@ -117,8 +124,8 @@ int main(int argc, char **argv)
         
         //std::cout<<im.cols<<std::endl;
           
-        if(im.cols!=640 && im.rows!=480)
-          cv::resize(im, im, cv::Size(640, 480));
+        //if(im.cols!=640 && im.rows!=480)
+          //cv::resize(im, im, cv::Size(640, 480));
           
         /*
         if(ni>235 && ni<420 || ni>477 && ni<605) {
@@ -142,6 +149,8 @@ int main(int argc, char **argv)
         double tframe = vTimestamps[ni];
 
         //im(topHalf) = 0;
+        
+        im(mask) = 0;
         
         //clahe->apply(im,im);
         //cv::cvtColor(im, imAux, cv::COLOR_GRAY2BGR);
@@ -167,17 +176,17 @@ int main(int argc, char **argv)
             std::chrono::monotonic_clock::time_point t_Start_Resize = std::chrono::monotonic_clock::now();
     #endif
 #endif
-            int width = im.cols * imageScale;
-            int height = im.rows * imageScale;
-            cv::resize(im, im, cv::Size(width, height));
+            //int width = im.cols * imageScale;
+            //int height = im.rows * imageScale;
+            //cv::resize(im, im, cv::Size(width, height));
 #ifdef REGISTER_TIMES
     #ifdef COMPILEDWITHC11
-            std::chrono::steady_clock::time_point t_End_Resize = std::chrono::steady_clock::now();
+            //std::chrono::steady_clock::time_point t_End_Resize = std::chrono::steady_clock::now();
     #else
-            std::chrono::monotonic_clock::time_point t_End_Resize = std::chrono::monotonic_clock::now();
+            //std::chrono::monotonic_clock::time_point t_End_Resize = std::chrono::monotonic_clock::now();
     #endif
-            t_resize = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(t_End_Resize - t_Start_Resize).count();
-            SLAM.InsertResizeTime(t_resize);
+            //t_resize = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(t_End_Resize - t_Start_Resize).count();
+            //SLAM.InsertResizeTime(t_resize);
 #endif
         }
 
@@ -205,7 +214,7 @@ int main(int argc, char **argv)
         
         //added by claydergc
         
-        /*if(ni>0) {
+        if(ni>0) {
           pitchCurr = SLAM.mpTracker->mCurrentFrame.GetPose().rotationMatrix().transpose().eulerAngles(0,1,2)[1]*180.0/M_PI;
           pitchDelta = abs(pitchCurr-pitchPrev);          
           pitchPrev = pitchCurr;
@@ -225,7 +234,7 @@ int main(int argc, char **argv)
         
         if(ni==0) {
           pitchPrev = SLAM.mpTracker->mCurrentFrame.GetPose().rotationMatrix().transpose().eulerAngles(0,1,2)[1]*180.0/M_PI;
-        }*/
+        }
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();

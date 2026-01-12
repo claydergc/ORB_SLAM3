@@ -15,7 +15,9 @@ folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/TrajectoryFiles/WLightI
 #program = ["./Examples/Monocular/mono_tum", "./Vocabulary/ORBvoc.txt", "./Examples/Monocular/TUM1.yaml", "/home/ros-noetic/datasets/Polcam/S11_20250822/00/polcamI90", "./WLightI90"]
 #program = ["/home/claydergc/OneDrive/MyDockerPackages/ros-noetic/run_docker_orb_slam3_mono.sh", "/home/ros-noetic/datasets/Polcam/S11_20250822/00/polcamI0", "/home/ros-noetic/src/ORB_SLAM3/WLightI0"]
 
-program = ["/home/claydergc/OneDrive/MyDockerPackages/ros-noetic/run_docker_container_orb_slam3_mono.sh", "/home/ros-noetic/datasets/Polcam/S11_20250822/00/polcamI0", "/home/ros-noetic/src/ORB_SLAM3/WLightI0"]
+#program = ["/home/claydergc/OneDrive/MyDockerPackages/ros-noetic/run_docker_container_orb_slam3_mono.sh", "/home/ros-noetic/datasets/Polcam/S11_20250822/00/polcamI0", "/home/ros-noetic/src/ORB_SLAM3/WLightI0"]
+
+program = ["/home/claydergc/OneDrive/MyDockerContainers/ros-noetic/run_docker_container_orb_slam3_mono.sh", "", ""]
 
 # Start ffmpeg recording for rectangle
 record_cmd = [

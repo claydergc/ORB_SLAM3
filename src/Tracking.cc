@@ -2342,6 +2342,8 @@ void Tracking::Track()
             std::chrono::steady_clock::time_point time_StartNewKF = std::chrono::steady_clock::now();
 #endif
             bool bNeedKF = NeedNewKeyFrame();
+            
+            //std::cout<<"Need new keyframe: "<<bNeedKF<<"\n";
 
             // Check if we need to insert a new keyframe
             // if(bNeedKF && bOK)
@@ -2830,6 +2832,7 @@ bool Tracking::TrackReferenceKeyFrame()
     int nmatches = matcher.SearchByBoW(mpReferenceKF,mCurrentFrame,vpMapPointMatches);
 
     if(nmatches<15)
+    //if(nmatches<6) //even this threshold is not reached! added by claydergc to avoid failure messages
     {
         cout << "TRACK_REF_KF: Less than 15 matches!!\n";
         return false;
@@ -3001,7 +3004,7 @@ bool Tracking::TrackWithMotionModel()
     }
 
     if(nmatches<20)
-    //if(nmatches<5) //fails too much
+    //if(nmatches<6) //fails too much. added by claydergc to avoid the message of matching failure
     {
         Verbose::PrintMess("Not enough matches!!", Verbose::VERBOSITY_NORMAL);
         if (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)
@@ -3267,6 +3270,7 @@ bool Tracking::NeedNewKeyFrame()
     const bool c2 = (((mnMatchesInliers<nRefMatches*thRefRatio || bNeedToInsertClose)) && mnMatchesInliers>15);
 
     //std::cout << "NeedNewKF: c1a=" << c1a << "; c1b=" << c1b << "; c1c=" << c1c << "; c2=" << c2 << std::endl;
+    //std::cout << "NeedNewKF: c1a=" << mCurrentFrame.mnId << "; " << mnLastKeyFrameId << std::endl;
     // Temporal condition for Inertial cases
     bool c3 = false;
     if(mpLastKeyFrame)
@@ -3371,6 +3375,8 @@ void Tracking::CreateNewKeyFrame()
                 vDepthIdx.push_back(make_pair(z,i));
             }
         }
+        
+        //std::cout<<"Vector Depth is empty: "<<vDepthIdx.empty()<<"\n";
 
         if(!vDepthIdx.empty())
         {
@@ -3438,6 +3444,8 @@ void Tracking::CreateNewKeyFrame()
 
 
     mpLocalMapper->InsertKeyFrame(pKF);
+    
+    std::cout<<"KeyFrame added "<<pKF->mnId<<"\n";
 
     mpLocalMapper->SetNotStop(false);
 

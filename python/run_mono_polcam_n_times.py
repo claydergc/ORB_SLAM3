@@ -15,7 +15,7 @@ folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/TrajectoryFiles/WLightI
 #program = ["./Examples/Monocular/mono_tum", "./Vocabulary/ORBvoc.txt", "./Examples/Monocular/TUM1.yaml", "/home/ros-noetic/datasets/Polcam/S11_20250822/00/polcamI90", "./WLightI90"]
 #program = ["/home/claydergc/OneDrive/MyDockerPackages/ros-noetic/run_docker_orb_slam3_mono.sh", "/home/ros-noetic/datasets/Polcam/S11_20250822/00/polcamI0", "/home/ros-noetic/src/ORB_SLAM3/WLightI0"]
 
-program = ["/home/claydergc/OneDrive/MyDockerPackages/ros-noetic/run_docker_container_orb_slam3_mono_polcam.sh", "/home/ros-noetic/datasets/Polcam/S11_20250822/00/polcamI0", "/home/ros-noetic/src/ORB_SLAM3/WLightI0"]
+program = ["/home/claydergc/OneDrive/MyDockerContainers/ros-noetic/run_docker_container_orb_slam3_mono_polcam.sh", "", ""]
 
 # Start ffmpeg recording for rectangle
 record_cmd = [
@@ -173,13 +173,14 @@ program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725
 
 #folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM_CLAHE/polcamI45_I90/run_"
 #folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI45_I90/KeyFrameTrajectory"
-folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM_CLAHE/polcamI45_I135/run_"
-folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI45_I135/KeyFrameTrajectory"
-#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM_CLAHE/polcamI90_I135/run_"
-#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI90_I135/KeyFrameTrajectory"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM_CLAHE/polcamI45_I135/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI45_I135/KeyFrameTrajectory"
+folder_video = "/media/claydergc/DATA/Videos/20251015/1725_MULTICAM_CLAHE/polcamI90_I135/run_"
+folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_MULTICAM_CLAHE/polcamI90_I135/KeyFrameTrajectory"
 
 
-for j in range(20):
+#for j in range(20):
+for j in range(16,17):
 #for j in range(20):
 #for j in range(19,20):
 #for j in range(12,13):

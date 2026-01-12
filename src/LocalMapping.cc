@@ -1034,6 +1034,8 @@ void LocalMapping::KeyFrameCulling() {
       } else {
         pKF->SetBadFlag();
       }
+      
+      std::cout<<"claydergc: Culling keyframe "<<pKF->mnId<<std::endl;
     }
     if ((count > 20 && mbAbortBA) || count > 100) {
       break;

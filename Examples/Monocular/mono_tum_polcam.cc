@@ -101,7 +101,8 @@ int main(int argc, char **argv)
     file_n_keypoints_diff<<std::fixed<<std::setprecision(9);
     std::vector<std::pair<double, float>> vec_n_keypoints_diff;
     
-    cv::Rect topHalf(0, 0, 640, 130);
+    //cv::Rect topHalf(0, 0, 640, 130);
+    cv::Rect topHalf(0, 0, 606, 254);
     //cv::Rect topHalf(0, 0, 640, 90);
     //cv::Rect topHalf(0, 0, 640, 80);
     //cv::Rect topHalf(0, 200, 640, 280);
@@ -110,7 +111,8 @@ int main(int argc, char **argv)
     
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
     
-    for(int ni=0; ni<nImages && !g_signal_received; ni++)
+    //for(int ni=0; ni<nImages && !g_signal_received; ni++)
+    for(int ni=0; ni<1410 && !g_signal_received; ni++)
     {
         // Read image from file
         
@@ -134,19 +136,19 @@ int main(int argc, char **argv)
         //im = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         //imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         
-        im = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        
-        //im = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        //im = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         //imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        
+        im = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         
         //im = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         //imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         
         //std::cout<<im.cols<<std::endl;
           
-        if(im.cols!=640 && im.rows!=480)
-          cv::resize(im, im, cv::Size(640, 480));
+        //if(im.cols!=640 && im.rows!=480)
+          //cv::resize(im, im, cv::Size(640, 480));
           
         /*
         if(ni>235 && ni<420 || ni>477 && ni<605) {
@@ -169,9 +171,10 @@ int main(int argc, char **argv)
                 
         double tframe = vTimestamps[ni];
 
-        //im(topHalf) = 0;
+        im(topHalf) = 0;
+        imPolcam(topHalf) = 0;
         
-        clahe->apply(im,im);
+        //clahe->apply(im,im);
         //cv::cvtColor(im, imAux, cv::COLOR_GRAY2BGR);
         
         //cv::imshow("imAUx", im);
@@ -195,17 +198,17 @@ int main(int argc, char **argv)
             std::chrono::monotonic_clock::time_point t_Start_Resize = std::chrono::monotonic_clock::now();
     #endif
 #endif
-            int width = im.cols * imageScale;
-            int height = im.rows * imageScale;
-            cv::resize(im, im, cv::Size(width, height));
+            //int width = im.cols * imageScale;
+            //int height = im.rows * imageScale;
+            //cv::resize(im, im, cv::Size(width, height));
 #ifdef REGISTER_TIMES
     #ifdef COMPILEDWITHC11
             std::chrono::steady_clock::time_point t_End_Resize = std::chrono::steady_clock::now();
     #else
             std::chrono::monotonic_clock::time_point t_End_Resize = std::chrono::monotonic_clock::now();
     #endif
-            t_resize = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(t_End_Resize - t_Start_Resize).count();
-            SLAM.InsertResizeTime(t_resize);
+            //t_resize = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(t_End_Resize - t_Start_Resize).count();
+            //SLAM.InsertResizeTime(t_resize);
 #endif
         }
 
