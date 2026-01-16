@@ -105,7 +105,8 @@ int main(int argc, char **argv)
     //cv::Rect topHalf(0, 0, 640, 80);
     //cv::Rect topHalf(0, 200, 640, 280);
     
-    cv::Rect mask(0, 350, 640, 130);
+    //cv::Rect mask(0, 350, 640, 130);
+    cv::Rect mask(0, 440, 640, 40);
     
     std::vector<cv::KeyPoint> kp0;
     

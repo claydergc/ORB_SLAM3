@@ -20,17 +20,17 @@ Camera.type: "PinHole"
 #Camera1.k3: 1.163314
 
 # Camera calibration and distortion parameters (OpenCV) for Polarised Camera 640x480 after being padded from 1365x1024
-Camera1.fx: 758.3153257832925
-Camera1.fy: 676.6492212772476
+Camera1.fx: 606.652260626634
+Camera1.fy: 541.3193770217981
 Camera1.cx: 318.27111164892506
 #Camera1.cy: 242.8489188768646
 Camera1.cy: 239.79816832491474
 
 # distortion parameters
-Camera1.k1: -0.059098218173967695
-Camera1.k2: 0.1793477408661115
-Camera1.p1: 0.0016819528105368057
-Camera1.p2: -0.0005887999624264534
+Camera1.k1: 0.0
+Camera1.k2: 0.0
+Camera1.p1: 0.0
+Camera1.p2: 0.0
 
 # Camera frames per second 
 Camera.fps: 25
