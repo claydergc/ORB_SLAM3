@@ -106,15 +106,15 @@ int main(int argc, char **argv)
     //cv::Rect topHalf(0, 200, 640, 280);
     
     //cv::Rect mask(0, 350, 640, 130);
-    cv::Rect mask(0, 440, 640, 40);
+    cv::Rect mask(0, 0, 606, 140);
     
     std::vector<cv::KeyPoint> kp0;
     
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
     
     //for(int ni=0; ni<1409 && !g_signal_received; ni++)
-    //for(int ni=0; ni<nImages && !g_signal_received; ni++)
-    for(int ni=3670; ni<nImages && !g_signal_received; ni++)
+    for(int ni=0; ni<nImages && !g_signal_received; ni++)
+    //for(int ni=3670; ni<nImages && !g_signal_received; ni++)
     //for(int ni=1200; ni<nImages && !g_signal_received; ni++)
     {
         // Read image from file
@@ -146,12 +146,22 @@ int main(int argc, char **argv)
             // Apply transformation
             im.convertTo(im, -1, alpha, beta);
         }*/
+        
+        //double alpha = 1.5; // contrast control (1.0 = no change)
+        //int beta = 20;      // brightness control (0 = no change)
+
+        // Apply transformation
+        //im.convertTo(im, -1, alpha, beta);
                 
         double tframe = vTimestamps[ni];
 
         //im(topHalf) = 0;
         
-        im(mask) = 0;
+        
+        
+        //im(mask) = 0;
+        
+        
         
         //clahe->apply(im,im);
         //cv::cvtColor(im, imAux, cv::COLOR_GRAY2BGR);

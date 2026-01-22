@@ -20,11 +20,13 @@ Camera.type: "PinHole"
 #Camera1.k3: 1.163314
 
 Camera1.fx: 449.8472
-Camera1.fy: 450.1625
+#Camera1.fy: 450.1625
 #Camera1.fy: 334.7362
+Camera1.fy: 325.8572
 Camera1.cx: 301.9373
-Camera1.cy: 256.0032
+#Camera1.cy: 256.0032
 #Camera1.cy: 190.3613
+Camera1.cy: 185.3119
 
 
 
@@ -44,7 +46,7 @@ Camera.RGB: 1
 # Camera resolution
 Camera.width: 606
 Camera.height: 507
-#Camera.height: 377
+#Camera.height: 367
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters

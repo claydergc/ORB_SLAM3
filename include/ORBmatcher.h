@@ -113,7 +113,7 @@ public:
            vector<MapPoint *> &vpReplacePoint);
 
 public:
-  std::vector<cv::DMatch> myMatches;
+  //std::vector<cv::DMatch> myMatches;
 
   static const int TH_LOW;
   static const int TH_HIGH;

@@ -552,6 +552,7 @@ void Frame::ExtractORB(int flag, const cv::Mat &im, const int x0, const int x1)
         monoRight = (*mpORBextractorRight)(im,cv::Mat(),mvKeysRight,mDescriptorsRight,vLapping);
 }
 
+//added by claydergc
 void Frame::ExtractORBPolcam(int flag, const cv::Mat &im, const int x0, const int x1)
 {
     vector<int> vLapping = {x0,x1};
@@ -560,6 +561,7 @@ void Frame::ExtractORBPolcam(int flag, const cv::Mat &im, const int x0, const in
     else
         monoPolcam = (*mpORBextractorPolcam)(im,cv::Mat(),mvKeysPolcam,mDescriptorsPolcam,vLapping);
 }
+//added by claydergc
 
 //added by claydergc
 /**

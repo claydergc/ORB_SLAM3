@@ -102,17 +102,19 @@ int main(int argc, char **argv)
     std::vector<std::pair<double, float>> vec_n_keypoints_diff;
     
     //cv::Rect topHalf(0, 0, 640, 130);
-    cv::Rect topHalf(0, 0, 606, 254);
+    //cv::Rect topHalf(0, 0, 606, 254);
     //cv::Rect topHalf(0, 0, 640, 90);
     //cv::Rect topHalf(0, 0, 640, 80);
     //cv::Rect topHalf(0, 200, 640, 280);
+    
+    cv::Rect mask(0, 0, 606, 140);
     
     std::vector<cv::KeyPoint> kp0;
     
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
     
-    //for(int ni=0; ni<nImages && !g_signal_received; ni++)
-    for(int ni=0; ni<1410 && !g_signal_received; ni++)
+    for(int ni=0; ni<nImages && !g_signal_received; ni++)
+    //for(int ni=0; ni<1410 && !g_signal_received; ni++)
     {
         // Read image from file
         
@@ -171,8 +173,8 @@ int main(int argc, char **argv)
                 
         double tframe = vTimestamps[ni];
 
-        im(topHalf) = 0;
-        imPolcam(topHalf) = 0;
+        //im(mask) = 0;
+        //imPolcam(mask) = 0;
         
         //clahe->apply(im,im);
         //cv::cvtColor(im, imAux, cv::COLOR_GRAY2BGR);

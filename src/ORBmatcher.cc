@@ -39,7 +39,7 @@ const int ORBmatcher::HISTO_LENGTH = 30;
 
 ORBmatcher::ORBmatcher(float nnratio, bool checkOri)
     : mfNNratio(nnratio), mbCheckOrientation(checkOri) {
-    myMatches = std::vector<cv::DMatch>(2001);
+    //myMatches = std::vector<cv::DMatch>(2001);
     }
 
 int ORBmatcher::SearchByProjection(Frame &F,
@@ -1699,9 +1699,9 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame,
           nmatches++;
 
           //added by claydergc
-          cv::DMatch myMatch(i, bestIdx2, bestDist);
+          //cv::DMatch myMatch(i, bestIdx2, bestDist);
           //myMatches.push_back(myMatch);
-          myMatches[bestIdx2] = myMatch;
+          //myMatches[bestIdx2] = myMatch;
 
           if (mbCheckOrientation) {
             cv::KeyPoint kpLF =
@@ -1779,9 +1779,9 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame,
             nmatches++;
           
             //added by claydergc
-            cv::DMatch myMatch(i, bestIdx2, bestDist);
+            //cv::DMatch myMatch(i, bestIdx2, bestDist);
             //myMatches.push_back(myMatch);
-            myMatches[bestIdx2] = myMatch;
+            //myMatches[bestIdx2] = myMatch;
 
             if (mbCheckOrientation) {
               cv::KeyPoint kpLF =
@@ -1823,7 +1823,7 @@ int ORBmatcher::SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame,
           CurrentFrame.mvpMapPoints[rotHist[i][j]] =
               static_cast<MapPoint *>(NULL);
           
-          myMatches[rotHist[i][j]] = cv::DMatch(-1, -1, FLT_MAX); //added by claydergc
+          //myMatches[rotHist[i][j]] = cv::DMatch(-1, -1, FLT_MAX); //added by claydergc
           nmatches--;
         }
       }
