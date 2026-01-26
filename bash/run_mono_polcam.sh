@@ -70,12 +70,12 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ros-noetic/Pangolin-0.9.2/build
 
 #/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum_polcam /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20251204/20251204_1527 KeyframeTrajectory.txt
 
-#/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum_polcam /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S_606x507.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20251204/20251204_1533 KeyframeTrajectory.txt
+/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum_polcam /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S_606x507.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20251204/20251204_1533 KeyframeTrajectory.txt
 
 #/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum_polcam /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20251208/20251208_1746 KeyframeTrajectory.txt
 
 #/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum_polcam /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S_606x507.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20251211/20251211_1629 KeyframeTrajectory.txt
 
-/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum_polcam /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S_606x507.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20260120/20260120_0943 KeyframeTrajectory.txt
+#/home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/mono_tum_polcam /home/ros-noetic/src/ORB_SLAM3/Vocabulary/ORBvoc.txt /home/ros-noetic/src/ORB_SLAM3/Examples/Monocular/TRIO50S_606x507.yaml /home/ros-noetic/datasets/Polcam/Yandiwanba/20260120/20260120_0943 KeyframeTrajectory.txt
 
 #/home/ros-noetic/src/ORB_SLAM3/WLightI90/KeyframeTrajectory.txt

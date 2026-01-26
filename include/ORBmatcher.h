@@ -50,6 +50,9 @@ public:
   // matches. Used to track from previous frame (Tracking)
   int SearchByProjection(Frame &CurrentFrame, const Frame &LastFrame,
                          const float th, const bool bMono);
+                         
+  int SearchByProjectionPolcam(Frame &CurrentFrame, const Frame &LastFrame,
+                         const float th, const bool bMono);
 
   // Project MapPoints seen in KeyFrame into the Frame and search matches.
   // Used in relocalisation (Tracking)
@@ -92,6 +95,16 @@ public:
                              std::vector<pair<size_t, size_t>> &vMatchedPairs,
                              const bool bOnlyStereo,
                              const bool bCoarse = false);
+                             
+  int SearchForTriangulationNormalcam(KeyFrame *pKF1, KeyFrame *pKF2,
+                             std::vector<pair<size_t, size_t>> &vMatchedPairs,
+                             const bool bOnlyStereo,
+                             const bool bCoarse = false);
+                             
+  int SearchForTriangulationPolcam(KeyFrame *pKF1, KeyFrame *pKF2,
+                             std::vector<pair<size_t, size_t>> &vMatchedPairs,
+                             const bool bOnlyStereo,
+                             const bool bCoarse = false);                          
 
   // Search matches between MapPoints seen in KF1 and KF2 transforming by a Sim3
   // [s12*R12|t12] In the stereo and RGB-D case, s12=1 int

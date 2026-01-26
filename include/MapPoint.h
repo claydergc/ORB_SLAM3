@@ -142,10 +142,12 @@ public:
     }
 
     void ComputeDistinctiveDescriptors();
+    void ComputeDistinctiveDescriptors2();
 
     cv::Mat GetDescriptor();
 
     void UpdateNormalAndDepth();
+    void UpdateNormalAndDepth2();
 
     float GetMinDistanceInvariance();
     float GetMaxDistanceInvariance();

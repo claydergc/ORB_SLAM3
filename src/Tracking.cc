@@ -1702,7 +1702,24 @@ Sophus::SE3f Tracking::GrabImageMonocularPolcam(const cv::Mat &im, const cv::Mat
 #endif
 
     lastID = mCurrentFrame.mnId;
+    
+    //uint16_t n_mappoints = 0;
+    
+    //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+    //  if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+    //    n_mappoints++;
+
+    //std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl;
+
     Track();
+    
+    //n_mappoints = 0;
+    
+    //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+      //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+        //n_mappoints++;
+
+    //std::cout<<"mCurrentFrame.mvpMapPoints.size() after: "<<n_mappoints<<std::endl;
 
     return mCurrentFrame.GetPose();
 }
@@ -2004,7 +2021,22 @@ void Tracking::Track()
         }
         else
         {
+            /*uint16_t n_mappoints = 0;
+    
+            for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+              if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+                n_mappoints++;
+
+            std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl;*/
             MonocularInitialization();
+            
+            /*n_mappoints = 0;
+            
+            for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+              if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+                n_mappoints++;
+
+            std::cout<<"mCurrentFrame.mvpMapPoints.size() after: "<<n_mappoints<<std::endl;*/
         }
 
         //mpFrameDrawer->Update(this);
@@ -2049,8 +2081,24 @@ void Tracking::Track()
                 }
                 else
                 {
+                    /*uint16_t n_mappoints = 0;
+    
+                    for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+                      if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+                        n_mappoints++;
+
+                    std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl;*/
+
                     Verbose::PrintMess("TRACK: Track with motion model", Verbose::VERBOSITY_DEBUG);
                     bOK = TrackWithMotionModel();
+                    
+                    /*n_mappoints = 0;
+    
+                    for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+                      if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+                        n_mappoints++;
+
+                    std::cout<<"mCurrentFrame.mvpMapPoints.size() after: "<<n_mappoints<<std::endl;*/
                     if(!bOK)
                         bOK = TrackReferenceKeyFrame();
                 }
@@ -2308,7 +2356,7 @@ void Tracking::Track()
             if(mLastFrame.isSet() && mCurrentFrame.isSet())
             {
                 Sophus::SE3f LastTwc = mLastFrame.GetPose().inverse();
-                mVelocity = mCurrentFrame.GetPose() * LastTwc;
+                mVelocity = mCurrentFrame.GetPose() * LastTwc; //Update mVelocity
                 mbVelocity = true;
             }
             else {
@@ -2971,13 +3019,23 @@ bool Tracking::TrackWithMotionModel()
     }
     else
     {
-        mCurrentFrame.SetPose(mVelocity * mLastFrame.GetPose());
+        mCurrentFrame.SetPose(mVelocity * mLastFrame.GetPose()); //Update with a constant velocity motion model
     }
 
 
 
 
     fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
+    
+    //uint16_t n_mappoints = 0;
+    
+    //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+    //for(int i=0;i<mLastFrame.mvpMapPoints.size();++i)
+      //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+      //if(mLastFrame.mvpMapPoints[i]!=NULL)
+        //n_mappoints++;
+
+    //std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl;
 
     // Project points seen in previous frame
     int th;
@@ -2989,7 +3047,20 @@ bool Tracking::TrackWithMotionModel()
 
     th_global = th;
 
-    int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR || mSensor==System::IMU_MONOCULAR);
+    int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR || mSensor==System::IMU_MONOCULAR); //Copies points from last frame that matches in the new current frame
+    //int nmatchesPolcam = matcher.SearchByProjectionPolcam(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR || mSensor==System::IMU_MONOCULAR); //STILL WITH ERRORS!
+    
+    //n_mappoints = 0;
+    
+    //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+    //for(int i=0;i<mLastFrame.mvpMapPoints.size();++i)
+      //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+      //if(mLastFrame.mvpMapPoints[i]!=NULL)
+        //n_mappoints++;
+
+    //std::cout<<"mCurrentFrame.mvpMapPoints.size() after: "<<n_mappoints<<std::endl;
+    
+    //std::cout<<"nmatchesPolcam: "<<nmatchesPolcam<<std::endl;
 
     // If few matches, uses a wider window search
     if(nmatches<20)
@@ -3328,9 +3399,25 @@ void Tracking::CreateNewKeyFrame()
         return;
 
     if(!mpLocalMapper->SetNotStop(true))
-        return;
+        return;    
+    
+    //uint16_t n_mappoints = 0;
+    
+    //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+      //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+        //n_mappoints++;
+    
+    //std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl;
 
     KeyFrame* pKF = new KeyFrame(mCurrentFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
+
+    //n_mappoints = 0;
+    
+    //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+      //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+        //n_mappoints++;
+        
+    //std::cout<<"mCurrentFrame.mvpMapPoints.size() after: "<<n_mappoints<<std::endl;
 
     if(mpAtlas->isImuInitialized()) //  || mpLocalMapper->IsInitializing())
         pKF->bImu = true;
@@ -3453,9 +3540,18 @@ void Tracking::CreateNewKeyFrame()
     mpLastKeyFrame = pKF;
 }
 
+//HERE!!!
 void Tracking::SearchLocalPoints()
 {
-    // Do not search map points already matched
+    //uint16_t n_mappoints = 0;
+    
+    //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+      //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+        //n_mappoints++;
+
+    //std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl; //BEFORE IT IS SMALLER
+
+    // Do not search map points already matched (points already copied from previous frame)
     for(vector<MapPoint*>::iterator vit=mCurrentFrame.mvpMapPoints.begin(), vend=mCurrentFrame.mvpMapPoints.end(); vit!=vend; vit++)
     {
         MapPoint* pMP = *vit;
@@ -3523,7 +3619,24 @@ void Tracking::SearchLocalPoints()
         if(mState==LOST || mState==RECENTLY_LOST) // Lost for less than 1 second
             th=15; // 15
 
+
+        //uint16_t n_mappoints = 0;
+    
+        //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+          //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+            //n_mappoints++;
+    
+        //std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl; //BEFORE IT IS SMALLER
+        
         int matches = matcher.SearchByProjection(mCurrentFrame, mvpLocalMapPoints, th, mpLocalMapper->mbFarPoints, mpLocalMapper->mThFarPoints);
+        
+        //n_mappoints = 0;
+    
+        //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
+          //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
+            //n_mappoints++;
+    
+        //std::cout<<"mCurrentFrame.mvpMapPoints.size() after: "<<n_mappoints<<std::endl; // AFTER IT IS BIGGER
     }
 }
 
