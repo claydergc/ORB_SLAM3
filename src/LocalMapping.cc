@@ -1260,24 +1260,25 @@ void LocalMapping::CreateNewMapPointsMonoAndPolcam() {
           new MapPoint(x3D, mpCurrentKeyFrame, mpAtlas->GetCurrentMap());
       if (bPointStereo)
         countStereo++;
-      
+          
+    
       pMP->AddObservation(mpCurrentKeyFrame, mpCurrentKeyFrame->N_Normalcam + idx1);
       pMP->AddObservation(pKF2, pKF2->N_Normalcam + idx2);
       
-      //mpCurrentKeyFrame->AddMapPoint(pMP, mpCurrentKeyFrame->N_Normalcam + idx1);
-      //pKF2->AddMapPoint(pMP, mpCurrentKeyFrame->N_Normalcam + idx2);
+      //The following line cause problems
+      mpCurrentKeyFrame->AddMapPoint(pMP, mpCurrentKeyFrame->N_Normalcam + idx1);
+      pKF2->AddMapPoint(pMP, pKF2->N_Normalcam + idx2);
                 
-      //pMP->ComputeDistinctiveDescriptors(); //WORKING BUT NOT CHECKED YET
-      //pMP->UpdateNormalAndDepth(); //WORKING BUT NOT CHECKED YET
+      pMP->ComputeDistinctiveDescriptors(); //WORKING BUT NOT CHECKED YET
+      pMP->UpdateNormalAndDepth(); //WORKING BUT NOT CHECKED YET
 
-
-      //mpAtlas->AddMapPoint(pMP);
-      //mlpRecentAddedMapPoints.push_back(pMP);
+      mpAtlas->AddMapPoint(pMP);
+      mlpRecentAddedMapPoints.push_back(pMP);
     }
     
     
-    vec_n_polcam_map_points.push_back(std::make_pair((mpCurrentKeyFrame->mTimeStamp-1764826000), n_polcam_map_points));
-    n_polcam_map_points = 0;
+    //vec_n_polcam_map_points.push_back(std::make_pair((mpCurrentKeyFrame->mTimeStamp-1764826000), n_polcam_map_points));
+    //n_polcam_map_points = 0;
     
     //std::cout<<"mvpMapPoints after:"<<mpCurrentKeyFrame->countMapPoints()<<"\n";
     

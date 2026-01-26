@@ -455,10 +455,10 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     //added by claydergc
 
     
-    N = mvKeys.size();
+    //N = mvKeys.size();
     N_Normalcam = mvKeysNormalcam.size();
     N_Polcam = mvKeysPolcamNonOverlapped.size();
-    //N = N_NPolcam;
+    N = N_Normalcam + N_Polcam;
     
     if(mvKeys.empty())
         return;
