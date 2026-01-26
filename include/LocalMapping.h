@@ -110,6 +110,8 @@ public:
     // not consider far points (clouds)
     bool mbFarPoints;
     float mThFarPoints;
+    
+    std::vector<std::pair<double, uint16_t>> vec_n_polcam_map_points; //added by claydergc
 
 #ifdef REGISTER_TIMES
     vector<double> vdKFInsert_ms;

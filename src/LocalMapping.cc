@@ -104,8 +104,8 @@ void LocalMapping::Run() {
 #endif
 
       // Triangulate new MapPoints
-      CreateNewMapPoints();
-      //CreateNewMapPointsMonoAndPolcam();
+      //CreateNewMapPoints();
+      CreateNewMapPointsMonoAndPolcam();
 
       mbAbortBA = false;
 
@@ -751,6 +751,9 @@ void LocalMapping::CreateNewMapPointsMonoAndPolcam() {
   int countStereoAttempt = 0;
   int totalStereoPts = 0;
   
+  //std::vector<std::pair<uint32_t, uint16_t>> vec_n_polcam_map_points; //added by claydergc
+  uint16_t n_polcam_map_points = 0; //added by claydergc
+  
   //uint32_t newCreatedMapPoints = 0; //added by claydergc
   // Search matches with epipolar restriction and triangulate
   for (size_t i = 0; i < vpNeighKFs.size(); i++) {
@@ -787,8 +790,8 @@ void LocalMapping::CreateNewMapPointsMonoAndPolcam() {
     matcher.SearchForTriangulationNormalcam(mpCurrentKeyFrame, pKF2, vMatchedIndices,
                                    false, bCoarse);
                                    
-    //matcher.SearchForTriangulationPolcam(mpCurrentKeyFrame, pKF2, vMatchedIndicesPolcam,
-    //                               false, bCoarse); //added by claydergc                                  
+    matcher.SearchForTriangulationPolcam(mpCurrentKeyFrame, pKF2, vMatchedIndicesPolcam,
+                                   false, bCoarse); //added by claydergc                                  
 
     Sophus::SE3<float> sophTcw2 = pKF2->GetPose();
     Eigen::Matrix<float, 3, 4> eigTcw2 = sophTcw2.matrix3x4();
@@ -1037,7 +1040,7 @@ void LocalMapping::CreateNewMapPointsMonoAndPolcam() {
     
     //std::cout<<"mvpMapPoints before:"<<mpCurrentKeyFrame->countMapPoints()<<"\n";
     
-    //if(mpCurrentKeyFrame->NPolcam !=0 )
+    //if(mpCurrentKeyFrame->N_Polcam !=0 )
       //mpCurrentKeyFrame->joinFeaturesPolcam(); //added by claydergc
     
     //added by claydergc
@@ -1045,21 +1048,21 @@ void LocalMapping::CreateNewMapPointsMonoAndPolcam() {
     const int nmatchesPolcam = vMatchedIndicesPolcam.size();
     //std::cout<<"nmatchesPolcam: "<<nmatchesPolcam<<"\n";
     
-    /*for (int ikp = 0; ikp < nmatchesPolcam; ikp++) {
+    for (int ikp = 0; ikp < nmatchesPolcam; ikp++) {
       const int &idx1 = vMatchedIndicesPolcam[ikp].first;
       const int &idx2 = vMatchedIndicesPolcam[ikp].second;
 
       const cv::KeyPoint &kp1 =
-          (mpCurrentKeyFrame->NPolcam == -1) ? mpCurrentKeyFrame->mvKeysUnPolcam[idx1]
-          : (idx1 < mpCurrentKeyFrame->NPolcam)
+          (mpCurrentKeyFrame->N_Polcam == -1) ? mpCurrentKeyFrame->mvKeysUnPolcam[idx1]
+          : (idx1 < mpCurrentKeyFrame->N_Polcam)
               ? mpCurrentKeyFrame->mvKeysPolcamNonOverlapped[idx1]
               : mpCurrentKeyFrame->mvKeysRight[idx1 - mpCurrentKeyFrame->NLeft];
       const float kp1_ur = mpCurrentKeyFrame->mvuRight[idx1];
       bool bStereo1 = (!mpCurrentKeyFrame->mpCamera2 && kp1_ur >= 0);
       const bool bRight1 = false;
 
-      const cv::KeyPoint &kp2 = (pKF2->NPolcam == -1) ? pKF2->mvKeysUnPolcam[idx2]
-                                : (idx2 < pKF2->NPolcam)
+      const cv::KeyPoint &kp2 = (pKF2->N_Polcam == -1) ? pKF2->mvKeysUnPolcam[idx2]
+                                : (idx2 < pKF2->N_Polcam)
                                     ? pKF2->mvKeysPolcamNonOverlapped[idx2]
                                     : pKF2->mvKeysRight[idx2 - pKF2->NLeft];
 
@@ -1248,45 +1251,33 @@ void LocalMapping::CreateNewMapPointsMonoAndPolcam() {
           ratioDist > ratioOctave * ratioFactor)
         continue;
 
-      std::cout<<"Triangulation successful\n";
+      //std::cout<<"Triangulation successful\n";
 
       // Triangulation is succesfull
+      n_polcam_map_points++; //added by claydergc
+      
       MapPoint *pMP =
           new MapPoint(x3D, mpCurrentKeyFrame, mpAtlas->GetCurrentMap());
       if (bPointStereo)
         countStereo++;
-
-      //pMP->AddObservation(mpCurrentKeyFrame, idx1);
-      //pMP->AddObservation(pKF2, idx2);
-
-      //mpCurrentKeyFrame->AddMapPoint(pMP, idx1);
-      //pKF2->AddMapPoint(pMP, idx2);
-      
-      //mpCurrentKeyFrame->AddMapPointPolcam(pMP, idx1);
-      //pKF2->AddMapPointPolcam(pMP, idx2);
-      
-      //if(pKF2->NPolcam!=0)
-        //pKF2->joinFeaturesPolcam(); //added by claydergc
       
       pMP->AddObservation(mpCurrentKeyFrame, mpCurrentKeyFrame->N_Normalcam + idx1);
-      pMP->AddObservation(pKF2, mpCurrentKeyFrame->N_Normalcam + idx2);
+      pMP->AddObservation(pKF2, pKF2->N_Normalcam + idx2);
       
-      mpCurrentKeyFrame->AddMapPoint(pMP, mpCurrentKeyFrame->N_Normalcam + idx1);
-      pKF2->AddMapPoint(pMP, mpCurrentKeyFrame->N_Normalcam + idx2);
-      
-      //Join mDescriptors with mDescriptorsPolcamNonOverlapped
-      //JoinmDescriptorsAndmDescriptorsPolcamNonOverlapped()
-      
-      pMP->ComputeDistinctiveDescriptors(); //WORKING BUT NOT CHECKED YET
-      pMP->UpdateNormalAndDepth(); //WORKING BUT NOT CHECKED YET
+      //mpCurrentKeyFrame->AddMapPoint(pMP, mpCurrentKeyFrame->N_Normalcam + idx1);
+      //pKF2->AddMapPoint(pMP, mpCurrentKeyFrame->N_Normalcam + idx2);
+                
+      //pMP->ComputeDistinctiveDescriptors(); //WORKING BUT NOT CHECKED YET
+      //pMP->UpdateNormalAndDepth(); //WORKING BUT NOT CHECKED YET
 
-      //pMP->ComputeDistinctiveDescriptors2(); //WORKING BUT NOT CHECKED YET
-      //pMP->UpdateNormalAndDepth2(); //WORKING BUT NOT CHECKED YET
 
-      mpAtlas->AddMapPoint(pMP);
-      mlpRecentAddedMapPoints.push_back(pMP);
-    }*/
+      //mpAtlas->AddMapPoint(pMP);
+      //mlpRecentAddedMapPoints.push_back(pMP);
+    }
     
+    
+    vec_n_polcam_map_points.push_back(std::make_pair((mpCurrentKeyFrame->mTimeStamp-1764826000), n_polcam_map_points));
+    n_polcam_map_points = 0;
     
     //std::cout<<"mvpMapPoints after:"<<mpCurrentKeyFrame->countMapPoints()<<"\n";
     

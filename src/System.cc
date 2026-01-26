@@ -656,7 +656,16 @@ void System::Shutdown()
     mpTracker->PrintTimeStats();
 #endif
 
+    //added by claydergc
+    
+    std::ofstream file_n_polcam_map_points("n_polcam_map_points.txt");
+    file_n_polcam_map_points<<std::fixed<<std::setprecision(9);
+    
+    for(int i=0;i<mpLocalMapper->vec_n_polcam_map_points.size();++i) {
+      file_n_polcam_map_points<<mpLocalMapper->vec_n_polcam_map_points[i].first<<" "<<mpLocalMapper->vec_n_polcam_map_points[i].second<<"\n";    
+    }
 
+    file_n_polcam_map_points.close();
 }
 
 bool System::isShutDown() {
