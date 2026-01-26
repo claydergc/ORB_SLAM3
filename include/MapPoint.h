@@ -141,13 +141,11 @@ public:
         return mnFound;
     }
 
-    void ComputeDistinctiveDescriptors();
-    void ComputeDistinctiveDescriptors2();
+    void ComputeDistinctiveDescriptors();    
 
     cv::Mat GetDescriptor();
 
-    void UpdateNormalAndDepth();
-    void UpdateNormalAndDepth2();
+    void UpdateNormalAndDepth();    
 
     float GetMinDistanceInvariance();
     float GetMaxDistanceInvariance();

@@ -323,8 +323,8 @@ void LocalMapping::ProcessNewKeyFrame() {
 
   // Compute Bags of Words structures
   mpCurrentKeyFrame->ComputeBoW();
-  //mpCurrentKeyFrame->ComputeBoWNormalcam(); //added by claydergc
-  //mpCurrentKeyFrame->ComputeBoWPolcam(); //added by claydergc
+  mpCurrentKeyFrame->ComputeBoWNormalcam(); //added by claydergc
+  mpCurrentKeyFrame->ComputeBoWPolcam(); //added by claydergc
 
   // Associate MapPoints to the new keyframe and update normal and descriptor
   const vector<MapPoint *> vpMapPointMatches =

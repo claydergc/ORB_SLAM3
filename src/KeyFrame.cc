@@ -32,7 +32,7 @@ KeyFrame::KeyFrame():
         mnTrackReferenceForFrame(0), mnFuseTargetForKF(0), mnBALocalForKF(0), mnBAFixedForKF(0), mnBALocalForMerge(0),
         mnLoopQuery(0), mnLoopWords(0), mnRelocQuery(0), mnRelocWords(0), mnMergeQuery(0), mnMergeWords(0), mnBAGlobalForKF(0),
         fx(0), fy(0), cx(0), cy(0), invfx(0), invfy(0), mnPlaceRecognitionQuery(0), mnPlaceRecognitionWords(0), mPlaceRecognitionScore(0),
-        mbf(0), mb(0), mThDepth(0), N(0), N_NPolcam(0), NPolcam(0), N_Normalcam(0), mvKeys(static_cast<vector<cv::KeyPoint> >(NULL)), mvKeysUn(static_cast<vector<cv::KeyPoint> >(NULL)),
+        mbf(0), mb(0), mThDepth(0), N(0), N_Polcam(0), N_Normalcam(0), mvKeys(static_cast<vector<cv::KeyPoint> >(NULL)), mvKeysUn(static_cast<vector<cv::KeyPoint> >(NULL)),
         mvuRight(static_cast<vector<float> >(NULL)), mvDepth(static_cast<vector<float> >(NULL)), mnScaleLevels(0), mfScaleFactor(0),
         mfLogScaleFactor(0), mvScaleFactors(0), mvLevelSigma2(0), mvInvLevelSigma2(0), mnMinX(0), mnMinY(0), mnMaxX(0),
         mnMaxY(0), mPrevKF(static_cast<KeyFrame*>(NULL)), mNextKF(static_cast<KeyFrame*>(NULL)), mbFirstConnection(true), mpParent(NULL), mbNotErase(false),
@@ -48,7 +48,7 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
     mnTrackReferenceForFrame(0), mnFuseTargetForKF(0), mnBALocalForKF(0), mnBAFixedForKF(0), mnBALocalForMerge(0),
     mnLoopQuery(0), mnLoopWords(0), mnRelocQuery(0), mnRelocWords(0), mnBAGlobalForKF(0), mnPlaceRecognitionQuery(0), mnPlaceRecognitionWords(0), mPlaceRecognitionScore(0),
     fx(F.fx), fy(F.fy), cx(F.cx), cy(F.cy), invfx(F.invfx), invfy(F.invfy),
-    mbf(F.mbf), mb(F.mb), mThDepth(F.mThDepth), N(F.N), N_NPolcam(F.N_NPolcam), NPolcam(F.NPolcam), N_Normalcam(F.N_Normalcam), mvKeys(F.mvKeys), mvKeysNormalcam(F.mvKeysNormalcam), mvKeysPolcamNonOverlapped(F.mvKeysPolcamNonOverlapped), mvKeysUn(F.mvKeysUn), mvKeysUnNormalcam(F.mvKeysUnNormalcam), mvKeysUnPolcam(F.mvKeysUnPolcam),
+    mbf(F.mbf), mb(F.mb), mThDepth(F.mThDepth), N(F.N), N_Polcam(F.N_Polcam), N_Normalcam(F.N_Normalcam), mvKeys(F.mvKeys), mvKeysNormalcam(F.mvKeysNormalcam), mvKeysPolcamNonOverlapped(F.mvKeysPolcamNonOverlapped), mvKeysUn(F.mvKeysUn), mvKeysUnNormalcam(F.mvKeysUnNormalcam), mvKeysUnPolcam(F.mvKeysUnPolcam),
     mvuRight(F.mvuRight), mvDepth(F.mvDepth), mDescriptors(F.mDescriptors.clone()), mDescriptorsNormalcam(F.mDescriptorsNormalcam.clone()), mDescriptorsPolcamNonOverlapped(F.mDescriptorsPolcamNonOverlapped.clone()),
     mBowVec(F.mBowVec),mBowVecPolcam(F.mBowVecPolcam), mFeatVec(F.mFeatVec), mFeatVecPolcam(F.mFeatVecPolcam), mnScaleLevels(F.mnScaleLevels), mfScaleFactor(F.mfScaleFactor),
     mfLogScaleFactor(F.mfLogScaleFactor), mvScaleFactors(F.mvScaleFactors), mvLevelSigma2(F.mvLevelSigma2),
@@ -94,75 +94,6 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
 
     mnOriginMapId = pMap->GetId();
 }
-
-
-
-/*void KeyFrame::JoinmDescriptorsAndmDescriptorsPolcamNonOverlapped() {
-
-  cv::vconcat(mDescriptors, mDescriptorsPolcamNonOverlapped, mDescriptors);
-
-}
-
-void KeyFrame::JoinmvKeysUnAndmvKeysUnPolcam() {
-
-  std::vector<cv::KeyPoint> mvKeysUnJoined;
-  mvKeysUnJoined=mvKeysUn;
-  mvKeysUnJoined.insert(mvKeysUnJoined.end(), mvKeysUnPolcam.begin(), mvKeysUnPolcam.end());
-  mvKeysUn = mvKeysUnJoined;
-}
-
-void KeyFrame::joinFeaturesPolcam() {
-  JoinmDescriptorsAndmDescriptorsPolcamNonOverlapped();
-  JoinmvKeysUnAndmvKeysUnPolcam();
-  N = N_NPolcam;
-  UpdateFeaturesToGrid();
-  isFeaturesJoinedVar = true;
-}
-
-bool KeyFrame::isFeaturesJoined() {
-  return isFeaturesJoinedVar;
-}
-
-bool KeyFrame::PosInGrid(const cv::KeyPoint &kp, int &posX, int &posY)
-{
-    posX = round((kp.pt.x-mnMinX)*mfGridElementWidthInv);
-    posY = round((kp.pt.y-mnMinY)*mfGridElementHeightInv);
-
-    //Keypoint's coordinates are undistorted, which could cause to go out of the image
-    if(posX<0 || posX>=FRAME_GRID_COLS || posY<0 || posY>=FRAME_GRID_ROWS)
-        return false;
-
-    return true;
-}
-
-//added by claydergc
-void KeyFrame::UpdateFeaturesToGrid()
-{
-    // Fill matrix with points
-    const int nCells = FRAME_GRID_COLS*FRAME_GRID_ROWS;
-    
-    N = mvKeysUn.size();
-    
-    //std::cout<<"N0: "<<N<<std::endl;
-    //std::cout<<"mvKeysUn size0: "<<mvKeysUn.size()<<std::endl;
-
-    int nReserve = 0.5f*N/(nCells);
-
-    for(unsigned int i=0; i<FRAME_GRID_COLS;i++)
-        for (unsigned int j=0; j<FRAME_GRID_ROWS;j++){
-            mGrid[i][j].reserve(nReserve);            
-        }
-
-    for(int i=0;i<N;i++)
-    {
-        const cv::KeyPoint &kp = mvKeysUn[i];
-                                                 
-        int nGridPosX, nGridPosY;
-        if(PosInGrid(kp,nGridPosX,nGridPosY)){            
-            mGrid[nGridPosX][nGridPosY].push_back(i);            
-        }
-    }
-}*/
 
 uint32_t KeyFrame::countMapPoints() {
   

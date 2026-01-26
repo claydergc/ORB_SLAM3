@@ -220,8 +220,8 @@ public:
 
     // Bag of Words Representation
     void ComputeBoW();
-    void ComputeBoWNormalcam();
-    void ComputeBoWPolcam();
+    void ComputeBoWNormalcam(); //added by claydergc
+    void ComputeBoWPolcam(); //added by claydergc
 
     // Covisibility graph functions
     void AddConnection(KeyFrame* pKF, const int &weight);
@@ -386,8 +386,7 @@ public:
     // Number of KeyPoints
     int N;
     const int N_Normalcam;
-    const int N_NPolcam;
-    const int NPolcam;
+    const int N_Polcam;
 
     // KeyPoints, stereo coordinate and descriptors (all associated by an index)
     const std::vector<cv::KeyPoint> mvKeys;
@@ -536,12 +535,6 @@ protected:
 public:
     GeometricCamera* mpCamera, *mpCamera2;
     
-    /*void JoinmDescriptorsAndmDescriptorsPolcamNonOverlapped(); //added by claydergc
-    void JoinmvKeysUnAndmvKeysUnPolcam(); //added by claydergc
-    void joinFeaturesPolcam(); //added by claydergc
-    bool isFeaturesJoined();
-    void UpdateFeaturesToGrid();    
-    bool PosInGrid(const cv::KeyPoint &kp, int &posX, int &posY);*/
     uint32_t countMapPoints();
 
     //Indexes of stereo observations correspondences

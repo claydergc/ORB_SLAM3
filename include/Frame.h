@@ -236,10 +236,10 @@ public:
     float mThDepth;
 
     // Number of KeyPoints.
-    int N;
-    int N_Normalcam;
-    int N_NPolcam;
-    int NPolcam; //added by claydergc
+    int N; //added by claydergc
+    int N_Normalcam; //added by claydergc
+    //int N_NPolcam;
+    int N_Polcam; //added by claydergc
 
     // Vector of keypoints (original for visualization) and undistorted (actually used by the system).
     // In the stereo case, mvKeysUn is redundant as images must be rectified.
@@ -285,8 +285,8 @@ public:
     static float mfGridElementHeightInv;
     std::vector<std::size_t> mGrid[FRAME_GRID_COLS][FRAME_GRID_ROWS];
     
-    static float mfGridElementWidthInvPolcam; //added by claydergc
-    static float mfGridElementHeightInvPolcam; //added by claydergc
+    //static float mfGridElementWidthInvPolcam; //added by claydergc
+    //static float mfGridElementHeightInvPolcam; //added by claydergc
     std::vector<std::size_t> mGridPolcam[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
     
     std::vector<std::size_t> mGridNormalcam[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
