@@ -137,6 +137,7 @@ protected:
     void ProcessNewKeyFrame();
     void CreateNewMapPoints();
     void CreateNewMapPointsMonoAndPolcam(); //added by claydergc
+    void CreateNewMapPointsMonoAndPolcam2(); //added by claydergc
 
     void MapPointCulling();
     void SearchInNeighbors();

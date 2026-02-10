@@ -2640,6 +2640,8 @@ void Tracking::MonocularInitialization()
         // Find correspondences
         ORBmatcher matcher(0.9,true);
         int nmatches = matcher.SearchForInitialization(mInitialFrame,mCurrentFrame,mvbPrevMatched,mvIniMatches,100);
+        
+        //std::cout<<"ini nmatches: "<<nmatches<<std::endl;
 
         // Check if there are enough correspondences
         if(nmatches<100)
@@ -2685,6 +2687,12 @@ void Tracking::CreateInitialMapMonocular()
 
     pKFini->ComputeBoW();
     pKFcur->ComputeBoW();
+    
+    pKFini->ComputeBoWNormalcam(); //added by claydergc
+    pKFcur->ComputeBoWNormalcam(); //added by claydergc
+    
+    pKFini->ComputeBoWPolcam(); //added by claydergc
+    pKFcur->ComputeBoWPolcam(); //added by claydergc
 
     // Insert KFs in the map
     mpAtlas->AddKeyFrame(pKFini);
@@ -2870,7 +2878,9 @@ void Tracking::CheckReplacedInLastFrame()
 bool Tracking::TrackReferenceKeyFrame()
 {
     // Compute Bag of Words vector
-    mCurrentFrame.ComputeBoW();
+    mCurrentFrame.ComputeBoW();    
+    mCurrentFrame.ComputeBoWNormalcam(); //added by claydegc
+    mCurrentFrame.ComputeBoWPolcam(); //added by claydegc
 
     // We perform first an ORB matching with the reference keyframe
     // If enough matches are found we setup a PnP solver
@@ -2878,6 +2888,8 @@ bool Tracking::TrackReferenceKeyFrame()
     vector<MapPoint*> vpMapPointMatches;
 
     int nmatches = matcher.SearchByBoW(mpReferenceKF,mCurrentFrame,vpMapPointMatches);
+    
+    //std::cout<<"nmatches: "<<nmatches<<std::endl;
 
     if(nmatches<15)
     //if(nmatches<6) //even this threshold is not reached! added by claydergc to avoid failure messages

@@ -149,9 +149,9 @@ record_cmd = [
 #folder_video = "/media/claydergc/DATA/Videos/20251015/1725_CLAHE/polcamI90I135/run_"
 #folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba_CLAHE/polcamI90I135/KeyFrameTrajectory"
 
-program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/polcamI"
-folder_video = "/media/claydergc/DATA/Videos/20251015/1725_CLAHE_FEW_MATCHES/polcamI/run_"
-folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_CLAHE_FEW_MATCHES/polcamI/KeyFrameTrajectory"
+#program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/polcamI"
+#folder_video = "/media/claydergc/DATA/Videos/20251015/1725_CLAHE_FEW_MATCHES/polcamI/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015/1725_CLAHE_FEW_MATCHES/polcamI/KeyFrameTrajectory"
 
 #program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20251015/20251015_1725/polcamI135"
 #folder_video = "/media/claydergc/DATA/Videos/20251015/1725/polcamI135/run_"
@@ -159,8 +159,16 @@ folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20
 #folder_video = "/media/claydergc/DATA/Videos/20251015/1725_CLAHE/polcamI135/run_"
 #folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20251015_1725_Yandiwanba_CLAHE/polcamI135/KeyFrameTrajectory"
 
+#program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20260128/20260128_0830/polcamI"
+#folder_video = "/media/claydergc/DATA/Videos/20260128/20260128_0830/polcamI/run_"
+#folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20260128/20260128_0830/polcamI/KeyFrameTrajectory"
 
-for j in range(20):
+program[1] = "/home/ros-noetic/datasets/Polcam/Yandiwanba/20260128/20260128_0839/polcamI"
+folder_video = "/media/claydergc/DATA/Videos/20260128/20260128_0839/polcamI/run_"
+folder_trajectory_file = "/home/ros-noetic/src/ORB_SLAM3/results/Trajectories/20260128/20260128_0839/polcamI/KeyFrameTrajectory"
+
+for j in range(10):
+#for j in range(20):
 #for j in range(40):
 #for j in range(9,11):
 #for j in range(0,11):

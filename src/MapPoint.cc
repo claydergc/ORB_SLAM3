@@ -109,6 +109,10 @@ MapPoint::MapPoint(const Eigen::Vector3f &Pos, Map* pMap, Frame* pFrame, const i
     mfMinDistance = mfMaxDistance/pFrame->mvScaleFactors[nLevels-1];
 
     pFrame->mDescriptors.row(idxF).copyTo(mDescriptor);
+    
+    pFrame->mDescriptorsNormalcam.row(idxF).copyTo(mDescriptorNormalcam);
+    pFrame->mDescriptorsPolcam.row(idxF).copyTo(mDescriptorPolcam);
+    
 
     // MapPoints can be created from Tracking and Local Mapping. This mutex avoid conflicts with id.
     unique_lock<mutex> lock(mpMap->mMutexPointCreation);
@@ -404,10 +408,178 @@ void MapPoint::ComputeDistinctiveDescriptors()
     }
 }
 
+void MapPoint::ComputeDistinctiveDescriptorsNormalcam()
+{
+    // Retrieve all observed descriptors
+    vector<cv::Mat> vDescriptors;
+
+    map<KeyFrame*,tuple<int,int>> observations;
+
+    {
+        unique_lock<mutex> lock1(mMutexFeatures);
+        if(mbBad)
+            return;
+        observations=mObservations;
+    }
+
+    if(observations.empty())
+        return;
+
+    vDescriptors.reserve(observations.size());
+
+    for(map<KeyFrame*,tuple<int,int>>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
+    {
+        KeyFrame* pKF = mit->first;
+        
+        //pKF->JoinmDescriptorsAndmDescriptorsPolcamNonOverlapped(); //added by claydergc
+
+        if(!pKF->isBad()){
+            tuple<int,int> indexes = mit -> second;
+            int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
+
+            if(leftIndex != -1){
+                vDescriptors.push_back(pKF->mDescriptorsNormalcam.row(leftIndex));
+            }
+            if(rightIndex != -1){
+                vDescriptors.push_back(pKF->mDescriptorsNormalcam.row(rightIndex));
+            }
+        }
+    }
+
+    if(vDescriptors.empty())
+        return;
+
+    // Compute distances between them
+    const size_t N = vDescriptors.size();
+
+    float Distances[N][N];
+    for(size_t i=0;i<N;i++)
+    {
+        Distances[i][i]=0;
+        for(size_t j=i+1;j<N;j++)
+        {
+            int distij = ORBmatcher::DescriptorDistance(vDescriptors[i],vDescriptors[j]);
+            Distances[i][j]=distij;
+            Distances[j][i]=distij;
+        }
+    }
+
+    // Take the descriptor with least median distance to the rest
+    int BestMedian = INT_MAX;
+    int BestIdx = 0;
+    for(size_t i=0;i<N;i++)
+    {
+        vector<int> vDists(Distances[i],Distances[i]+N);
+        sort(vDists.begin(),vDists.end());
+        int median = vDists[0.5*(N-1)];
+
+        if(median<BestMedian)
+        {
+            BestMedian = median;
+            BestIdx = i;
+        }
+    }
+
+    {
+        unique_lock<mutex> lock(mMutexFeatures);
+        mDescriptor = vDescriptors[BestIdx].clone();
+    }
+}
+
+void MapPoint::ComputeDistinctiveDescriptorsPolcam()
+{
+    // Retrieve all observed descriptors
+    vector<cv::Mat> vDescriptors;
+
+    map<KeyFrame*,tuple<int,int>> observations;
+
+    {
+        unique_lock<mutex> lock1(mMutexFeatures);
+        if(mbBad)
+            return;
+        observations=mObservations;
+    }
+
+    if(observations.empty())
+        return;
+
+    vDescriptors.reserve(observations.size());
+
+    for(map<KeyFrame*,tuple<int,int>>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
+    {
+        KeyFrame* pKF = mit->first;
+        
+        //pKF->JoinmDescriptorsAndmDescriptorsPolcamNonOverlapped(); //added by claydergc
+
+        if(!pKF->isBad()){
+            tuple<int,int> indexes = mit -> second;
+            int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
+
+            if(leftIndex != -1){
+                vDescriptors.push_back(pKF->mDescriptorsPolcamNonOverlapped.row(leftIndex));
+            }
+            if(rightIndex != -1){
+                vDescriptors.push_back(pKF->mDescriptorsPolcamNonOverlapped.row(rightIndex));
+            }
+        }
+    }
+
+    if(vDescriptors.empty())
+        return;
+
+    // Compute distances between them
+    const size_t N = vDescriptors.size();
+
+    float Distances[N][N];
+    for(size_t i=0;i<N;i++)
+    {
+        Distances[i][i]=0;
+        for(size_t j=i+1;j<N;j++)
+        {
+            int distij = ORBmatcher::DescriptorDistance(vDescriptors[i],vDescriptors[j]);
+            Distances[i][j]=distij;
+            Distances[j][i]=distij;
+        }
+    }
+
+    // Take the descriptor with least median distance to the rest
+    int BestMedian = INT_MAX;
+    int BestIdx = 0;
+    for(size_t i=0;i<N;i++)
+    {
+        vector<int> vDists(Distances[i],Distances[i]+N);
+        sort(vDists.begin(),vDists.end());
+        int median = vDists[0.5*(N-1)];
+
+        if(median<BestMedian)
+        {
+            BestMedian = median;
+            BestIdx = i;
+        }
+    }
+
+    {
+        unique_lock<mutex> lock(mMutexFeatures);
+        mDescriptor = vDescriptors[BestIdx].clone();
+    }
+}
+
 cv::Mat MapPoint::GetDescriptor()
 {
     unique_lock<mutex> lock(mMutexFeatures);
     return mDescriptor.clone();
+}
+
+cv::Mat MapPoint::GetDescriptorNormalcam()
+{
+    unique_lock<mutex> lock(mMutexFeatures);
+    return mDescriptorNormalcam.clone();
+}
+
+cv::Mat MapPoint::GetDescriptorPolcam()
+{
+    unique_lock<mutex> lock(mMutexFeatures);
+    return mDescriptorPolcam.clone();
 }
 
 tuple<int,int> MapPoint::GetIndexInKeyFrame(KeyFrame *pKF)
@@ -494,6 +666,147 @@ void MapPoint::UpdateNormalAndDepth()
         mNormalVector = normal/n;
     }
 }
+
+void MapPoint::UpdateNormalAndDepthNormalcam()
+{
+    map<KeyFrame*,tuple<int,int>> observations;
+    KeyFrame* pRefKF;
+    Eigen::Vector3f Pos;
+    {
+        unique_lock<mutex> lock1(mMutexFeatures);
+        unique_lock<mutex> lock2(mMutexPos);
+        if(mbBad)
+            return;
+        observations = mObservations;
+        pRefKF = mpRefKF;
+        Pos = mWorldPos;
+    }
+
+    if(observations.empty())
+        return;
+
+    Eigen::Vector3f normal;
+    normal.setZero();
+    int n=0;
+    for(map<KeyFrame*,tuple<int,int>>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
+    {
+        KeyFrame* pKF = mit->first;
+
+        tuple<int,int> indexes = mit -> second;
+        int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
+
+        if(leftIndex != -1){
+            Eigen::Vector3f Owi = pKF->GetCameraCenter();
+            Eigen::Vector3f normali = Pos - Owi;
+            normal = normal + normali / normali.norm();
+            n++;
+        }
+        if(rightIndex != -1){
+            Eigen::Vector3f Owi = pKF->GetRightCameraCenter();
+            Eigen::Vector3f normali = Pos - Owi;
+            normal = normal + normali / normali.norm();
+            n++;
+        }
+    }
+
+    Eigen::Vector3f PC = Pos - pRefKF->GetCameraCenter();
+    const float dist = PC.norm();
+
+    tuple<int ,int> indexes = observations[pRefKF];
+    int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
+    int level;
+    if(pRefKF -> NLeft == -1){
+        level = pRefKF->mvKeysUnNormalcam[leftIndex].octave;
+    }
+    else if(leftIndex != -1){
+        level = pRefKF -> mvKeysNormalcam[leftIndex].octave;
+    }
+    else{
+        level = pRefKF -> mvKeysRight[rightIndex - pRefKF -> NLeft].octave;
+    }
+
+    //const int level = pRefKF->mvKeysUn[observations[pRefKF]].octave;
+    const float levelScaleFactor =  pRefKF->mvScaleFactors[level];
+    const int nLevels = pRefKF->mnScaleLevels;
+
+    {
+        unique_lock<mutex> lock3(mMutexPos);
+        mfMaxDistance = dist*levelScaleFactor;
+        mfMinDistance = mfMaxDistance/pRefKF->mvScaleFactors[nLevels-1];
+        mNormalVector = normal/n;
+    }
+}
+
+void MapPoint::UpdateNormalAndDepthPolcam()
+{
+    map<KeyFrame*,tuple<int,int>> observations;
+    KeyFrame* pRefKF;
+    Eigen::Vector3f Pos;
+    {
+        unique_lock<mutex> lock1(mMutexFeatures);
+        unique_lock<mutex> lock2(mMutexPos);
+        if(mbBad)
+            return;
+        observations = mObservations;
+        pRefKF = mpRefKF;
+        Pos = mWorldPos;
+    }
+
+    if(observations.empty())
+        return;
+
+    Eigen::Vector3f normal;
+    normal.setZero();
+    int n=0;
+    for(map<KeyFrame*,tuple<int,int>>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
+    {
+        KeyFrame* pKF = mit->first;
+
+        tuple<int,int> indexes = mit -> second;
+        int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
+
+        if(leftIndex != -1){
+            Eigen::Vector3f Owi = pKF->GetCameraCenter();
+            Eigen::Vector3f normali = Pos - Owi;
+            normal = normal + normali / normali.norm();
+            n++;
+        }
+        if(rightIndex != -1){
+            Eigen::Vector3f Owi = pKF->GetRightCameraCenter();
+            Eigen::Vector3f normali = Pos - Owi;
+            normal = normal + normali / normali.norm();
+            n++;
+        }
+    }
+
+    Eigen::Vector3f PC = Pos - pRefKF->GetCameraCenter();
+    const float dist = PC.norm();
+
+    tuple<int ,int> indexes = observations[pRefKF];
+    int leftIndex = get<0>(indexes), rightIndex = get<1>(indexes);
+    int level;
+    if(pRefKF -> NLeft == -1){
+        level = pRefKF->mvKeysUnPolcam[leftIndex].octave;
+    }
+    else if(leftIndex != -1){
+        level = pRefKF -> mvKeysPolcamNonOverlapped[leftIndex].octave;
+    }
+    else{
+        level = pRefKF -> mvKeysRight[rightIndex - pRefKF -> NLeft].octave;
+    }
+
+    //const int level = pRefKF->mvKeysUn[observations[pRefKF]].octave;
+    const float levelScaleFactor =  pRefKF->mvScaleFactors[level];
+    const int nLevels = pRefKF->mnScaleLevels;
+
+    {
+        unique_lock<mutex> lock3(mMutexPos);
+        mfMaxDistance = dist*levelScaleFactor;
+        mfMinDistance = mfMaxDistance/pRefKF->mvScaleFactors[nLevels-1];
+        mNormalVector = normal/n;
+    }
+}
+
 
 void MapPoint::SetNormalVector(const Eigen::Vector3f& normal)
 {

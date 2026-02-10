@@ -141,11 +141,17 @@ public:
         return mnFound;
     }
 
-    void ComputeDistinctiveDescriptors();    
+    void ComputeDistinctiveDescriptors();
+    void ComputeDistinctiveDescriptorsNormalcam();
+    void ComputeDistinctiveDescriptorsPolcam();
 
     cv::Mat GetDescriptor();
+    cv::Mat GetDescriptorNormalcam();
+    cv::Mat GetDescriptorPolcam();
 
-    void UpdateNormalAndDepth();    
+    void UpdateNormalAndDepth();
+    void UpdateNormalAndDepthNormalcam();
+    void UpdateNormalAndDepthPolcam();
 
     float GetMinDistanceInvariance();
     float GetMaxDistanceInvariance();
@@ -223,6 +229,8 @@ protected:
 
      // Best descriptor to fast matching
      cv::Mat mDescriptor;
+     cv::Mat mDescriptorNormalcam; //added by claydergc
+     cv::Mat mDescriptorPolcam; //added by claydergc
 
      // Reference KeyFrame
      KeyFrame* mpRefKF;

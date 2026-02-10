@@ -1101,8 +1101,8 @@ int ORBmatcher::SearchForTriangulationNormalcam(
   const DBoW2::FeatureVector &vFeatVec1 = pKF1->mFeatVecNormalcam;
   const DBoW2::FeatureVector &vFeatVec2 = pKF2->mFeatVecNormalcam;
   
-  //std::cout<<"pKF1->mFeatVecPolcam: "<<pKF1->mFeatVecPolcam.size()<<"\n";
-  //std::cout<<"pKF2->mFeatVecPolcam: "<<pKF2->mFeatVecPolcam.size()<<"\n";
+  //std::cout<<"pKF1->mFeatVecNormalcam: "<<pKF1->mFeatVecNormalcam.size()<<"\n";
+  //std::cout<<"pKF2->mFeatVecNormalcam: "<<pKF2->mFeatVecNormalcam.size()<<"\n";
 
   // Compute epipole in second image
   Sophus::SE3f T1w = pKF1->GetPose();
@@ -1143,6 +1143,10 @@ int ORBmatcher::SearchForTriangulationNormalcam(
   int nmatches = 0;
   vector<bool> vbMatched2(pKF2->N_Normalcam, false);
   vector<int> vMatches12(pKF1->N_Normalcam, -1);
+  //vector<bool> vbMatched2(pKF2->N, false);
+  //vector<int> vMatches12(pKF1->N, -1);
+  
+  //std::cout<<"HELLO0: "<<pKF1->N_Normalcam<<"\n";
 
   vector<int> rotHist[HISTO_LENGTH];
   for (int i = 0; i < HISTO_LENGTH; i++)
@@ -1167,6 +1171,8 @@ int ORBmatcher::SearchForTriangulationNormalcam(
           continue;
         }
 
+        //std::cout<<"HELLO1\n";
+
         const bool bStereo1 = (!pKF1->mpCamera2 && pKF1->mvuRight[idx1] >= 0);
 
         if (bOnlyStereo)
@@ -1190,6 +1196,8 @@ int ORBmatcher::SearchForTriangulationNormalcam(
           size_t idx2 = f2it->second[i2];
 
           MapPoint *pMP2 = pKF2->GetMapPoint(idx2);
+          
+          //std::cout<<"HELLO2\n";
 
           // If we have already matched or there is a MapPoint skip
           if (vbMatched2[idx2] || pMP2)
@@ -1207,6 +1215,8 @@ int ORBmatcher::SearchForTriangulationNormalcam(
 
           if (dist > TH_LOW || dist > bestDist)
             continue;
+            
+          //std::cout<<"HELLO2.1\n";
 
           const cv::KeyPoint &kp2 = (pKF2->NLeft == -1) ? pKF2->mvKeysUnNormalcam[idx2]
                                     : (idx2 < pKF2->NLeft)
@@ -1264,16 +1274,24 @@ int ORBmatcher::SearchForTriangulationNormalcam(
             bestIdx2 = idx2;
             bestDist = dist;
           }
+          
+          //std::cout<<"HELLO2.2\n";
         }
 
+        //std::cout<<"HELLO3"<<bestIdx2<<"\n";
+        //std::cout<<"HELLO3: "<<pKF2->mvKeysUnNormalcam.size()<<"\n";
+        //std::cout<<"HELLO3: "<<vMatches12.size()<<"\n";
+
         if (bestIdx2 >= 0) {
-          const cv::KeyPoint &kp2 =
-              (pKF2->NLeft == -1) ? pKF2->mvKeysUnNormalcam[bestIdx2]
-              : (bestIdx2 < pKF2->NLeft)
-                  ? pKF2->mvKeysNormalcam[bestIdx2]
-                  : pKF2->mvKeysRight[bestIdx2 - pKF2->NLeft];
+          const cv::KeyPoint &kp2 = pKF2->mvKeysUnNormalcam[bestIdx2]; //este no es el problema1!!
+              //(pKF2->NLeft == -1) ? pKF2->mvKeysUnNormalcam[bestIdx2]
+              //: (bestIdx2 < pKF2->NLeft)
+              //    ? pKF2->mvKeysNormalcam[bestIdx2]
+              //    : pKF2->mvKeysRight[bestIdx2 - pKF2->NLeft];
           vMatches12[idx1] = bestIdx2;
           nmatches++;
+          
+          //std::cout<<"HELLO3.1\n";
 
           if (mbCheckOrientation) {
             float rot = kp1.angle - kp2.angle;
@@ -1286,6 +1304,8 @@ int ORBmatcher::SearchForTriangulationNormalcam(
             rotHist[bin].push_back(idx1);
           }
         }
+        
+        //std::cout<<"HELLO4\n";
       }
 
       f1it++;

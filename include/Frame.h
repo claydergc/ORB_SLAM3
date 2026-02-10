@@ -251,6 +251,8 @@ public:
     std::vector<cv::KeyPoint> mvKeysNormalcam;
     std::vector<cv::KeyPoint> mvKeysUnNormalcam;
     std::vector<cv::KeyPoint> mvKeysUnPolcam; //added by claydergc
+    
+    
 
     // Corresponding stereo coordinate and depth for each keypoint.
     std::vector<MapPoint*> mvpMapPoints;
