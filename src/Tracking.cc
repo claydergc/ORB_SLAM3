@@ -593,7 +593,7 @@ void Tracking::newParameterLoader(Settings *settings) {
     float fScaleFactor = settings->scaleFactor();
 
     mpORBextractorLeft = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
-    
+
     mpORBextractorPolcam = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
     if(mSensor==System::STEREO || mSensor==System::IMU_STEREO)
@@ -1516,38 +1516,38 @@ Sophus::SE3f Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat 
     //cout << "Tracking start" << endl;
     Track();
     //cout << "Tracking end" << endl;
-    
-    //Sophus::SE3f pose = 
-    
+
+    //Sophus::SE3f pose =
+
     //float pitchPrev = 0.0;
-    
+
     //if(mCurrentFrame.mpPrevFrame!=nullptr)
       //pitchPrev = mCurrentFrame.mpPrevFrame->GetPose().rotationMatrix().eulerAngles(0,1,2)[1]*180.0/M_PI;
-    
-    
+
+
     /*if(started) {
       pitchCurr = mCurrentFrame.GetPose().rotationMatrix().eulerAngles(0,1,2)[1]*180.0/M_PI;
       float pitchDelta = abs(pitchCurr-pitchPrev);
       std::cout<<"Pitch curr: "<<pitchCurr<<", pitchPrev: "<<pitchPrev<<std::endl;
       pitchPrev = pitchCurr;
-      
+
       uint16_t nMapPoints = 0;
-      
+
       for(uint16_t i=0; i<mCurrentFrame.mvpMapPoints.size(); ++i) {
         if(mCurrentFrame.mvpMapPoints[i]!=nullptr)
           nMapPoints++;
       }
-      
+
       //std::cout<<"Map points: "<<mCurrentFrame.mvpMapPoints.size()<<", pitchDelta: "<<pitchDelta<<". MP/PD: "<<mCurrentFrame.mvpMapPoints.size()/pitchDelta<<std::endl;
       std::cout<<"Map points: "<<nMapPoints<<", pitchDelta: "<<pitchDelta<<". MP/PD: "<<nMapPoints/pitchDelta<<std::endl;
-      
+
     }
-    
+
     if(!started) {
       pitchPrev = mCurrentFrame.GetPose().rotationMatrix().transpose().eulerAngles(0,1,2)[1]*180.0/M_PI;
       started = true;
     }*/
-    
+
     //if(pitchDelta>3)
     //std::cout<<"Map points: "<<mCurrentFrame.mvpMapPoints.size()<<", pitchDelta: "<<pitchDelta<<". MP/PD: "<<mCurrentFrame.mvpMapPoints.size()/pitchDelta<<std::endl;
 
@@ -1702,9 +1702,9 @@ Sophus::SE3f Tracking::GrabImageMonocularPolcam(const cv::Mat &im, const cv::Mat
 #endif
 
     lastID = mCurrentFrame.mnId;
-    
+
     //uint16_t n_mappoints = 0;
-    
+
     //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
     //  if(mCurrentFrame.mvpMapPoints[i]!=NULL)
     //    n_mappoints++;
@@ -1712,9 +1712,9 @@ Sophus::SE3f Tracking::GrabImageMonocularPolcam(const cv::Mat &im, const cv::Mat
     //std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl;
 
     Track();
-    
+
     //n_mappoints = 0;
-    
+
     //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
       //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
         //n_mappoints++;
@@ -2022,16 +2022,16 @@ void Tracking::Track()
         else
         {
             /*uint16_t n_mappoints = 0;
-    
+
             for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
               if(mCurrentFrame.mvpMapPoints[i]!=NULL)
                 n_mappoints++;
 
             std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl;*/
             MonocularInitialization();
-            
+
             /*n_mappoints = 0;
-            
+
             for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
               if(mCurrentFrame.mvpMapPoints[i]!=NULL)
                 n_mappoints++;
@@ -2082,7 +2082,7 @@ void Tracking::Track()
                 else
                 {
                     /*uint16_t n_mappoints = 0;
-    
+
                     for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
                       if(mCurrentFrame.mvpMapPoints[i]!=NULL)
                         n_mappoints++;
@@ -2091,9 +2091,9 @@ void Tracking::Track()
 
                     Verbose::PrintMess("TRACK: Track with motion model", Verbose::VERBOSITY_DEBUG);
                     bOK = TrackWithMotionModel();
-                    
+
                     /*n_mappoints = 0;
-    
+
                     for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
                       if(mCurrentFrame.mvpMapPoints[i]!=NULL)
                         n_mappoints++;
@@ -2390,7 +2390,7 @@ void Tracking::Track()
             std::chrono::steady_clock::time_point time_StartNewKF = std::chrono::steady_clock::now();
 #endif
             bool bNeedKF = NeedNewKeyFrame();
-            
+
             //std::cout<<"Need new keyframe: "<<bNeedKF<<"\n";
 
             // Check if we need to insert a new keyframe
@@ -2640,7 +2640,7 @@ void Tracking::MonocularInitialization()
         // Find correspondences
         ORBmatcher matcher(0.9,true);
         int nmatches = matcher.SearchForInitialization(mInitialFrame,mCurrentFrame,mvbPrevMatched,mvIniMatches,100);
-        
+
         //std::cout<<"ini nmatches: "<<nmatches<<std::endl;
 
         // Check if there are enough correspondences
@@ -2687,12 +2687,16 @@ void Tracking::CreateInitialMapMonocular()
 
     pKFini->ComputeBoW();
     pKFcur->ComputeBoW();
-    
-    pKFini->ComputeBoWNormalcam(); //added by claydergc
-    pKFcur->ComputeBoWNormalcam(); //added by claydergc
-    
-    pKFini->ComputeBoWPolcam(); //added by claydergc
-    pKFcur->ComputeBoWPolcam(); //added by claydergc
+
+    // pKFini->ComputeBoWNormalcam(); //added by claydergc
+    // pKFcur->ComputeBoWNormalcam(); //added by claydergc
+    pKFini->ComputeBoWCam(0);
+    pKFcur->ComputeBoWCam(0);
+
+    // pKFini->ComputeBoWPolcam(); //added by claydergc
+    // pKFcur->ComputeBoWPolcam(); //added by claydergc
+    pKFini->ComputeBoWCam(1);
+    pKFcur->ComputeBoWCam(1);
 
     // Insert KFs in the map
     mpAtlas->AddKeyFrame(pKFini);
@@ -2878,9 +2882,11 @@ void Tracking::CheckReplacedInLastFrame()
 bool Tracking::TrackReferenceKeyFrame()
 {
     // Compute Bag of Words vector
-    mCurrentFrame.ComputeBoW();    
-    mCurrentFrame.ComputeBoWNormalcam(); //added by claydegc
-    mCurrentFrame.ComputeBoWPolcam(); //added by claydegc
+    mCurrentFrame.ComputeBoW();
+    // mCurrentFrame.ComputeBoWNormalcam(); //added by claydergc
+    // mCurrentFrame.ComputeBoWPolcam(); //added by claydergc
+    mCurrentFrame.ComputeBoWCam(0);
+    mCurrentFrame.ComputeBoWCam(1);
 
     // We perform first an ORB matching with the reference keyframe
     // If enough matches are found we setup a PnP solver
@@ -2888,7 +2894,7 @@ bool Tracking::TrackReferenceKeyFrame()
     vector<MapPoint*> vpMapPointMatches;
 
     int nmatches = matcher.SearchByBoW(mpReferenceKF,mCurrentFrame,vpMapPointMatches);
-    
+
     //std::cout<<"nmatches: "<<nmatches<<std::endl;
 
     if(nmatches<15)
@@ -2948,9 +2954,12 @@ void Tracking::UpdateLastFrame()
     Sophus::SE3f Tlr = mlRelativeFramePoses.back();
     mLastFrame.SetPose(Tlr * pRef->GetPose());
 
+    // std::cout<<"Here 0"<<std::endl;
+
     if(mnLastKeyFrameId==mLastFrame.mnId || mSensor==System::MONOCULAR || mSensor==System::IMU_MONOCULAR || !mbOnlyTracking)
         return;
 
+    // std::cout<<"Here 1"<<std::endl;
     // Create "visual odometry" MapPoints
     // We sort points according to their measured depth by the stereo/RGB-D sensor
     vector<pair<float,int> > vDepthIdx;
@@ -2964,6 +2973,8 @@ void Tracking::UpdateLastFrame()
             vDepthIdx.push_back(make_pair(z,i));
         }
     }
+
+    //std::cout<<"vDepthIdx.size(): "<<vDepthIdx.size()<<std::endl;
 
     if(vDepthIdx.empty())
         return;
@@ -2985,6 +2996,8 @@ void Tracking::UpdateLastFrame()
             bCreateNew = true;
         else if(pMP->Observations()<1)
             bCreateNew = true;
+
+        //std::cout<<"bCreateNew: "<<bCreateNew<<std::endl;
 
         if(bCreateNew)
         {
@@ -3038,9 +3051,9 @@ bool Tracking::TrackWithMotionModel()
 
 
     fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
-    
+
     //uint16_t n_mappoints = 0;
-    
+
     //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
     //for(int i=0;i<mLastFrame.mvpMapPoints.size();++i)
       //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
@@ -3061,9 +3074,9 @@ bool Tracking::TrackWithMotionModel()
 
     int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR || mSensor==System::IMU_MONOCULAR); //Copies points from last frame that matches in the new current frame
     //int nmatchesPolcam = matcher.SearchByProjectionPolcam(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR || mSensor==System::IMU_MONOCULAR); //STILL WITH ERRORS!
-    
+
     //n_mappoints = 0;
-    
+
     //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
     //for(int i=0;i<mLastFrame.mvpMapPoints.size();++i)
       //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
@@ -3071,7 +3084,7 @@ bool Tracking::TrackWithMotionModel()
         //n_mappoints++;
 
     //std::cout<<"mCurrentFrame.mvpMapPoints.size() after: "<<n_mappoints<<std::endl;
-    
+
     //std::cout<<"nmatchesPolcam: "<<nmatchesPolcam<<std::endl;
 
     // If few matches, uses a wider window search
@@ -3411,24 +3424,24 @@ void Tracking::CreateNewKeyFrame()
         return;
 
     if(!mpLocalMapper->SetNotStop(true))
-        return;    
-    
+        return;
+
     //uint16_t n_mappoints = 0;
-    
+
     //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
       //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
         //n_mappoints++;
-    
+
     //std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl;
 
     KeyFrame* pKF = new KeyFrame(mCurrentFrame,mpAtlas->GetCurrentMap(),mpKeyFrameDB);
 
     //n_mappoints = 0;
-    
+
     //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
       //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
         //n_mappoints++;
-        
+
     //std::cout<<"mCurrentFrame.mvpMapPoints.size() after: "<<n_mappoints<<std::endl;
 
     if(mpAtlas->isImuInitialized()) //  || mpLocalMapper->IsInitializing())
@@ -3474,7 +3487,7 @@ void Tracking::CreateNewKeyFrame()
                 vDepthIdx.push_back(make_pair(z,i));
             }
         }
-        
+
         //std::cout<<"Vector Depth is empty: "<<vDepthIdx.empty()<<"\n";
 
         if(!vDepthIdx.empty())
@@ -3543,7 +3556,7 @@ void Tracking::CreateNewKeyFrame()
 
 
     mpLocalMapper->InsertKeyFrame(pKF);
-    
+
     std::cout<<"KeyFrame added "<<pKF->mnId<<"\n";
 
     mpLocalMapper->SetNotStop(false);
@@ -3556,7 +3569,7 @@ void Tracking::CreateNewKeyFrame()
 void Tracking::SearchLocalPoints()
 {
     //uint16_t n_mappoints = 0;
-    
+
     //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
       //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
         //n_mappoints++;
@@ -3633,21 +3646,21 @@ void Tracking::SearchLocalPoints()
 
 
         //uint16_t n_mappoints = 0;
-    
+
         //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
           //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
             //n_mappoints++;
-    
+
         //std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl; //BEFORE IT IS SMALLER
-        
+
         int matches = matcher.SearchByProjection(mCurrentFrame, mvpLocalMapPoints, th, mpLocalMapper->mbFarPoints, mpLocalMapper->mThFarPoints);
-        
+
         //n_mappoints = 0;
-    
+
         //for(int i=0;i<mCurrentFrame.mvpMapPoints.size();++i)
           //if(mCurrentFrame.mvpMapPoints[i]!=NULL)
             //n_mappoints++;
-    
+
         //std::cout<<"mCurrentFrame.mvpMapPoints.size() after: "<<n_mappoints<<std::endl; // AFTER IT IS BIGGER
     }
 }

@@ -129,10 +129,10 @@ class KeyFrame
         // BOW
         ar & mBowVec;
         ar & mFeatVec;
-        ar & mBowVecNormalcam;
-        ar & mFeatVecNormalcam;
-        ar & mBowVecPolcam;
-        ar & mFeatVecPolcam;
+        ar & mBowVecCam0; //added by claydergc
+        ar & mFeatVecCam0; //added by claydergc
+        ar & mBowVecCam1; //added by claydergc
+        ar & mFeatVecCam1; //added by claydergc
         // Pose relative to parent
         serializeSophusSE3<Archive>(ar, mTcp, version);
         // Scale
@@ -222,6 +222,7 @@ public:
     void ComputeBoW();
     void ComputeBoWNormalcam(); //added by claydergc
     void ComputeBoWPolcam(); //added by claydergc
+    void ComputeBoWCam(uint8_t camIdx);
 
     // Covisibility graph functions
     void AddConnection(KeyFrame* pKF, const int &weight);
@@ -385,8 +386,7 @@ public:
 
     // Number of KeyPoints
     int N;
-    const int N_Normalcam;
-    const int N_Polcam;
+
 
     // KeyPoints, stereo coordinate and descriptors (all associated by an index)
     const std::vector<cv::KeyPoint> mvKeys;
@@ -395,25 +395,24 @@ public:
     const std::vector<float> mvDepth; // negative value for monocular points
     //const cv::Mat mDescriptors;
     cv::Mat mDescriptors;
-    
-    const std::vector<cv::KeyPoint> mvKeysNormalcam; //added by claydergc
-    const std::vector<cv::KeyPoint> mvKeysUnNormalcam;  //added by claydergc
-    const cv::Mat mDescriptorsNormalcam; //added by claydergc
-    
-    const std::vector<cv::KeyPoint> mvKeysPolcamNonOverlapped; //added by claydergc
-    const std::vector<cv::KeyPoint> mvKeysUnPolcam;  //added by claydergc
-    const cv::Mat mDescriptorsPolcamNonOverlapped; //added by claydergc
-    
+
+    const int N_Cam0; //added by claydergc
+    const int N_Cam1; //added by claydergc
+    const std::vector<cv::KeyPoint> mvKeysCam0; //added by claydergc
+    const std::vector<cv::KeyPoint> mvKeysUnCam0;  //added by claydergc
+    const cv::Mat mDescriptorsCam0; //added by claydergc
+    const std::vector<cv::KeyPoint> mvKeysCam1; //added by claydergc
+    const std::vector<cv::KeyPoint> mvKeysUnCam1;  //added by claydergc
+    const cv::Mat mDescriptorsCam1; //added by claydergc
+    DBoW2::BowVector mBowVecCam0; //added by claydergc
+    DBoW2::FeatureVector mFeatVecCam0; //added by claydergc
+    DBoW2::BowVector mBowVecCam1; //added by claydergc
+    DBoW2::FeatureVector mFeatVecCam1; //added by claydergc
+
 
     //BoW
     DBoW2::BowVector mBowVec;
     DBoW2::FeatureVector mFeatVec;
-    
-    DBoW2::BowVector mBowVecNormalcam; //added by claydergc
-    DBoW2::FeatureVector mFeatVecNormalcam; //added by claydergc
-    
-    DBoW2::BowVector mBowVecPolcam; //added by claydergc
-    DBoW2::FeatureVector mFeatVecPolcam; //added by claydergc
 
     // Pose relative to parent (this is computed when bad flag is activated)
     Sophus::SE3f mTcp;
@@ -476,8 +475,6 @@ protected:
     std::vector<MapPoint*> mvpMapPoints;
     // For save relation without pointer, this is necessary for save/load function
     std::vector<long long int> mvBackupMapPointsId;
-    
-    std::vector<MapPoint*> mvpMapPointsPolcam; //added by claydergc
 
     // BoW
     KeyFrameDatabase* mpKeyFrameDB;
@@ -507,7 +504,7 @@ protected:
     // Bad flags
     bool mbNotErase;
     bool mbToBeErased;
-    bool mbBad;    
+    bool mbBad;
 
     float mHalfBaseline; // Only for visualization
 
@@ -529,12 +526,12 @@ protected:
     std::mutex mMutexConnections;
     std::mutex mMutexFeatures;
     std::mutex mMutexMap;
-    
+
     bool isFeaturesJoinedVar = false;
 
 public:
     GeometricCamera* mpCamera, *mpCamera2;
-    
+
     uint32_t countMapPoints();
 
     //Indexes of stereo observations correspondences

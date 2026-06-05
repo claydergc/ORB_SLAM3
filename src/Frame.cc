@@ -26,6 +26,7 @@
 #include "ORBmatcher.h"
 #include "GeometricCamera.h"
 
+#include <cstdint>
 #include <thread>
 #include <include/CameraModels/Pinhole.h>
 #include <include/CameraModels/KannalaBrandt8.h>
@@ -55,11 +56,11 @@ Frame::Frame(): mpcpi(NULL), mpImuPreintegrated(NULL), mpPrevFrame(NULL), mpImuP
 Frame::Frame(const Frame &frame)
     :mpcpi(frame.mpcpi),mpORBvocabulary(frame.mpORBvocabulary), mpORBextractorLeft(frame.mpORBextractorLeft), mpORBextractorRight(frame.mpORBextractorRight),
      mTimeStamp(frame.mTimeStamp), mK(frame.mK.clone()), mK_(Converter::toMatrix3f(frame.mK)), mDistCoef(frame.mDistCoef.clone()),
-     mbf(frame.mbf), mb(frame.mb), mThDepth(frame.mThDepth), N(frame.N), N_Normalcam(frame.N_Normalcam), N_Polcam(frame.N_Polcam), mvKeys(frame.mvKeys), mvKeysPolcamNonOverlapped(frame.mvKeysPolcamNonOverlapped),
-     mvKeysRight(frame.mvKeysRight), mvKeysUn(frame.mvKeysUn), mvKeysUnNormalcam(frame.mvKeysUnNormalcam), mvKeysUnPolcam(frame.mvKeysUnPolcam), mvuRight(frame.mvuRight),
-     mvDepth(frame.mvDepth), mBowVec(frame.mBowVec), mBowVecNormalcam(frame.mBowVecNormalcam), mBowVecPolcam(frame.mBowVecPolcam), mFeatVec(frame.mFeatVec), mFeatVecNormalcam(frame.mFeatVecNormalcam), mFeatVecPolcam(frame.mFeatVecPolcam),
-     mDescriptors(frame.mDescriptors.clone()), mDescriptorsNormalcam(frame.mDescriptorsNormalcam.clone()), mDescriptorsPolcamNonOverlapped(frame.mDescriptorsPolcamNonOverlapped.clone()), mDescriptorsRight(frame.mDescriptorsRight.clone()),
-     mvpMapPoints(frame.mvpMapPoints), mvpMapPointsPolcam(frame.mvpMapPointsPolcam), mvbOutlier(frame.mvbOutlier), mImuCalib(frame.mImuCalib), mnCloseMPs(frame.mnCloseMPs),
+     mbf(frame.mbf), mb(frame.mb), mThDepth(frame.mThDepth), N(frame.N), N_Cam0(frame.N_Cam0), N_Cam1(frame.N_Cam1), mvKeys(frame.mvKeys), mvKeysCam1(frame.mvKeysCam1),
+     mvKeysRight(frame.mvKeysRight), mvKeysUn(frame.mvKeysUn), mvKeysUnCam0(frame.mvKeysUnCam0), mvKeysUnCam1(frame.mvKeysUnCam1), mvuRight(frame.mvuRight),
+     mvDepth(frame.mvDepth), mBowVec(frame.mBowVec), mBowVecCam0(frame.mBowVecCam0), mBowVecCam1(frame.mBowVecCam1), mFeatVec(frame.mFeatVec), mFeatVecCam0(frame.mFeatVecCam0), mFeatVecCam1(frame.mFeatVecCam1),
+     mDescriptors(frame.mDescriptors.clone()), mDescriptorsCam0(frame.mDescriptorsCam0.clone()), mDescriptorsCam1(frame.mDescriptorsCam1.clone()), mDescriptorsRight(frame.mDescriptorsRight.clone()),
+     mvpMapPoints(frame.mvpMapPoints), mvbOutlier(frame.mvbOutlier), mImuCalib(frame.mImuCalib), mnCloseMPs(frame.mnCloseMPs),
      mpImuPreintegrated(frame.mpImuPreintegrated), mpImuPreintegratedFrame(frame.mpImuPreintegratedFrame), mImuBias(frame.mImuBias),
      mnId(frame.mnId), mpReferenceKF(frame.mpReferenceKF), mnScaleLevels(frame.mnScaleLevels),
      mfScaleFactor(frame.mfScaleFactor), mfLogScaleFactor(frame.mfLogScaleFactor),
@@ -75,18 +76,18 @@ Frame::Frame(const Frame &frame)
     for(int i=0;i<FRAME_GRID_COLS;i++)
         for(int j=0; j<FRAME_GRID_ROWS; j++){
             mGrid[i][j]=frame.mGrid[i][j];
-            mGridNormalcam[i][j]=frame.mGridNormalcam[i][j]; //added by claydergc
-            mGridPolcam[i][j]=frame.mGridPolcam[i][j]; //added by claydergc
+            mGridCam0[i][j]=frame.mGridCam0[i][j]; //added by claydergc
+            mGridCam1[i][j]=frame.mGridCam1[i][j]; //added by claydergc
             if(frame.Nleft > 0){
                 mGridRight[i][j] = frame.mGridRight[i][j];
             }
         }
-    
+
     //added by claydergc
     //for(int i=0;i<FRAME_GRID_COLS;i++)
         //for(int j=0; j<FRAME_GRID_ROWS; j++)
-            //mGridPolcam[i][j]=frame.mGridPolcam[i][j];            
-        
+            //mGridPolcam[i][j]=frame.mGridPolcam[i][j];
+
 
     if(frame.mbHasPose)
         SetPose(frame.GetPose());
@@ -137,7 +138,7 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeSt
     mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
 #endif
 
-    N = mvKeys.size();    
+    N = mvKeys.size();
     //N = mvKeys.size() + mvKeysPolcamNonOverlapped.size();
     if(mvKeys.empty())
         return;
@@ -324,12 +325,12 @@ Frame::Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extra
     mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
 #endif
 
-    mvKeysNormalcam = mvKeys;
-    mDescriptorsNormalcam = mDescriptors;
+    mvKeysCam0 = mvKeys;
+    mDescriptorsCam0 = mDescriptors;
 
     N = mvKeys.size();
-    N_Normalcam = N;
-    
+    N_Cam0 = N;
+
     if(mvKeys.empty())
         return;
 
@@ -400,7 +401,7 @@ Frame::Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extra
 
 //Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &timeStamp, std::vector<std::pair<double, float>> &vec_n_keypoints_diff, ORBextractor* extractor, ORBextractor* extractorPolcam, ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF, const IMU::Calib &ImuCalib)
 Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &timeStamp, ORBextractor* extractor, ORBextractor* extractorPolcam, ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF, const IMU::Calib &ImuCalib)
-    :mpcpi(NULL),mpORBvocabulary(voc),mpORBextractorLeft(extractor), mpORBextractorPolcam(extractorPolcam),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
+    :mpcpi(NULL),mpORBvocabulary(voc),mpORBextractorLeft(extractor), mpORBextractorCam1(extractorPolcam),mpORBextractorRight(static_cast<ORBextractor*>(NULL)),
      mTimeStamp(timeStamp), mK(static_cast<Pinhole*>(pCamera)->toK()), mK_(static_cast<Pinhole*>(pCamera)->toK_()), mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth),
      mImuCalib(ImuCalib), mpImuPreintegrated(NULL),mpPrevFrame(pPrevF),mpImuPreintegratedFrame(NULL), mpReferenceKF(static_cast<KeyFrame*>(NULL)), mbIsSet(false), mbImuPreintegrated(false), mpCamera(pCamera),
      mpCamera2(nullptr), mbHasPose(false), mbHasVelocity(false)
@@ -423,9 +424,11 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
 #endif
     //ExtractORB(0,imGray,0,1000);
     //ExtractORB(0,imPolarized,0,1000);
-    
-    thread threadMono(&Frame::ExtractORBPolcam,this,0,imGray,0,1000);
-    thread threadPolcam(&Frame::ExtractORBPolcam,this,1,imPolarized,0,1000);
+
+    // thread threadMono(&Frame::ExtractORBPolcam,this,0,imGray,0,1000);
+    // thread threadPolcam(&Frame::ExtractORBPolcam,this,1,imPolarized,0,1000);
+    thread threadMono(&Frame::ExtractORBPolcam,this,0,imGray,0,0);
+    thread threadPolcam(&Frame::ExtractORBPolcam,this,1,imPolarized,0,0);
     threadMono.join();
     threadPolcam.join();
 #ifdef REGISTER_TIMES
@@ -434,51 +437,58 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     mTimeORB_Ext = std::chrono::duration_cast<std::chrono::duration<double,std::milli> >(time_EndExtORB - time_StartExtORB).count();
 #endif
 
-    
+
     //added by claydergc
     //std::vector<cv::KeyPoint> mvKeysPolcamNonOverlapped;
-    std::vector<cv::Mat> mDescriptorsPolcamNonOverlappedVec;
+    std::vector<cv::Mat> mDescriptorsCam1Vec;
     //cv::Mat mDescriptorsPolcamNonOverlapped;
     //computeFeatureOverlap(mvKeys, mvKeysPolcam, mvKeysPolcamNonOverlapped, mDescriptorsPolcam, mDescriptorsPolcamNonOverlappedVec, 4.0);
-    computeFeatureOverlap(mvKeys, mvKeysPolcam, mvKeysPolcamNonOverlapped, mDescriptorsPolcam, mDescriptorsPolcamNonOverlappedVec, 3.0);
+    computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 3.0);
     //std::cout<<"mvKeysPolcamNonOverlapped: "<<mvKeysPolcamNonOverlapped.size()<<std::endl;
-    
 
-    
-    mvKeysNormalcam = mvKeys;
-    mDescriptorsNormalcam = mDescriptors;
-    
-    
+
+
+    mvKeysCam0 = mvKeys;
+    mDescriptorsCam0 = mDescriptors;
+
+
     //Join mvKeys and mvKeysPolcamNonOverlapped
+    std::vector<cv::KeyPoint> mvKeysJoined;
     mvKeysJoined = mvKeys;
-    mvKeysJoined.insert(mvKeysJoined.end(), mvKeysPolcamNonOverlapped.begin(), mvKeysPolcamNonOverlapped.end());
+    mvKeysJoined.insert(mvKeysJoined.end(), mvKeysCam1.begin(), mvKeysCam1.end());
     mvKeys = mvKeysJoined;
-    
+
     //std::cout<<"mDescriptors: "<<mDescriptors.size()<<" "<<"mDescriptorsDiff: "<<mDescriptorsDiff.size()<<std::endl;
-    
+
     //Join mDescriptors and mDescriptorsNonOverlapped
-    cv::vconcat(mDescriptorsPolcamNonOverlappedVec, mDescriptorsPolcamNonOverlapped);
+    cv::vconcat(mDescriptorsCam1Vec, mDescriptorsCam1);
     //std::cout<<"mDescriptorsPolcamNonOverlapped: "<<mDescriptorsPolcamNonOverlapped.size()<<std::endl;
-    cv::vconcat(mDescriptors, mDescriptorsPolcamNonOverlapped, mDescriptors);
-    
+    // Put all descriptors (mDescriptors, mDescriptorsCam1) in the same matrix mDescriptors.
+    // This is to make it possible for ComputeDistinctiveDescriptors() tu run correctly
+    cv::vconcat(mDescriptors, mDescriptorsCam1, mDescriptors);
+
+
+
     //std::cout<<"mDescriptors: "<<mDescriptors.size()<<std::endl;
     //added by claydergc
 
-    
-    //N = mvKeys.size();
-    N_Normalcam = mvKeysNormalcam.size();
-    N_Polcam = mvKeysPolcamNonOverlapped.size();
-    N = N_Normalcam + N_Polcam;
-    
-    
-    
+
+    // N = mvKeys.size();
+    N_Cam0 = mvKeysCam0.size();
+    N_Cam1 = mvKeysCam1.size();
+    N = N_Cam0 + N_Cam1;
+
+
+
     if(mvKeys.empty())
         return;
 
     UndistortKeyPoints();
-    UndistortKeyPointsNormalcam(); //added by claydergc
-    UndistortKeyPointsPolcam();
-    
+    // UndistortKeyPointsNormalcam(); //added by claydergc
+    // UndistortKeyPointsPolcam();
+    UndistortKeyPointsCam(0);
+    UndistortKeyPointsCam(1);
+
     //std::cout<<"mvKeysUnNormalcam: "<<mvKeysUnNormalcam.size()<<std::endl;
     //std::cout<<"mvKeysUnPolcam: "<<mvKeysUnPolcam.size()<<std::endl;
 
@@ -488,7 +498,6 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     mnCloseMPs = 0;
 
     mvpMapPoints = vector<MapPoint*>(N,static_cast<MapPoint*>(NULL));
-    mvpMapPointsPolcam = vector<MapPoint*>(N_Polcam,static_cast<MapPoint*>(NULL));
 
     mmProjectPoints.clear();// = map<long unsigned int, cv::Point2f>(N, static_cast<cv::Point2f>(NULL));
     mmMatchedInImage.clear();
@@ -526,8 +535,10 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     monoRight = -1;
 
     AssignFeaturesToGrid();
-    AssignFeaturesToGridNormalcam();
-    AssignFeaturesToGridPolcam();
+    // AssignFeaturesToGridNormalcam();
+    // AssignFeaturesToGridPolcam();
+    AssignFeaturesToGridCam(0);
+    AssignFeaturesToGridCam(1);
 
     if(pPrevF)
     {
@@ -586,21 +597,21 @@ void Frame::AssignFeaturesToGridNormalcam()
     const int nCells = FRAME_GRID_COLS*FRAME_GRID_ROWS;
 
     //int nReserve = 0.5f*N_Polcam/(nCells);
-    int nReserve = 0.5f*N_Normalcam/(nCells);
+    int nReserve = 0.5f*N_Cam0/(nCells);
 
     for(unsigned int i=0; i<FRAME_GRID_COLS;i++)
         for (unsigned int j=0; j<FRAME_GRID_ROWS;j++)
-            mGridNormalcam[i][j].reserve(nReserve);            
+            mGridCam0[i][j].reserve(nReserve);
 
 
     //for(int i=0;i<N_Polcam;i++)
-    for(int i=0;i<N_Normalcam;i++)
+    for(int i=0;i<N_Cam0;i++)
     {
-        const cv::KeyPoint &kp = mvKeysUnNormalcam[i];
+        const cv::KeyPoint &kp = mvKeysUnCam0[i];
 
         int nGridPosX, nGridPosY;
-        if(PosInGrid(kp,nGridPosX,nGridPosY)){            
-            mGridNormalcam[nGridPosX][nGridPosY].push_back(i);            
+        if(PosInGrid(kp,nGridPosX,nGridPosY)){
+            mGridCam0[nGridPosX][nGridPosY].push_back(i);
         }
     }
 }
@@ -611,20 +622,20 @@ void Frame::AssignFeaturesToGridPolcam()
     // Fill matrix with points
     const int nCells = FRAME_GRID_COLS*FRAME_GRID_ROWS;
 
-    int nReserve = 0.5f*N_Polcam/(nCells);
+    int nReserve = 0.5f*N_Cam1/(nCells);
 
     for(unsigned int i=0; i<FRAME_GRID_COLS;i++)
         for (unsigned int j=0; j<FRAME_GRID_ROWS;j++)
-            mGridPolcam[i][j].reserve(nReserve);            
+            mGridCam1[i][j].reserve(nReserve);
 
 
-    for(int i=0;i<N_Polcam;i++)
+    for(int i=0;i<N_Cam1;i++)
     {
-        const cv::KeyPoint &kp = mvKeysUnPolcam[i];
+        const cv::KeyPoint &kp = mvKeysUnCam1[i];
 
         int nGridPosX, nGridPosY;
-        if(PosInGrid(kp,nGridPosX,nGridPosY)){            
-            mGridPolcam[nGridPosX][nGridPosY].push_back(i);            
+        if(PosInGrid(kp,nGridPosX,nGridPosY)){
+            mGridCam1[nGridPosX][nGridPosY].push_back(i);
         }
     }
 }
@@ -645,21 +656,32 @@ void Frame::ExtractORBPolcam(int flag, const cv::Mat &im, const int x0, const in
     if(flag==0)
         monoLeft = (*mpORBextractorLeft)(im,cv::Mat(),mvKeys,mDescriptors,vLapping);
     else
-        monoPolcam = (*mpORBextractorPolcam)(im,cv::Mat(),mvKeysPolcam,mDescriptorsPolcam,vLapping);
+        monoPolcam = (*mpORBextractorCam1)(im,cv::Mat(),mvKeysCam1Overlapped,mDescriptorsCam1Overlapped,vLapping);
 }
 //added by claydergc
+
+
+//added by claydergc
+void Frame::ExtractORBPolcamGrid(const cv::Mat &polcam0, const cv::Mat &polcam1, const cv::Mat &polcam2, const cv::Mat &polcam3, const int x0, const int x1)
+{
+    vector<int> vLapping = {x0,x1};
+
+    // Divide images in 4x4 grid and extract ORB features for each cell
+
+    //monoPolcam = (*mpORBextractorPolcam)(im,cv::Mat(),mvKeysPolcamOverlapped,mDescriptorsPolcamOverlapped,vLapping);
+}
 
 //added by claydergc
 /**
  * @brief Compute the overlap ratio between two sets of keypoints and extract keypoints in B not present in A.
- * 
+ *
  * @param kptsA Keypoints from image A
  * @param kptsB Keypoints from image B
  * @param kptsC Output vector that will contain keypoints in B that are not overlapping with A
  * @param distance_thresh Maximum Euclidean distance (in pixels) to consider two keypoints as overlapping
  * @return double Overlap ratio (0.0 to 1.0)
  */
-void Frame::computeFeatureOverlap(const std::vector<cv::KeyPoint>& kptsA, const std::vector<cv::KeyPoint>& kptsB, std::vector<cv::KeyPoint>& kptsC, 
+void Frame::computeFeatureOverlap(const std::vector<cv::KeyPoint>& kptsA, const std::vector<cv::KeyPoint>& kptsB, std::vector<cv::KeyPoint>& kptsC,
 const cv::Mat& mDescriptorsPolcam, std::vector<cv::Mat>& mDescriptorsDiff, double distance_thresh = 5.0)
 {
     kptsC.clear();  // ensure output is empty
@@ -672,15 +694,15 @@ const cv::Mat& mDescriptorsPolcam, std::vector<cv::Mat>& mDescriptorsDiff, doubl
         kptsC = kptsB;
         return;
     }
-    
+
     // Now find keypoints in B that are NOT in A
     //for (const auto& kpB : kptsB)
     for (uint16_t i=0; i<kptsB.size(); ++i)
     {
         bool has_match = false;
-        
+
         cv::KeyPoint kpB = kptsB[i];
-        
+
         for (const auto& kpA : kptsA)
         {
             double dx = kpB.pt.x - kpA.pt.x;
@@ -697,7 +719,7 @@ const cv::Mat& mDescriptorsPolcam, std::vector<cv::Mat>& mDescriptorsDiff, doubl
             mDescriptorsDiff.push_back(mDescriptorsPolcam.row(i));
         }
     }
-    
+
     //cv::vconcat(descriptors, mDescriptorsDiff);
 
 }
@@ -1001,10 +1023,14 @@ vector<size_t> Frame::GetFeaturesInArea(const float &x, const float  &y, const f
     return vIndices;
 }
 
-vector<size_t> Frame::GetFeaturesInAreaPolcam(const float &x, const float  &y, const float  &r, const int minLevel, const int maxLevel, const bool bRight) const
+vector<size_t> Frame::GetFeaturesInAreaCam(const uint8_t cam, const float &x, const float  &y, const float  &r, const int minLevel, const int maxLevel, const bool bRight) const
 {
     vector<size_t> vIndices;
-    vIndices.reserve(N_Polcam);
+
+    if(cam==0)
+        vIndices.reserve(N_Cam0);
+    else
+        vIndices.reserve(N_Cam1);
 
     float factorX = r;
     float factorY = r;
@@ -1039,14 +1065,25 @@ vector<size_t> Frame::GetFeaturesInAreaPolcam(const float &x, const float  &y, c
     {
         for(int iy = nMinCellY; iy<=nMaxCellY; iy++)
         {
-            const vector<size_t> vCell = mGridPolcam[ix][iy];
+            vector<size_t> vCell;
+
+            if(cam==0)
+                vCell = mGridCam0[ix][iy];
+            else
+                vCell = mGridCam1[ix][iy];
+
             if(vCell.empty())
                 continue;
 
             for(size_t j=0, jend=vCell.size(); j<jend; j++)
             {
-                const cv::KeyPoint &kpUn = mvKeysUnPolcam[vCell[j]];
-                
+                cv::KeyPoint kpUn;
+
+                if(cam==0)
+                    kpUn = mvKeysUnCam0[vCell[j]];
+                else
+                    kpUn = mvKeysUnCam1[vCell[j]];
+
                 if(bCheckLevels)
                 {
                     if(kpUn.octave<minLevel)
@@ -1092,19 +1129,19 @@ void Frame::ComputeBoW()
 
 void Frame::ComputeBoWNormalcam()
 {
-    if(mBowVecNormalcam.empty())
+    if(mBowVecCam0.empty())
     {
-        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsNormalcam);
-        mpORBvocabulary->transform(vCurrentDesc,mBowVecNormalcam,mFeatVecNormalcam,4);
+        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam0);
+        mpORBvocabulary->transform(vCurrentDesc,mBowVecCam0,mFeatVecCam0,4);
     }
 }
 
 void Frame::ComputeBoWPolcam()
 {
-    if(mBowVecPolcam.empty())
+    if(mBowVecCam1.empty())
     {
-        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsPolcamNonOverlapped);
-        mpORBvocabulary->transform(vCurrentDesc,mBowVecPolcam,mFeatVecPolcam,4);
+        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam1);
+        mpORBvocabulary->transform(vCurrentDesc,mBowVecCam1,mFeatVecCam1,4);
     }
 }
 
@@ -1147,21 +1184,21 @@ void Frame::UndistortKeyPointsNormalcam()
 {
     if(mDistCoef.at<float>(0)==0.0)
     {
-        mvKeysUnNormalcam=mvKeysNormalcam;
+        mvKeysUnCam0=mvKeysCam0;
         return;
     }
 
     // Fill matrix with points
     //cv::Mat mat(N,2,CV_32F);
-    cv::Mat mat(N_Normalcam,2,CV_32F);
+    cv::Mat mat(N_Cam0,2,CV_32F);
 
     //for(int i=0; i<N; i++)
-    for(int i=0; i<N_Normalcam; i++)
+    for(int i=0; i<N_Cam0; i++)
     {
-        mat.at<float>(i,0)=mvKeysNormalcam[i].pt.x;
-        mat.at<float>(i,1)=mvKeysNormalcam[i].pt.y;
+        mat.at<float>(i,0)=mvKeysCam0[i].pt.x;
+        mat.at<float>(i,1)=mvKeysCam0[i].pt.y;
     }
-    
+
     //std::cout<<"HELLOO"<<std::endl;
 
     // Undistort points
@@ -1171,13 +1208,13 @@ void Frame::UndistortKeyPointsNormalcam()
 
 
     // Fill undistorted keypoint vector
-    mvKeysUnNormalcam.resize(N_Normalcam);
-    for(int i=0; i<N_Normalcam; i++)
+    mvKeysUnCam0.resize(N_Cam0);
+    for(int i=0; i<N_Cam0; i++)
     {
-        cv::KeyPoint kp = mvKeysNormalcam[i];
+        cv::KeyPoint kp = mvKeysCam0[i];
         kp.pt.x=mat.at<float>(i,0);
         kp.pt.y=mat.at<float>(i,1);
-        mvKeysUnNormalcam[i]=kp;
+        mvKeysUnCam0[i]=kp;
     }
 
 }
@@ -1187,17 +1224,17 @@ void Frame::UndistortKeyPointsPolcam()
 {
     if(mDistCoef.at<float>(0)==0.0)
     {
-        mvKeysUnPolcam=mvKeysPolcamNonOverlapped;                  
+        mvKeysUnCam1=mvKeysCam1;
         return;
     }
 
     // Fill matrix with points
-    cv::Mat mat(N_Polcam,2,CV_32F);
+    cv::Mat mat(N_Cam1,2,CV_32F);
 
-    for(int i=0; i<N_Polcam; i++)
+    for(int i=0; i<N_Cam1; i++)
     {
-        mat.at<float>(i,0)=mvKeysPolcamNonOverlapped[i].pt.x;
-        mat.at<float>(i,1)=mvKeysPolcamNonOverlapped[i].pt.y;        
+        mat.at<float>(i,0)=mvKeysCam1[i].pt.x;
+        mat.at<float>(i,1)=mvKeysCam1[i].pt.y;
     }
 
     // Undistort points
@@ -1207,14 +1244,14 @@ void Frame::UndistortKeyPointsPolcam()
 
 
     // Fill undistorted keypoint vector
-    mvKeysUnPolcam.resize(N_Polcam);
-    for(int i=0; i<N_Polcam; i++)
+    mvKeysUnCam1.resize(N_Cam1);
+    for(int i=0; i<N_Cam1; i++)
     {
         //cv::KeyPoint kp = mvKeysPolcam[i];
-        cv::KeyPoint kp = mvKeysPolcamNonOverlapped[i];
+        cv::KeyPoint kp = mvKeysCam1[i];
         kp.pt.x=mat.at<float>(i,0);
         kp.pt.y=mat.at<float>(i,1);
-        mvKeysUnPolcam[i]=kp;
+        mvKeysUnCam1[i]=kp;
     }
 }
 //added by claydergc
@@ -1684,5 +1721,136 @@ bool Frame::isInFrustumChecks(MapPoint *pMP, float viewingCosLimit, bool bRight)
 Eigen::Vector3f Frame::UnprojectStereoFishEye(const int &i){
     return mRwc * mvStereo3Dpoints[i] + mOw;
 }
+
+void Frame::UndistortKeyPointsCam(uint8_t camIdx)
+{
+    if(camIdx==0 && mDistCoef.at<float>(0)==0.0)
+    {
+        mvKeysUnCam0=mvKeysCam0;
+        return;
+    }
+    else if(camIdx==1 && mDistCoef.at<float>(0)==0.0)
+    {
+        mvKeysUnCam1=mvKeysCam1;
+        return;
+    }
+
+    cv::Mat mat;
+
+    if(camIdx==0)
+    {
+        mat = cv::Mat(N_Cam0,2,CV_32F);
+        mvKeysUnCam0.resize(N_Cam0);
+
+        for(int i=0; i<N_Cam0; i++)
+        {
+            mat.at<float>(i,0)=mvKeysCam0[i].pt.x;
+            mat.at<float>(i,1)=mvKeysCam0[i].pt.y;
+        }
+    }
+    else if(camIdx==1)
+    {
+        mat = cv::Mat(N_Cam1,2,CV_32F);
+        mvKeysUnCam1.resize(N_Cam1);
+
+        for(int i=0; i<N_Cam1; i++)
+        {
+            mat.at<float>(i,0)=mvKeysCam1[i].pt.x;
+            mat.at<float>(i,1)=mvKeysCam1[i].pt.y;
+        }
+    }
+
+    // Undistort points
+    mat=mat.reshape(2);
+    cv::undistortPoints(mat,mat, static_cast<Pinhole*>(mpCamera)->toK(),mDistCoef,cv::Mat(),mK);
+    mat=mat.reshape(1);
+
+    // Fill undistorted keypoint vector
+
+    if(camIdx==0)
+    {
+        for(int i=0; i<N_Cam0; i++)
+        {
+            cv::KeyPoint kp = mvKeysCam0[i];
+            kp.pt.x=mat.at<float>(i,0);
+            kp.pt.y=mat.at<float>(i,1);
+            mvKeysUnCam0[i]=kp;
+        }
+    }
+    else if(camIdx==1)
+    {
+        for(int i=0; i<N_Cam1; i++)
+        {
+            cv::KeyPoint kp = mvKeysCam1[i];
+            kp.pt.x=mat.at<float>(i,0);
+            kp.pt.y=mat.at<float>(i,1);
+            mvKeysUnCam1[i]=kp;
+        }
+    }
+}
+
+//added by claydergc
+void Frame::AssignFeaturesToGridCam(uint8_t camIdx)
+{
+    // Fill matrix with points
+    const int nCells = FRAME_GRID_COLS*FRAME_GRID_ROWS;
+
+    int nReserve;
+
+    if(camIdx == 0)
+        nReserve = 0.5f*N_Cam0/(nCells);
+    else if(camIdx == 1)
+        nReserve = 0.5f*N_Cam1/(nCells);
+
+    for(unsigned int i=0; i<FRAME_GRID_COLS;i++)
+        for (unsigned int j=0; j<FRAME_GRID_ROWS;j++)
+        {
+            if(camIdx == 0)
+                mGridCam0[i][j].reserve(nReserve);
+            else if(camIdx == 1)
+                mGridCam1[i][j].reserve(nReserve);
+        }
+
+    int N_Cam;
+
+    if(camIdx == 0)
+        N_Cam = N_Cam0;
+    else if(camIdx == 1)
+        N_Cam = N_Cam1;
+
+    for(int i=0;i<N_Cam;i++)
+    {
+        cv::KeyPoint kp;
+
+        if(camIdx == 0)
+            kp = mvKeysUnCam0[i];
+        else if(camIdx == 1)
+            kp = mvKeysUnCam1[i];
+
+        int nGridPosX, nGridPosY;
+        if(PosInGrid(kp,nGridPosX,nGridPosY)){
+            if(camIdx == 0)
+                mGridCam0[nGridPosX][nGridPosY].push_back(i);
+            else if(camIdx == 1)
+                mGridCam1[nGridPosX][nGridPosY].push_back(i);
+        }
+    }
+}
+
+void Frame::ComputeBoWCam(uint8_t camIdx)
+{
+    if(camIdx==0 && mBowVecCam0.empty())
+    {
+        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam0);
+        mpORBvocabulary->transform(vCurrentDesc,mBowVecCam0,mFeatVecCam0,4);
+    }
+    else if(camIdx==1 && mBowVecCam1.empty())
+    {
+        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam1);
+        mpORBvocabulary->transform(vCurrentDesc,mBowVecCam1,mFeatVecCam1,4);
+    }
+
+}
+
 
 } //namespace ORB_SLAM

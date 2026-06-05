@@ -70,8 +70,15 @@ public:
     // Constructor for Polarization cameras.
     //Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &timeStamp, std::vector<std::pair<double, float>> &vec_n_keypoints_diff, ORBextractor* extractor, ORBextractor* extractorPolcam, ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
     Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &timeStamp, ORBextractor* extractor, ORBextractor* extractorPolcam, ORBVocabulary* voc, GeometricCamera* pCamera, cv::Mat &distCoef, const float &bf, const float &thDepth, Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
-    
-    
+
+    //added by claydergc
+    void ExtractORBPolcamGrid(const cv::Mat &polcam0, const cv::Mat &polcam1, const cv::Mat &polcam2, const cv::Mat &polcam3, const int x0, const int x1);
+    void computeFeatureOverlap(const std::vector<cv::KeyPoint>& kptsA, const std::vector<cv::KeyPoint>& kptsB, std::vector<cv::KeyPoint>& kptsC, const cv::Mat& mDescriptorsPolcam, std::vector<cv::Mat>& mDescriptorsDiff, double distance_thresh);
+    void ExtractORBPolcam(int flag, const cv::Mat &im, const int x0, const int x1);
+    void ComputeBoWNormalcam(); //added by claydergc
+    void ComputeBoWPolcam(); //added by claydergc
+    void ComputeBoWCam(uint8_t camIdx); //added by claydergc
+    vector<size_t> GetFeaturesInAreaCam(const uint8_t cam, const float &x, const float  &y, const float  &r, const int minLevel=-1, const int maxLevel=-1, const bool bRight = false) const;
 
 
     // Destructor
@@ -79,16 +86,11 @@ public:
 
     // Extract ORB on the image. 0 for left image and 1 for right image.
     void ExtractORB(int flag, const cv::Mat &im, const int x0, const int x1);
-    
-    //added by claydergc
-    void ExtractORBPolcam(int flag, const cv::Mat &im, const int x0, const int x1);
-    
-    void computeFeatureOverlap(const std::vector<cv::KeyPoint>& kptsA, const std::vector<cv::KeyPoint>& kptsB, std::vector<cv::KeyPoint>& kptsC, const cv::Mat& mDescriptorsPolcam, std::vector<cv::Mat>& mDescriptorsDiff, double distance_thresh);
+
 
     // Compute Bag of Words representation.
     void ComputeBoW();
-    void ComputeBoWNormalcam(); //added by claydergc
-    void ComputeBoWPolcam(); //added by claydergc
+
 
     // Set the camera pose. (Imu pose is not modified!)
     void SetPose(const Sophus::SE3<float> &Tcw);
@@ -124,7 +126,6 @@ public:
     bool PosInGrid(const cv::KeyPoint &kp, int &posX, int &posY);
 
     vector<size_t> GetFeaturesInArea(const float &x, const float  &y, const float  &r, const int minLevel=-1, const int maxLevel=-1, const bool bRight = false) const;
-    vector<size_t> GetFeaturesInAreaPolcam(const float &x, const float  &y, const float  &r, const int minLevel=-1, const int maxLevel=-1, const bool bRight = false) const;
 
     // Search a match for each keypoint in the left image to a keypoint in the right image.
     // If there is a match, depth is computed and the right coordinate associated to the left keypoint is stored.
@@ -179,7 +180,8 @@ public:
 
 
 
-private:
+// private:
+protected:
     //Sophus/Eigen migration
     Sophus::SE3<float> mTcw;
     Eigen::Matrix<float,3,3> mRwc;
@@ -209,7 +211,7 @@ public:
 
     // Feature extractor. The right is used only in the stereo case.
     ORBextractor* mpORBextractorLeft, *mpORBextractorRight;
-    ORBextractor* mpORBextractorPolcam;
+
 
     // Frame timestamp.
     double mTimeStamp;
@@ -237,26 +239,33 @@ public:
 
     // Number of KeyPoints.
     int N; //added by claydergc
-    int N_Normalcam; //added by claydergc
-    //int N_NPolcam;
-    int N_Polcam; //added by claydergc
 
     // Vector of keypoints (original for visualization) and undistorted (actually used by the system).
     // In the stereo case, mvKeysUn is redundant as images must be rectified.
     // In the RGB-D case, RGB images can be distorted.
     std::vector<cv::KeyPoint> mvKeys, mvKeysRight;
-    std::vector<cv::KeyPoint> mvKeysPolcam, mvKeysJoined; //added by claydergc
-    std::vector<cv::KeyPoint> mvKeysPolcamNonOverlapped; //added by claydergc
     std::vector<cv::KeyPoint> mvKeysUn;
-    std::vector<cv::KeyPoint> mvKeysNormalcam;
-    std::vector<cv::KeyPoint> mvKeysUnNormalcam;
-    std::vector<cv::KeyPoint> mvKeysUnPolcam; //added by claydergc
-    
-    
+
+    ORBextractor* mpORBextractorCam1; //added by claydergc
+    int N_Cam0; //added by claydergc
+    int N_Cam1; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysCam1Overlapped; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysCam0; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysCam1; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysUnCam0; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysUnCam1; //added by claydergc
+    DBoW2::BowVector mBowVecCam0; //added by claydergc
+    DBoW2::FeatureVector mFeatVecCam0; //added by claydergc
+    DBoW2::BowVector mBowVecCam1; //added by claydergc
+    DBoW2::FeatureVector mFeatVecCam1; //added by claydergc
+    cv::Mat mDescriptorsCam0;
+    cv::Mat mDescriptorsCam1Overlapped, mDescriptorsCam1; //added by claydergc
+    std::vector<std::size_t> mGridCam1[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
+    std::vector<std::size_t> mGridCam0[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
 
     // Corresponding stereo coordinate and depth for each keypoint.
     std::vector<MapPoint*> mvpMapPoints;
-    std::vector<MapPoint*> mvpMapPointsPolcam; //added by claydergc
+
     // "Monocular" keypoints have a negative value.
     std::vector<float> mvuRight;
     std::vector<float> mvDepth;
@@ -264,18 +273,10 @@ public:
     // Bag of Words Vector structures.
     DBoW2::BowVector mBowVec;
     DBoW2::FeatureVector mFeatVec;
-    
-    DBoW2::BowVector mBowVecNormalcam; //added by claydergc
-    DBoW2::FeatureVector mFeatVecNormalcam; //added by claydergc
-    
-    DBoW2::BowVector mBowVecPolcam; //added by claydergc
-    DBoW2::FeatureVector mFeatVecPolcam; //added by claydergc
+
 
     // ORB descriptor, each row associated to a keypoint.
     cv::Mat mDescriptors, mDescriptorsRight;
-    //cv::Mat mDescriptorsPolcam, mDescriptorsJoined; //added by claydergc
-    cv::Mat mDescriptorsPolcam, mDescriptorsPolcamNonOverlapped; //added by claydergc
-    cv::Mat mDescriptorsNormalcam;
 
     // MapPoints associated to keypoints, NULL pointer if no association.
     // Flag to identify outlier associations.
@@ -286,12 +287,7 @@ public:
     static float mfGridElementWidthInv;
     static float mfGridElementHeightInv;
     std::vector<std::size_t> mGrid[FRAME_GRID_COLS][FRAME_GRID_ROWS];
-    
-    //static float mfGridElementWidthInvPolcam; //added by claydergc
-    //static float mfGridElementHeightInvPolcam; //added by claydergc
-    std::vector<std::size_t> mGridPolcam[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
-    
-    std::vector<std::size_t> mGridNormalcam[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
+
 
     IMU::Bias mPredBias;
 
@@ -345,22 +341,26 @@ public:
     double mTimeStereoMatch;
 #endif
 
-private:
+// private:
+protected:
 
     // Undistort keypoints given OpenCV distortion parameters.
     // Only for the RGB-D case. Stereo must be already rectified!
     // (called in the constructor).
     void UndistortKeyPoints();
-    void UndistortKeyPointsNormalcam();
-    void UndistortKeyPointsPolcam();
 
     // Computes image bounds for the undistorted image (called in the constructor).
     void ComputeImageBounds(const cv::Mat &imLeft);
 
     // Assign keypoints to the grid for speed up feature matching (called in the constructor).
     void AssignFeaturesToGrid();
-    void AssignFeaturesToGridNormalcam();
-    void AssignFeaturesToGridPolcam();
+
+    void UndistortKeyPointsCam(uint8_t camIdx); //added by claydergc
+    void UndistortKeyPointsNormalcam(); //added by claydergc
+    void UndistortKeyPointsPolcam();   //added by claydergc
+    void AssignFeaturesToGridCam(uint8_t camIdx); //added by claydergc
+    void AssignFeaturesToGridNormalcam(); //added by claydergc
+    void AssignFeaturesToGridPolcam();   //added by claydergc
 
     bool mbIsSet;
 
@@ -391,8 +391,8 @@ public:
     std::vector<std::size_t> mGridRight[FRAME_GRID_COLS][FRAME_GRID_ROWS];
 
     Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeStamp, ORBextractor* extractorLeft, ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth, GeometricCamera* pCamera, GeometricCamera* pCamera2, Sophus::SE3f& Tlr,Frame* pPrevF = static_cast<Frame*>(NULL), const IMU::Calib &ImuCalib = IMU::Calib());
-    
-    
+
+
     //void JoinmDescriptorsAndmDescriptorsPolcamNonOverlapped(); //added by claydergc
     //void JoinmvKeysUnAndmvKeysUnPolcam(); //added by claydergc
     //void UpdateFeaturesToGrid(); //added by claydergc

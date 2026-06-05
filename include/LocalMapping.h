@@ -26,6 +26,7 @@
 #include "Tracking.h"
 #include "KeyFrameDatabase.h"
 #include "Settings.h"
+#include "Constants.h"
 
 #include <mutex>
 
@@ -42,7 +43,7 @@ class LocalMapping
 {
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-    LocalMapping(System* pSys, Atlas* pAtlas, const float bMonocular, bool bInertial, const string &_strSeqName=std::string());
+    LocalMapping(System* pSys, Atlas* pAtlas, const float bMonocular, bool bInertial, const Constants::ePolcamMode polcam_mode, const string &_strSeqName=std::string());
 
     void SetLoopCloser(LoopClosing* pLoopCloser);
 
@@ -110,7 +111,7 @@ public:
     // not consider far points (clouds)
     bool mbFarPoints;
     float mThFarPoints;
-    
+
     std::vector<std::pair<double, uint16_t>> vec_n_polcam_map_points; //added by claydergc
 
 #ifdef REGISTER_TIMES
@@ -138,6 +139,7 @@ protected:
     void CreateNewMapPoints();
     void CreateNewMapPointsMonoAndPolcam(); //added by claydergc
     void CreateNewMapPointsMonoAndPolcam2(); //added by claydergc
+    void CreateNewMapPointsAllCams(bool cam0, bool cam1, bool cam2, bool cam3); //added by claydergc
 
     void MapPointCulling();
     void SearchInNeighbors();
@@ -147,6 +149,7 @@ protected:
 
     bool mbMonocular;
     bool mbInertial;
+    Constants::ePolcamMode mPolcamMode; //added by claydergc
 
     void ResetIfRequested();
     bool mbResetRequested;

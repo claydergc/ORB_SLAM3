@@ -19,6 +19,7 @@
 #include "KeyFrame.h"
 #include "Converter.h"
 #include "ImuTypes.h"
+#include <cstdint>
 #include<mutex>
 
 namespace ORB_SLAM3
@@ -32,7 +33,7 @@ KeyFrame::KeyFrame():
         mnTrackReferenceForFrame(0), mnFuseTargetForKF(0), mnBALocalForKF(0), mnBAFixedForKF(0), mnBALocalForMerge(0),
         mnLoopQuery(0), mnLoopWords(0), mnRelocQuery(0), mnRelocWords(0), mnMergeQuery(0), mnMergeWords(0), mnBAGlobalForKF(0),
         fx(0), fy(0), cx(0), cy(0), invfx(0), invfy(0), mnPlaceRecognitionQuery(0), mnPlaceRecognitionWords(0), mPlaceRecognitionScore(0),
-        mbf(0), mb(0), mThDepth(0), N(0), N_Polcam(0), N_Normalcam(0), mvKeys(static_cast<vector<cv::KeyPoint> >(NULL)), mvKeysUn(static_cast<vector<cv::KeyPoint> >(NULL)), mvKeysUnNormalcam(static_cast<vector<cv::KeyPoint> >(NULL)),mvKeysUnPolcam(static_cast<vector<cv::KeyPoint> >(NULL)),
+        mbf(0), mb(0), mThDepth(0), N(0), N_Cam1(0), N_Cam0(0), mvKeys(static_cast<vector<cv::KeyPoint> >(NULL)), mvKeysUn(static_cast<vector<cv::KeyPoint> >(NULL)), mvKeysUnCam0(static_cast<vector<cv::KeyPoint> >(NULL)),mvKeysUnCam1(static_cast<vector<cv::KeyPoint> >(NULL)),
         mvuRight(static_cast<vector<float> >(NULL)), mvDepth(static_cast<vector<float> >(NULL)), mnScaleLevels(0), mfScaleFactor(0),
         mfLogScaleFactor(0), mvScaleFactors(0), mvLevelSigma2(0), mvInvLevelSigma2(0), mnMinX(0), mnMinY(0), mnMaxX(0),
         mnMaxY(0), mPrevKF(static_cast<KeyFrame*>(NULL)), mNextKF(static_cast<KeyFrame*>(NULL)), mbFirstConnection(true), mpParent(NULL), mbNotErase(false),
@@ -48,13 +49,13 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
     mnTrackReferenceForFrame(0), mnFuseTargetForKF(0), mnBALocalForKF(0), mnBAFixedForKF(0), mnBALocalForMerge(0),
     mnLoopQuery(0), mnLoopWords(0), mnRelocQuery(0), mnRelocWords(0), mnBAGlobalForKF(0), mnPlaceRecognitionQuery(0), mnPlaceRecognitionWords(0), mPlaceRecognitionScore(0),
     fx(F.fx), fy(F.fy), cx(F.cx), cy(F.cy), invfx(F.invfx), invfy(F.invfy),
-    mbf(F.mbf), mb(F.mb), mThDepth(F.mThDepth), N(F.N), N_Polcam(F.N_Polcam), N_Normalcam(F.N_Normalcam), mvKeys(F.mvKeys), mvKeysNormalcam(F.mvKeysNormalcam), mvKeysPolcamNonOverlapped(F.mvKeysPolcamNonOverlapped), mvKeysUn(F.mvKeysUn), mvKeysUnNormalcam(F.mvKeysUnNormalcam), mvKeysUnPolcam(F.mvKeysUnPolcam),
-    mvuRight(F.mvuRight), mvDepth(F.mvDepth), mDescriptors(F.mDescriptors.clone()), mDescriptorsNormalcam(F.mDescriptorsNormalcam.clone()), mDescriptorsPolcamNonOverlapped(F.mDescriptorsPolcamNonOverlapped.clone()),
-    mBowVec(F.mBowVec),mBowVecPolcam(F.mBowVecPolcam), mFeatVec(F.mFeatVec), mFeatVecNormalcam(F.mFeatVecNormalcam), mFeatVecPolcam(F.mFeatVecPolcam), mnScaleLevels(F.mnScaleLevels), mfScaleFactor(F.mfScaleFactor),
+    mbf(F.mbf), mb(F.mb), mThDepth(F.mThDepth), N(F.N), N_Cam1(F.N_Cam1), N_Cam0(F.N_Cam0), mvKeys(F.mvKeys), mvKeysCam0(F.mvKeysCam0), mvKeysCam1(F.mvKeysCam1), mvKeysUn(F.mvKeysUn), mvKeysUnCam0(F.mvKeysUnCam0), mvKeysUnCam1(F.mvKeysUnCam1),
+    mvuRight(F.mvuRight), mvDepth(F.mvDepth), mDescriptors(F.mDescriptors.clone()), mDescriptorsCam0(F.mDescriptorsCam0.clone()), mDescriptorsCam1(F.mDescriptorsCam1.clone()),
+    mBowVec(F.mBowVec),mBowVecCam1(F.mBowVecCam1), mFeatVec(F.mFeatVec), mFeatVecCam0(F.mFeatVecCam0), mFeatVecCam1(F.mFeatVecCam1), mnScaleLevels(F.mnScaleLevels), mfScaleFactor(F.mfScaleFactor),
     mfLogScaleFactor(F.mfLogScaleFactor), mvScaleFactors(F.mvScaleFactors), mvLevelSigma2(F.mvLevelSigma2),
     mvInvLevelSigma2(F.mvInvLevelSigma2), mnMinX(F.mnMinX), mnMinY(F.mnMinY), mnMaxX(F.mnMaxX),
     mnMaxY(F.mnMaxY), mK_(F.mK_), mPrevKF(NULL), mNextKF(NULL), mpImuPreintegrated(F.mpImuPreintegrated),
-    mImuCalib(F.mImuCalib), mvpMapPoints(F.mvpMapPoints), mvpMapPointsPolcam(F.mvpMapPointsPolcam), mpKeyFrameDB(pKFDB),
+    mImuCalib(F.mImuCalib), mvpMapPoints(F.mvpMapPoints), mpKeyFrameDB(pKFDB),
     mpORBvocabulary(F.mpORBvocabulary), mbFirstConnection(true), mpParent(NULL), mDistCoef(F.mDistCoef), mbNotErase(false), mnDataset(F.mnDataset),
     mbToBeErased(false), mbBad(false), mHalfBaseline(F.mb/2), mpMap(pMap), mbCurrentPlaceRecognition(false), mNameFile(F.mNameFile), mnMergeCorrectedForKF(0),
     mpCamera(F.mpCamera), mpCamera2(F.mpCamera2),
@@ -96,9 +97,9 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
 }
 
 uint32_t KeyFrame::countMapPoints() {
-  
+
   uint32_t n_map_points = 0;
-  
+
   for(int i=0; i<mvpMapPoints.size(); ++i)
     if(mvpMapPoints[i]!=NULL)
       n_map_points++;
@@ -118,23 +119,47 @@ void KeyFrame::ComputeBoW()
 
 void KeyFrame::ComputeBoWNormalcam()
 {
-    if(mBowVecNormalcam.empty() || mFeatVecNormalcam.empty())
+    if(mBowVecCam0.empty() || mFeatVecCam0.empty())
     {
-        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsNormalcam);
+        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam0);
         // Feature vector associate features with nodes in the 4th level (from leaves up)
         // We assume the vocabulary tree has 6 levels, change the 4 otherwise
-        mpORBvocabulary->transform(vCurrentDesc,mBowVecNormalcam,mFeatVecNormalcam,4);
+        mpORBvocabulary->transform(vCurrentDesc,mBowVecCam0,mFeatVecCam0,4);
     }
 }
 
 void KeyFrame::ComputeBoWPolcam()
 {
-    if(mBowVecPolcam.empty() || mFeatVecPolcam.empty())
+    if(mBowVecCam1.empty() || mFeatVecCam1.empty())
     {
-        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsPolcamNonOverlapped);
+        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam1);
         // Feature vector associate features with nodes in the 4th level (from leaves up)
         // We assume the vocabulary tree has 6 levels, change the 4 otherwise
-        mpORBvocabulary->transform(vCurrentDesc,mBowVecPolcam,mFeatVecPolcam,4);
+        mpORBvocabulary->transform(vCurrentDesc,mBowVecCam1,mFeatVecCam1,4);
+    }
+}
+
+void KeyFrame::ComputeBoWCam(uint8_t camIdx)
+{
+    if(camIdx==0)
+    {
+        if(mBowVecCam0.empty() || mFeatVecCam0.empty())
+        {
+            vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam0);
+            // Feature vector associate features with nodes in the 4th level (from leaves up)
+            // We assume the vocabulary tree has 6 levels, change the 4 otherwise
+            mpORBvocabulary->transform(vCurrentDesc,mBowVecCam0,mFeatVecCam0,4);
+        }
+    }
+    else if(camIdx==1)
+    {
+        if(mBowVecCam1.empty() || mFeatVecCam1.empty())
+        {
+            vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam1);
+            // Feature vector associate features with nodes in the 4th level (from leaves up)
+            // We assume the vocabulary tree has 6 levels, change the 4 otherwise
+            mpORBvocabulary->transform(vCurrentDesc,mBowVecCam1,mFeatVecCam1,4);
+        }
     }
 }
 
@@ -330,12 +355,6 @@ void KeyFrame::AddMapPoint(MapPoint *pMP, const size_t &idx)
 {
     unique_lock<mutex> lock(mMutexFeatures);
     mvpMapPoints[idx]=pMP;
-}
-
-void KeyFrame::AddMapPointPolcam(MapPoint *pMP, const size_t &idx)
-{
-    unique_lock<mutex> lock(mMutexFeatures);
-    mvpMapPointsPolcam[idx]=pMP;
 }
 
 void KeyFrame::EraseMapPointMatch(const int &idx)
@@ -743,7 +762,7 @@ vector<size_t> KeyFrame::GetFeaturesInArea(const float &x, const float &y, const
 {
     vector<size_t> vIndices;
     vIndices.reserve(N);
-    
+
     //std::cout<<"N: "<<N<<std::endl;
     //std::cout<<"mvKeysUn size: "<<mvKeysUn.size()<<std::endl;
 

@@ -41,6 +41,9 @@
 #include "Tracking.h"
 #include "Viewer.h"
 
+#include "Constants.h"
+
+
 namespace ORB_SLAM3 {
 
 class Verbose {
@@ -96,7 +99,7 @@ public:
   // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and
   // Viewer threads.
   System(const string &strVocFile, const string &strSettingsFile,
-         const eSensor sensor, const bool bUseViewer = true,
+         const eSensor sensor, const Constants::ePolcamMode polcam_mode, const bool bUseViewer = true,
          const int initFr = 0, const string &strSequence = std::string());
 
   // Proccess the given stereo frame. Images must be synchronized and rectified.
@@ -124,7 +127,7 @@ public:
   TrackMonocular(const cv::Mat &im, const double &timestamp,
                  const vector<IMU::Point> &vImuMeas = vector<IMU::Point>(),
                  string filename = "");
-                 
+
   Sophus::SE3f
   //TrackMonocularPolcam(const cv::Mat &im, const cv::Mat &imPolcam, const double &timestamp, std::vector<std::pair<double, float>>& vec_n_keypoints_diff, const vector<IMU::Point>& vImuMeas = vector<IMU::Point>(), string filename = "");
   TrackMonocularPolcam(const cv::Mat &im, const cv::Mat &imPolcam, const double &timestamp, const vector<IMU::Point>& vImuMeas = vector<IMU::Point>(), string filename = "");
@@ -215,6 +218,7 @@ private:
 
   // Input sensor
   eSensor mSensor;
+  Constants::ePolcamMode mPolcamMode; //added by claydergc
 
   // ORB vocabulary used for place recognition and feature matching.
   ORBVocabulary *mpVocabulary;

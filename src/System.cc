@@ -39,8 +39,8 @@ namespace ORB_SLAM3
 Verbose::eLevel Verbose::th = Verbose::VERBOSITY_NORMAL;
 
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
-               const bool bUseViewer, const int initFr, const string &strSequence):
-    mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false), mbResetActiveMap(false),
+               const Constants::ePolcamMode polcam_mode, const bool bUseViewer, const int initFr, const string &strSequence):
+    mSensor(sensor), mPolcamMode(polcam_mode), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false), mbResetActiveMap(false),
     mbActivateLocalizationMode(false), mbDeactivateLocalizationMode(false), mbShutDown(false)
 {
     // Output welcome message
@@ -198,7 +198,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     //Initialize the Local Mapping thread and launch
     mpLocalMapper = new LocalMapping(this, mpAtlas, mSensor==MONOCULAR || mSensor==IMU_MONOCULAR,
-                                     mSensor==IMU_MONOCULAR || mSensor==IMU_STEREO || mSensor==IMU_RGBD, strSequence);
+                                     mSensor==IMU_MONOCULAR || mSensor==IMU_STEREO || mSensor==IMU_RGBD, mPolcamMode, strSequence);
     mptLocalMapping = new thread(&ORB_SLAM3::LocalMapping::Run,mpLocalMapper);
     mpLocalMapper->mInitFr = initFr;
     if(settings_)
@@ -425,7 +425,7 @@ Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, 
         cv::resize(im,resizedIm,settings_->newImSize());
         imToFeed = resizedIm;
     }
-    
+
     //std::cout<<"TrackMonocular"<<std::endl;
 
     // Check mode change
@@ -479,7 +479,7 @@ Sophus::SE3f System::TrackMonocular(const cv::Mat &im, const double &timestamp, 
     mTrackingState = mpTracker->mState;
     mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
     mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
-    
+
     //std::cout<<"TrackMonocular2"<<std::endl;
 
     return Tcw;
@@ -510,7 +510,7 @@ Sophus::SE3f System::TrackMonocularPolcam(const cv::Mat &im, const cv::Mat &imPo
         cv::resize(im,resizedIm,settings_->newImSize());
         imToFeed = resizedIm;
     }
-    
+
     //std::cout<<"TrackMonocular"<<std::endl;
 
     // Check mode change
@@ -565,7 +565,7 @@ Sophus::SE3f System::TrackMonocularPolcam(const cv::Mat &im, const cv::Mat &imPo
     mTrackingState = mpTracker->mState;
     mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
     mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
-    
+
     //std::cout<<"TrackMonocular2"<<std::endl;
 
     return Tcw;
@@ -657,12 +657,12 @@ void System::Shutdown()
 #endif
 
     //added by claydergc
-    
+
     /*std::ofstream file_n_polcam_map_points("n_polcam_map_points.txt");
     file_n_polcam_map_points<<std::fixed<<std::setprecision(9);
-    
+
     for(int i=0;i<mpLocalMapper->vec_n_polcam_map_points.size();++i) {
-      file_n_polcam_map_points<<mpLocalMapper->vec_n_polcam_map_points[i].first<<" "<<mpLocalMapper->vec_n_polcam_map_points[i].second<<"\n";    
+      file_n_polcam_map_points<<mpLocalMapper->vec_n_polcam_map_points[i].first<<" "<<mpLocalMapper->vec_n_polcam_map_points[i].second<<"\n";
     }
 
     file_n_polcam_map_points.close();*/
@@ -1653,4 +1653,3 @@ string System::CalculateCheckSum(string filename, int type)
 }
 
 } //namespace ORB_SLAM
-
