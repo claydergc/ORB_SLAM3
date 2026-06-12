@@ -247,21 +247,39 @@ public:
     std::vector<cv::KeyPoint> mvKeysUn;
 
     ORBextractor* mpORBextractorCam1; //added by claydergc
+    ORBextractor* mpORBextractorCam2; //added by claydergc
+    ORBextractor* mpORBextractorCam3; //added by claydergc
     int N_Cam0; //added by claydergc
     int N_Cam1; //added by claydergc
+    int N_Cam2; //added by claydergc
+    int N_Cam3; //added by claydergc
     std::vector<cv::KeyPoint> mvKeysCam1Overlapped; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysCam2Overlapped; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysCam3Overlapped; //added by claydergc
     std::vector<cv::KeyPoint> mvKeysCam0; //added by claydergc
     std::vector<cv::KeyPoint> mvKeysCam1; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysCam2; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysCam3; //added by claydergc
     std::vector<cv::KeyPoint> mvKeysUnCam0; //added by claydergc
     std::vector<cv::KeyPoint> mvKeysUnCam1; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysUnCam2; //added by claydergc
+    std::vector<cv::KeyPoint> mvKeysUnCam3; //added by claydergc
     DBoW2::BowVector mBowVecCam0; //added by claydergc
     DBoW2::FeatureVector mFeatVecCam0; //added by claydergc
     DBoW2::BowVector mBowVecCam1; //added by claydergc
     DBoW2::FeatureVector mFeatVecCam1; //added by claydergc
+    DBoW2::BowVector mBowVecCam2; //added by claydergc
+    DBoW2::FeatureVector mFeatVecCam2; //added by claydergc
+    DBoW2::BowVector mBowVecCam3; //added by claydergc
+    DBoW2::FeatureVector mFeatVecCam3; //added by claydergc
     cv::Mat mDescriptorsCam0;
     cv::Mat mDescriptorsCam1Overlapped, mDescriptorsCam1; //added by claydergc
-    std::vector<std::size_t> mGridCam1[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
+    cv::Mat mDescriptorsCam2Overlapped, mDescriptorsCam2; //added by claydergc
+    cv::Mat mDescriptorsCam3Overlapped, mDescriptorsCam3; //added by claydergc
     std::vector<std::size_t> mGridCam0[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
+    std::vector<std::size_t> mGridCam1[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
+    std::vector<std::size_t> mGridCam2[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
+    std::vector<std::size_t> mGridCam3[FRAME_GRID_COLS][FRAME_GRID_ROWS]; //added by claydergc
 
     // Corresponding stereo coordinate and depth for each keypoint.
     std::vector<MapPoint*> mvpMapPoints;

@@ -224,8 +224,8 @@ protected:
 
      // Best descriptor to fast matching
      cv::Mat mDescriptor;
-     cv::Mat mDescriptorNormalcam; //added by claydergc
-     cv::Mat mDescriptorPolcam; //added by claydergc
+     cv::Mat mDescriptorCam0; //added by claydergc
+     cv::Mat mDescriptorCam1; //added by claydergc
 
      // Reference KeyFrame
      KeyFrame* mpRefKF;

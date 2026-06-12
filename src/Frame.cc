@@ -56,10 +56,13 @@ Frame::Frame(): mpcpi(NULL), mpImuPreintegrated(NULL), mpPrevFrame(NULL), mpImuP
 Frame::Frame(const Frame &frame)
     :mpcpi(frame.mpcpi),mpORBvocabulary(frame.mpORBvocabulary), mpORBextractorLeft(frame.mpORBextractorLeft), mpORBextractorRight(frame.mpORBextractorRight),
      mTimeStamp(frame.mTimeStamp), mK(frame.mK.clone()), mK_(Converter::toMatrix3f(frame.mK)), mDistCoef(frame.mDistCoef.clone()),
-     mbf(frame.mbf), mb(frame.mb), mThDepth(frame.mThDepth), N(frame.N), N_Cam0(frame.N_Cam0), N_Cam1(frame.N_Cam1), mvKeys(frame.mvKeys), mvKeysCam1(frame.mvKeysCam1),
-     mvKeysRight(frame.mvKeysRight), mvKeysUn(frame.mvKeysUn), mvKeysUnCam0(frame.mvKeysUnCam0), mvKeysUnCam1(frame.mvKeysUnCam1), mvuRight(frame.mvuRight),
-     mvDepth(frame.mvDepth), mBowVec(frame.mBowVec), mBowVecCam0(frame.mBowVecCam0), mBowVecCam1(frame.mBowVecCam1), mFeatVec(frame.mFeatVec), mFeatVecCam0(frame.mFeatVecCam0), mFeatVecCam1(frame.mFeatVecCam1),
-     mDescriptors(frame.mDescriptors.clone()), mDescriptorsCam0(frame.mDescriptorsCam0.clone()), mDescriptorsCam1(frame.mDescriptorsCam1.clone()), mDescriptorsRight(frame.mDescriptorsRight.clone()),
+     mbf(frame.mbf), mb(frame.mb), mThDepth(frame.mThDepth), N(frame.N), N_Cam0(frame.N_Cam0), N_Cam1(frame.N_Cam1), N_Cam2(frame.N_Cam2), N_Cam3(frame.N_Cam3),
+     mvKeys(frame.mvKeys), mvKeysCam0(frame.mvKeysCam0), mvKeysCam1(frame.mvKeysCam1), mvKeysCam2(frame.mvKeysCam2), mvKeysCam3(frame.mvKeysCam3),
+     mvKeysRight(frame.mvKeysRight), mvKeysUn(frame.mvKeysUn), mvKeysUnCam0(frame.mvKeysUnCam0), mvKeysUnCam1(frame.mvKeysUnCam1), mvKeysUnCam2(frame.mvKeysUnCam2), mvKeysUnCam3(frame.mvKeysUnCam3),
+     mvuRight(frame.mvuRight),
+     mvDepth(frame.mvDepth), mBowVec(frame.mBowVec), mBowVecCam0(frame.mBowVecCam0), mBowVecCam1(frame.mBowVecCam1), mBowVecCam2(frame.mBowVecCam2), mBowVecCam3(frame.mBowVecCam3),
+     mFeatVec(frame.mFeatVec), mFeatVecCam0(frame.mFeatVecCam0), mFeatVecCam1(frame.mFeatVecCam1), mFeatVecCam2(frame.mFeatVecCam2), mFeatVecCam3(frame.mFeatVecCam3),
+     mDescriptors(frame.mDescriptors.clone()), mDescriptorsCam0(frame.mDescriptorsCam0.clone()), mDescriptorsCam1(frame.mDescriptorsCam1.clone()), mDescriptorsCam2(frame.mDescriptorsCam2.clone()), mDescriptorsCam3(frame.mDescriptorsCam3.clone()),
      mvpMapPoints(frame.mvpMapPoints), mvbOutlier(frame.mvbOutlier), mImuCalib(frame.mImuCalib), mnCloseMPs(frame.mnCloseMPs),
      mpImuPreintegrated(frame.mpImuPreintegrated), mpImuPreintegratedFrame(frame.mpImuPreintegratedFrame), mImuBias(frame.mImuBias),
      mnId(frame.mnId), mpReferenceKF(frame.mpReferenceKF), mnScaleLevels(frame.mnScaleLevels),
@@ -1734,6 +1737,17 @@ void Frame::UndistortKeyPointsCam(uint8_t camIdx)
         mvKeysUnCam1=mvKeysCam1;
         return;
     }
+    else if(camIdx==2 && mDistCoef.at<float>(0)==0.0)
+    {
+        mvKeysUnCam2=mvKeysCam2;
+        return;
+    }
+    else if(camIdx==3 && mDistCoef.at<float>(0)==0.0)
+    {
+        mvKeysUnCam3=mvKeysCam3;
+        return;
+    }
+
 
     cv::Mat mat;
 
@@ -1759,6 +1773,29 @@ void Frame::UndistortKeyPointsCam(uint8_t camIdx)
             mat.at<float>(i,1)=mvKeysCam1[i].pt.y;
         }
     }
+    else if(camIdx==2)
+    {
+        mat = cv::Mat(N_Cam2,2,CV_32F);
+        mvKeysUnCam2.resize(N_Cam2);
+
+        for(int i=0; i<N_Cam2; i++)
+        {
+            mat.at<float>(i,0)=mvKeysCam2[i].pt.x;
+            mat.at<float>(i,1)=mvKeysCam2[i].pt.y;
+        }
+    }
+    else if(camIdx==3)
+    {
+        mat = cv::Mat(N_Cam3,2,CV_32F);
+        mvKeysUnCam3.resize(N_Cam3);
+
+        for(int i=0; i<N_Cam3; i++)
+        {
+            mat.at<float>(i,0)=mvKeysCam3[i].pt.x;
+            mat.at<float>(i,1)=mvKeysCam3[i].pt.y;
+        }
+    }
+
 
     // Undistort points
     mat=mat.reshape(2);
@@ -1787,6 +1824,27 @@ void Frame::UndistortKeyPointsCam(uint8_t camIdx)
             mvKeysUnCam1[i]=kp;
         }
     }
+    else if(camIdx==2)
+    {
+        for(int i=0; i<N_Cam2; i++)
+        {
+            cv::KeyPoint kp = mvKeysCam2[i];
+            kp.pt.x=mat.at<float>(i,0);
+            kp.pt.y=mat.at<float>(i,1);
+            mvKeysUnCam2[i]=kp;
+        }
+    }
+    else if(camIdx==3)
+    {
+        for(int i=0; i<N_Cam3; i++)
+        {
+            cv::KeyPoint kp = mvKeysCam3[i];
+            kp.pt.x=mat.at<float>(i,0);
+            kp.pt.y=mat.at<float>(i,1);
+            mvKeysUnCam3[i]=kp;
+        }
+    }
+
 }
 
 //added by claydergc
@@ -1801,6 +1859,11 @@ void Frame::AssignFeaturesToGridCam(uint8_t camIdx)
         nReserve = 0.5f*N_Cam0/(nCells);
     else if(camIdx == 1)
         nReserve = 0.5f*N_Cam1/(nCells);
+    else if(camIdx == 2)
+        nReserve = 0.5f*N_Cam2/(nCells);
+    else if(camIdx == 3)
+        nReserve = 0.5f*N_Cam3/(nCells);
+
 
     for(unsigned int i=0; i<FRAME_GRID_COLS;i++)
         for (unsigned int j=0; j<FRAME_GRID_ROWS;j++)
@@ -1809,6 +1872,10 @@ void Frame::AssignFeaturesToGridCam(uint8_t camIdx)
                 mGridCam0[i][j].reserve(nReserve);
             else if(camIdx == 1)
                 mGridCam1[i][j].reserve(nReserve);
+            else if(camIdx == 2)
+                mGridCam2[i][j].reserve(nReserve);
+            else if(camIdx == 3)
+                mGridCam3[i][j].reserve(nReserve);
         }
 
     int N_Cam;
@@ -1817,6 +1884,10 @@ void Frame::AssignFeaturesToGridCam(uint8_t camIdx)
         N_Cam = N_Cam0;
     else if(camIdx == 1)
         N_Cam = N_Cam1;
+    else if(camIdx == 2)
+        N_Cam = N_Cam2;
+    else if(camIdx == 3)
+        N_Cam = N_Cam3;
 
     for(int i=0;i<N_Cam;i++)
     {
@@ -1826,6 +1897,10 @@ void Frame::AssignFeaturesToGridCam(uint8_t camIdx)
             kp = mvKeysUnCam0[i];
         else if(camIdx == 1)
             kp = mvKeysUnCam1[i];
+        else if(camIdx == 2)
+            kp = mvKeysUnCam2[i];
+        else if(camIdx == 3)
+            kp = mvKeysUnCam3[i];
 
         int nGridPosX, nGridPosY;
         if(PosInGrid(kp,nGridPosX,nGridPosY)){
@@ -1833,6 +1908,10 @@ void Frame::AssignFeaturesToGridCam(uint8_t camIdx)
                 mGridCam0[nGridPosX][nGridPosY].push_back(i);
             else if(camIdx == 1)
                 mGridCam1[nGridPosX][nGridPosY].push_back(i);
+            else if(camIdx == 2)
+                mGridCam2[nGridPosX][nGridPosY].push_back(i);
+            else if(camIdx == 3)
+                mGridCam3[nGridPosX][nGridPosY].push_back(i);
         }
     }
 }
@@ -1849,6 +1928,17 @@ void Frame::ComputeBoWCam(uint8_t camIdx)
         vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam1);
         mpORBvocabulary->transform(vCurrentDesc,mBowVecCam1,mFeatVecCam1,4);
     }
+    else if(camIdx==2 && mBowVecCam2.empty())
+    {
+        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam2);
+        mpORBvocabulary->transform(vCurrentDesc,mBowVecCam2,mFeatVecCam2,4);
+    }
+    else if(camIdx==3 && mBowVecCam3.empty())
+    {
+        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam3);
+        mpORBvocabulary->transform(vCurrentDesc,mBowVecCam3,mFeatVecCam3,4);
+    }
+
 
 }
 

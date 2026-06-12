@@ -112,8 +112,8 @@ MapPoint::MapPoint(const Eigen::Vector3f &Pos, Map* pMap, Frame* pFrame, const i
 
 
     // These following two lines are not correct, but they are never reached
-    pFrame->mDescriptorsCam0.row(idxF).copyTo(mDescriptorNormalcam);
-    pFrame->mDescriptorsCam1.row(idxF).copyTo(mDescriptorPolcam);
+    pFrame->mDescriptorsCam0.row(idxF).copyTo(mDescriptorCam0);
+    pFrame->mDescriptorsCam1.row(idxF).copyTo(mDescriptorCam1);
 
 
     // MapPoints can be created from Tracking and Local Mapping. This mutex avoid conflicts with id.
