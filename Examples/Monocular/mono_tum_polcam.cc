@@ -178,6 +178,9 @@ int main(int argc, char **argv)
         }*/
 
 
+        im = cv::imread(string(argv[3])+"/polcamI0_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
+        imPolcam = cv::imread(string(argv[3])+"/polcamI45_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+
         // im = cv::imread(string(argv[3])+"/polcamI90_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
         // imPolcam = cv::imread(string(argv[3])+"/polcamI135_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
@@ -199,8 +202,14 @@ int main(int argc, char **argv)
         // im = cv::imread(string(argv[3])+"/polcamI90_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         // imPolcam = cv::imread(string(argv[3])+"/polcamI45_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
-        im  = cv::imread(string(argv[3])+"/polcamI0_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        imPolcam = cv::imread(string(argv[3])+"/polcamI45_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);   // works well for 0830 full resolution
+        // im  = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        // imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+
+        // im  = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        // imPolcam = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);   // works well for 0830  and 0839full resolution
+
+        // im  = cv::imread(string(argv[3])+"/polcamI0_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        // imPolcam = cv::imread(string(argv[3])+"/polcamI45_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);   // works well for 0830  and 0839full resolution
         // imPolcam = cv::imread(string(argv[3])+"/polcamI135_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);   // works well for 0830 full resolution
 
         // im = cv::imread(string(argv[3])+"/polcamI0_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);

@@ -56,7 +56,8 @@ Camera.height: 1024
 #ORBextractor.nFeatures: 1000 #default
 #ORBextractor.nFeatures: 1400
 #ORBextractor.nFeatures: 1600
-ORBextractor.nFeatures: 1200
+# ORBextractor.nFeatures: 1200
+ORBextractor.nFeatures: 1400
 
 # ORB Extractor: Scale factor between levels in the scale pyramid
 ORBextractor.scaleFactor: 1.2

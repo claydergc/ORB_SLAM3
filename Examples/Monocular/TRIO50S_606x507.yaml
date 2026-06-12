@@ -70,11 +70,11 @@ ORBextractor.nLevels: 8
 # Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
 # You can lower these values if your images have low contrast
 #ORBextractor.iniThFAST: 20
-#ORBextractor.iniThFAST: 15
-ORBextractor.iniThFAST: 10
+ORBextractor.iniThFAST: 15
+# ORBextractor.iniThFAST: 10
 #ORBextractor.iniThFAST: 5
-#ORBextractor.minThFAST: 7
-ORBextractor.minThFAST: 3
+ORBextractor.minThFAST: 7
+# ORBextractor.minThFAST: 3
 #ORBextractor.minThFAST: 2
 
 #--------------------------------------------------------------------------------------------
