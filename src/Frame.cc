@@ -446,9 +446,12 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     std::vector<cv::Mat> mDescriptorsCam1Vec;
     //cv::Mat mDescriptorsPolcamNonOverlapped;
     //computeFeatureOverlap(mvKeys, mvKeysPolcam, mvKeysPolcamNonOverlapped, mDescriptorsPolcam, mDescriptorsPolcamNonOverlappedVec, 4.0);
+
+
     computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 3.0);
     //std::cout<<"mvKeysPolcamNonOverlapped: "<<mvKeysPolcamNonOverlapped.size()<<std::endl;
 
+    // mvKeysCam1 = mvKeysCam1Overlapped; //added to try what happen
 
 
     mvKeysCam0 = mvKeys;
@@ -470,6 +473,8 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     // This is to make it possible for ComputeDistinctiveDescriptors() tu run correctly
     cv::vconcat(mDescriptors, mDescriptorsCam1, mDescriptors);
 
+    // cv::vconcat(mDescriptors, mDescriptorsCam1Overlapped, mDescriptors);  //added to try what happen
+
 
 
     //std::cout<<"mDescriptors: "<<mDescriptors.size()<<std::endl;
@@ -481,6 +486,7 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     N_Cam1 = mvKeysCam1.size();
     N = N_Cam0 + N_Cam1;
 
+    // std::cout<<"N_Cam0: "<<N_Cam0<<" N_Cam1: "<<N_Cam1<<" N: "<<N<<std::endl;
 
 
     if(mvKeys.empty())

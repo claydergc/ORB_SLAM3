@@ -3273,8 +3273,11 @@ bool Tracking::NeedNewKeyFrame()
             return true;
         else if ((mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD) && (mCurrentFrame.mTimeStamp-mpLastKeyFrame->mTimeStamp)>=0.25)
             return true;
-        else
+        else {
+            // std::cout<<"False because of time"<<std::endl;
             return false;
+        }
+
     }
 
     if(mbOnlyTracking)
@@ -3389,12 +3392,20 @@ bool Tracking::NeedNewKeyFrame()
     else
         c4=false;
 
+    // std::cout<<c1c<<" "<<c2<<std::endl;
+    // std::cout<<c4<<" "<<std::endl;
+    // std::cout<<(c1c&&c2)<<std::endl;
+    //
+    // std::cout<<((c1a||c1b||c1c) && c2)<<std::endl;
+    // std::cout<<c2<<std::endl; //c2 is the determinant condition for keyframe insertion
+
     if(((c1a||c1b||c1c) && c2)||c3 ||c4)
     {
         // If the mapping accepts keyframes, insert keyframe.
         // Otherwise send a signal to interrupt BA
         if(bLocalMappingIdle || mpLocalMapper->IsInitializing())
         {
+            // std::cout<<"True"<<std::endl;
             return true;
         }
         else
@@ -3402,20 +3413,26 @@ bool Tracking::NeedNewKeyFrame()
             mpLocalMapper->InterruptBA();
             if(mSensor!=System::MONOCULAR  && mSensor!=System::IMU_MONOCULAR)
             {
-                if(mpLocalMapper->KeyframesInQueue()<3)
+                if(mpLocalMapper->KeyframesInQueue()<3) {
+                    // std::cout<<"True"<<std::endl;
                     return true;
-                else
+                }
+                else {
+                    // std::cout<<"False!!!"<<std::endl;
                     return false;
+                }
             }
             else
             {
-                //std::cout << "NeedNewKeyFrame: localmap is busy" << std::endl;
+                // std::cout << "NeedNewKeyFrame: localmap is busy" << std::endl;
                 return false;
             }
         }
     }
-    else
+    else {
+        // std::cout<<"False2!!!"<<std::endl;
         return false;
+    }
 }
 
 void Tracking::CreateNewKeyFrame()
@@ -3557,7 +3574,7 @@ void Tracking::CreateNewKeyFrame()
 
     mpLocalMapper->InsertKeyFrame(pKF);
 
-    std::cout<<"KeyFrame added "<<pKF->mnId<<"\n";
+    // std::cout<<"KeyFrame added "<<pKF->mnId<<"\n";
 
     mpLocalMapper->SetNotStop(false);
 

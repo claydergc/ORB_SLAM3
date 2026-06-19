@@ -54,10 +54,12 @@ Camera.height: 1024
 #ORBextractor.nFeatures: 280 #here both fails
 #ORBextractor.nFeatures: 310
 #ORBextractor.nFeatures: 1000 #default
-#ORBextractor.nFeatures: 1400
+ORBextractor.nFeatures: 1200 #Works for KG
+# ORBextractor.nFeatures: 1400
 #ORBextractor.nFeatures: 1600
-# ORBextractor.nFeatures: 1200
-ORBextractor.nFeatures: 1400
+# ORBextractor.nFeatures: 1400
+# ORBextractor.nFeatures: 1800
+# ORBextractor.nFeatures: 2000 #Works for YW. If I put 2000 on KG it fails
 
 # ORB Extractor: Scale factor between levels in the scale pyramid
 ORBextractor.scaleFactor: 1.2
@@ -70,12 +72,20 @@ ORBextractor.nLevels: 8
 # Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
 # You can lower these values if your images have low contrast
 #ORBextractor.iniThFAST: 20
-#ORBextractor.iniThFAST: 10
-ORBextractor.iniThFAST: 15
+#ORBextractor.iniThFAST: 15
+# ORBextractor.iniThFAST: 10
 #ORBextractor.iniThFAST: 5
-#ORBextractor.minThFAST: 7
+# ORBextractor.minThFAST: 7
+# ORBextractor.minThFAST: 4
+# ORBextractor.minThFAST: 3
+#
+
+# ORBextractor.iniThFAST: 20
+# ORBextractor.minThFAST: 7
+ORBextractor.iniThFAST: 15
 ORBextractor.minThFAST: 4
-#ORBextractor.minThFAST: 3
+# ORBextractor.iniThFAST: 10
+# ORBextractor.minThFAST: 3
 
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters

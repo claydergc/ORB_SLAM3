@@ -53,9 +53,9 @@ int main(int argc, char **argv)
 {
     signal(SIGINT, signal_handler);
     //if(argc != 4)
-    if(argc != 5)
+    if(argc != 6)
     {
-        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_sequence" << endl;
+        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_imgs_cam0 path_to_imgs_cam1 path_to_keyframe_trajectory" << endl;
         return 1;
     }
 
@@ -63,7 +63,12 @@ int main(int argc, char **argv)
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
     string strFile = string(argv[3])+"/polcamI/rgb.txt";
-    LoadImages(strFile, vstrImageFilenames, vTimestamps);
+
+
+    string strFileCam0 = string(argv[3])+"/rgb.txt";
+
+
+    LoadImages(strFileCam0, vstrImageFilenames, vTimestamps);
 
     int nImages = vstrImageFilenames.size();
 
@@ -83,24 +88,24 @@ int main(int argc, char **argv)
     double t_track = 0.f;
 
     // Main loop
-    cv::Mat im;
-    cv::Mat imPolcam;
+    cv::Mat imCam0;
+    cv::Mat imCam1;
     cv::Mat imAux; //= cv::Mat::zeros(480, 640, CV_8U);
     int mState;
 
     //added by claydergc
 
-    std::ofstream mprFile("map_points_ratio.txt");
-    mprFile<<std::fixed<<std::setprecision(9);
+    // std::ofstream mprFile("map_points_ratio.txt");
+    // mprFile<<std::fixed<<std::setprecision(9);
     std::vector<Tuple> mprVector;
     float pitchPrev=0.0;
     float pitchCurr=0.0;
     float pitchDelta=0.0;
     uint16_t nMapPoints=0;
 
-    std::ofstream file_n_keypoints_diff("n_polcam_kp.txt");
-    file_n_keypoints_diff<<std::fixed<<std::setprecision(9);
-    std::vector<std::pair<double, int>> vec_n_keypoints_diff;
+    // std::ofstream file_n_keypoints_diff("n_polcam_kp.txt");
+    // file_n_keypoints_diff<<std::fixed<<std::setprecision(9);
+    // std::vector<std::pair<double, int>> vec_n_keypoints_diff;
 
     //cv::Rect topHalf(0, 0, 640, 130);
     //cv::Rect topHalf(0, 0, 606, 254);
@@ -121,65 +126,11 @@ int main(int argc, char **argv)
     {
         // Read image from file
 
-        //std::cout<<string(argv[3])+"/"+vstrImageFilenames[ni]<<std::endl;
-        //im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_UNCHANGED); //,cv::IMREAD_UNCHANGED);
+        imCam0 = cv::imread(string(argv[3])+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
+        imCam1 = cv::imread(string(argv[4])+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
-        //im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        //im = cv::imread(string(argv[3])+"/polcamI/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        //imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        //im = cv::imread(string(argv[3])+"/polcamI/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        //imPolcam = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        //im = cv::imread(string(argv[3])+"/polcamI/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        //imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        // im = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        // im = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        //
-        // im = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        // im = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        // im = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        // im = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        // im = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        // im = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        //0835
-        //if(vTimestamps[ni]<1769553330) {
-        /*if(vTimestamps[ni]<1769553026+11) {
-
-          //im = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-          //imPolcam = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-          im = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-          imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        }
-        else {
-          //im = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-          //imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-          im = cv::imread(string(argv[3])+"/polcamI45/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-          imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-          //im = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-          //imPolcam = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        }*/
-
-
-        im = cv::imread(string(argv[3])+"/polcamI0_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
-        imPolcam = cv::imread(string(argv[3])+"/polcamI45_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        // im = cv::imread(string(argv[3])+"/polcamI0_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
+        // imPolcam = cv::imread(string(argv[3])+"/polcamI45_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
         // im = cv::imread(string(argv[3])+"/polcamI90_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
         // imPolcam = cv::imread(string(argv[3])+"/polcamI135_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
@@ -220,35 +171,7 @@ int main(int argc, char **argv)
         // imPolcam = cv::imread(string(argv[3])+"/polcamI45_1224x1024/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); // works well for 1746 full resolution
 
 
-        // im = cv::imread(string(argv[3])+"/polcamI90/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // imPolcam = cv::imread(string(argv[3])+"/polcamI/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
-        // im = cv::imread(string(argv[3])+"/polcamI0/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // imPolcam = cv::imread(string(argv[3])+"/polcamI135/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-
-        //std::cout<<im.cols<<std::endl;
-
-        //if(im.cols!=640 && im.rows!=480)
-          //cv::resize(im, im, cv::Size(640, 480));
-
-        /*
-        if(ni>235 && ni<420 || ni>477 && ni<605) {
-            //cv::Mat adjusted;
-            //double alpha = 1.5; // contrast control (1.0 = no change)
-            double alpha = 1.7; // contrast control (1.0 = no change)
-            //int beta = 20;      // brightness control (0 = no change)
-            int beta = 15;      // brightness control (0 = no change)
-
-            // Apply transformation
-            im.convertTo(im, -1, alpha, beta);
-        }else  {
-        //cv::Mat adjusted;
-            double alpha = 2.0; // contrast control (1.0 = no change)
-            int beta = 30;      // brightness control (0 = no change)
-
-            // Apply transformation
-            im.convertTo(im, -1, alpha, beta);
-        }*/
 
         double tframe = vTimestamps[ni];
 
@@ -257,13 +180,8 @@ int main(int argc, char **argv)
 
         // clahe->apply(im,im);
         // clahe->apply(imPolcam,imPolcam);
-        //cv::cvtColor(im, imAux, cv::COLOR_GRAY2BGR);
 
-        //cv::imshow("imAUx", im);
-
-        //std::cout<<im.rows<<" "<<im.cols<<std::endl;
-
-        if(im.empty())
+        if(imCam0.empty())
         {
             cerr << endl << "Failed to load image at: "
                  << string(argv[3]) << "/" << vstrImageFilenames[ni] << endl;
@@ -308,9 +226,9 @@ int main(int argc, char **argv)
         // Pass the image to the SLAM system
         //SLAM.TrackMonocular(im,tframe);
         //SLAM.TrackMonocularPolcam(im,imPolcam,tframe,vec_n_keypoints_diff);
-        SLAM.TrackMonocularPolcam(im,imPolcam,tframe);
+        SLAM.TrackMonocularPolcam(imCam0,imCam1,tframe);
 
-        vec_N_Polcam.push_back(std::make_pair(SLAM.mpTracker->mCurrentFrame.mTimeStamp, SLAM.mpTracker->mCurrentFrame.N_Cam1));
+        // vec_N_Polcam.push_back(std::make_pair(SLAM.mpTracker->mCurrentFrame.mTimeStamp, SLAM.mpTracker->mCurrentFrame.N_Cam1));
 
         //std::cout<<im.cols<<std::endl;
 
@@ -449,9 +367,9 @@ int main(int argc, char **argv)
     //  file_n_keypoints_diff<<vec_n_keypoints_diff[i].first<<" "<<vec_n_keypoints_diff[i].second<<"\n";
     //file_n_keypoints_diff.close();
 
-    for(uint16_t i=0; i<vec_N_Polcam.size(); ++i)
-      file_n_keypoints_diff<<vec_N_Polcam[i].first<<" "<<vec_N_Polcam[i].second<<"\n";
-    file_n_keypoints_diff.close();
+    // for(uint16_t i=0; i<vec_N_Polcam.size(); ++i)
+    //   file_n_keypoints_diff<<vec_N_Polcam[i].first<<" "<<vec_N_Polcam[i].second<<"\n";
+    // file_n_keypoints_diff.close();
 
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());
@@ -467,7 +385,7 @@ int main(int argc, char **argv)
     // Save camera trajectory
     // SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
     //SLAM.SaveTrajectoryTUM("KeyFrameTrajectory.txt");
-    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[4]));
+    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[5]));
 
     return 0;
 }

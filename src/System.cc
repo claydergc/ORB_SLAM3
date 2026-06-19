@@ -242,11 +242,12 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
 
     // Fix verbosity
-    //Verbose::SetTh(Verbose::VERBOSITY_QUIET);
+    Verbose::SetTh(Verbose::VERBOSITY_QUIET);
     //Verbose::SetTh(Verbose::VERBOSITY_NORMAL);
     //Verbose::SetTh(Verbose::VERBOSITY_VERBOSE);
     //Verbose::SetTh(Verbose::VERBOSITY_VERY_VERBOSE);
-    Verbose::SetTh(Verbose::VERBOSITY_DEBUG);
+
+    // Verbose::SetTh(Verbose::VERBOSITY_DEBUG); IT WAS RUNNING ON THIS
 }
 
 Sophus::SE3f System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp, const vector<IMU::Point>& vImuMeas, string filename)
