@@ -82,10 +82,10 @@ ORBextractor.nLevels: 8
 
 # ORBextractor.iniThFAST: 20
 # ORBextractor.minThFAST: 7
-ORBextractor.iniThFAST: 15
-ORBextractor.minThFAST: 4
-# ORBextractor.iniThFAST: 10
-# ORBextractor.minThFAST: 3
+# ORBextractor.iniThFAST: 15 #default for KG
+# ORBextractor.minThFAST: 4  #default for KG
+ORBextractor.iniThFAST: 10
+ORBextractor.minThFAST: 3
 
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters

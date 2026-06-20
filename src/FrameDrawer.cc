@@ -56,9 +56,10 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
   map<long unsigned int, cv::Point2f> mProjectPoints;
   map<long unsigned int, cv::Point2f> mMatchedInImage;
 
-  cv::Scalar standardColor(0, 255, 0);
+  cv::Scalar GREEN(0, 255, 0);
   cv::Scalar odometryColor(255, 0, 0);
-  cv::Scalar restKeypoints(0, 0, 255);
+  cv::Scalar RED(0, 0, 255);
+  cv::Scalar MAGENTA(255, 0, 255);
 
   // Copy variables within scoped mutex
   {
@@ -117,7 +118,7 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
           pt1 = vIniKeys[i].pt;
           pt2 = vCurrentKeys[vMatches[i]].pt;
         }
-        cv::line(im, pt1, pt2, standardColor);
+        cv::line(im, pt1, pt2, GREEN);
       }
     }
     for (vector<pair<cv::Point2f, cv::Point2f>>::iterator it = vTracks.begin();
@@ -130,7 +131,7 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
         pt1 = (*it).first;
         pt2 = (*it).second;
       }
-      cv::line(im, pt1, pt2, standardColor, 5);
+      cv::line(im, pt1, pt2, GREEN, 5);
     }
 
   } else if (state == Tracking::OK) // TRACKING
@@ -139,6 +140,10 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
     mnTrackedVO = 0;
     const float r = 5;
     int n = vCurrentKeys.size();
+
+
+    // std::cout<<"N_keys: "<<n<<", N_keys_Cam0: "<<N_keys_Cam0<<", N_keys_Cam1: "<<N_keys_Cam1<<std::endl;
+
     for (int i = 0; i < n; i++) {
       cv::Point2f pt1, pt2;
       cv::Point2f point;
@@ -178,8 +183,15 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
 
         // This is a match to a MapPoint in the map
         if (vbMap[i]) {
-          cv::rectangle(im, pt1, pt2, standardColor);
-          cv::circle(im, point, 2, standardColor, -1);
+
+            if(i<N_keys_Cam0) {
+                cv::rectangle(im, pt1, pt2, GREEN);
+                cv::circle(im, point, 2, GREEN, -1);
+            } else { //added by claydergc
+                cv::rectangle(im, pt1, pt2, MAGENTA);
+                cv::circle(im, point, 2, MAGENTA, -1);
+            }
+
           mnTracked++;
         } else // This is match to a "visual odometry" MapPoint created in the
                // last frame
@@ -188,11 +200,12 @@ cv::Mat FrameDrawer::DrawFrame(float imageScale) {
           cv::circle(im, point, 2, odometryColor, -1);
           mnTrackedVO++;
         }
-      } else {
-      
-        cv::rectangle(im, pt1, pt2, restKeypoints);
-        cv::circle(im, point, 2, restKeypoints, -1);
       }
+      // else {
+
+      //   cv::rectangle(im, pt1, pt2, RED);
+      //   cv::circle(im, point, 2, RED, -1);
+      // }
     }
   }
 
@@ -359,6 +372,10 @@ void FrameDrawer::Update(Tracking *pTracker) {
   mvCurrentKeys = pTracker->mCurrentFrame.mvKeys;
   mThDepth = pTracker->mCurrentFrame.mThDepth;
   mvCurrentDepth = pTracker->mCurrentFrame.mvDepth;
+
+  N_keys = mvCurrentKeys.size();
+  N_keys_Cam0 = pTracker->mCurrentFrame.N_Cam0;
+  N_keys_Cam1 = pTracker->mCurrentFrame.N_Cam1;
 
   if (both) {
     mvCurrentKeysRight = pTracker->mCurrentFrame.mvKeysRight;

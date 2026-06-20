@@ -26,6 +26,7 @@
 #include "MapPoint.h"
 #include "Tracking.h"
 
+#include <cstdint>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
@@ -51,6 +52,7 @@ public:
 
   bool both;
   vector<bool> mvbMap, mvbVO;
+  uint32_t N_keys, N_keys_Cam0, N_keys_Cam1;
 
 protected:
   void DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText);

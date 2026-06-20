@@ -53,8 +53,8 @@ Camera.height: 507
 # ORB Extractor: Number of features per image
 #ORBextractor.nFeatures: 280 #here both fails
 #ORBextractor.nFeatures: 310
-# ORBextractor.nFeatures: 1000 #default
-ORBextractor.nFeatures: 1200 #default
+ORBextractor.nFeatures: 1000 #default
+# ORBextractor.nFeatures: 1200 #default
 #ORBextractor.nFeatures: 1600 #default
 # ORBextractor.nFeatures: 1400
 # ORBextractor.nFeatures: 1200
@@ -73,7 +73,7 @@ ORBextractor.nLevels: 8
 ORBextractor.iniThFAST: 15
 # ORBextractor.iniThFAST: 10
 #ORBextractor.iniThFAST: 5
-ORBextractor.minThFAST: 7
+ORBextractor.minThFAST: 4
 # ORBextractor.minThFAST: 3
 #ORBextractor.minThFAST: 2
 

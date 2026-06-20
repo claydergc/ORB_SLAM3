@@ -452,6 +452,7 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     //std::cout<<"mvKeysPolcamNonOverlapped: "<<mvKeysPolcamNonOverlapped.size()<<std::endl;
 
     // mvKeysCam1 = mvKeysCam1Overlapped; //added to try what happen
+    // mDescriptorsCam1 = mDescriptorsCam1Overlapped; //added to try what happen
 
 
     mvKeysCam0 = mvKeys;
@@ -473,7 +474,7 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     // This is to make it possible for ComputeDistinctiveDescriptors() tu run correctly
     cv::vconcat(mDescriptors, mDescriptorsCam1, mDescriptors);
 
-    // cv::vconcat(mDescriptors, mDescriptorsCam1Overlapped, mDescriptors);  //added to try what happen
+    // cv::vconcat(mDescriptors, mDescriptorsCam1, mDescriptors);  //added to try what happen
 
 
 

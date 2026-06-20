@@ -49,11 +49,91 @@ void signal_handler(int signum) {
     }
 }
 
+struct PoseStamped
+{
+    double timestamp;
+    double x;
+    double y;
+    double z;
+    double qx;
+    double qy;
+    double qz;
+    double qw;
+};
+
+void SaveTrajectoryForAllFramesClayder(const string &filename, std::vector<PoseStamped> trajectory)
+{
+    cout << endl << "Saving Clayder frames trajectory to " << filename << " ..." << endl;
+
+    // Transform all keyframes so that the first keyframe is at the origin.
+    // After a loop closure the first keyframe might not be at the origin.
+    std::ofstream f(filename.c_str());
+    f.imbue(std::locale::classic());
+
+    // CSV header
+    // f << "ts (ns),tx (m),ty (m),tz (m),qx,qy,qz,qw\n";
+
+    for (const PoseStamped& pose : trajectory)
+    {
+        double t = pose.timestamp;
+        double x = pose.x;
+        double y = pose.y;
+        double z = pose.z;
+
+        double qx = pose.qx;
+        double qy = pose.qy;
+        double qz = pose.qz;
+        double qw = pose.qw;
+
+        long long ts_ns = static_cast<long long>(std::round(t * 1e9));
+
+        f << std::fixed << std::setprecision(9) << ts_ns << ','
+          << std::scientific << std::setprecision(7)
+          << static_cast<double>(x) << ','
+          << static_cast<double>(y) << ','
+          << static_cast<double>(z) << ','
+          << static_cast<double>(qx) << ','
+          << static_cast<double>(qy) << ','
+          << static_cast<double>(qz) << ','
+          << static_cast<double>(qw) << '\n';
+    }
+
+    f.close();
+}
+
+void SaveKeypointsForAllFramesClayder(const string &filename, std::vector<std::pair<double, uint16_t>> matchedKeypointsPerFrame)
+{
+    cout << endl << "Saving Clayder keypoints trajectory to " << filename << " ..." << endl;
+
+    // Transform all keyframes so that the first keyframe is at the origin.
+    // After a loop closure the first keyframe might not be at the origin.
+    std::ofstream f(filename.c_str());
+    f.imbue(std::locale::classic());
+
+    // CSV header
+    // f << "ts (ns),tx (m),ty (m),tz (m),qx,qy,qz,qw\n";
+
+    for (uint32_t i = 0; i < matchedKeypointsPerFrame.size(); i++)
+    {
+        double t = matchedKeypointsPerFrame[i].first;
+        uint16_t numKeypointsPerFrame = matchedKeypointsPerFrame[i].second;
+        long long ts_ns = static_cast<long long>(std::round(t * 1e9));
+
+        f << std::fixed << std::setprecision(9) << ts_ns << ','
+          << numKeypointsPerFrame << '\n';
+    }
+
+    f.close();
+}
+
+
+
 int main(int argc, char **argv)
 {
     signal(SIGINT, signal_handler);
     //if(argc != 4)
-    if(argc != 6)
+    // if(argc != 6)
+    if(argc != 7)
     {
         cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_imgs_cam0 path_to_imgs_cam1 path_to_keyframe_trajectory" << endl;
         return 1;
@@ -120,6 +200,11 @@ int main(int argc, char **argv)
     cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(3.0, cv::Size(8, 8));
 
     std::vector<std::pair<double, int>> vec_N_Polcam;
+
+    std::vector<PoseStamped> trajectory;
+
+
+    // std::cout<<nImages<<std::endl;
 
     for(int ni=0; ni<nImages && !g_signal_received; ni++)
     //for(int ni=0; ni<1410 && !g_signal_received; ni++)
@@ -226,7 +311,23 @@ int main(int argc, char **argv)
         // Pass the image to the SLAM system
         //SLAM.TrackMonocular(im,tframe);
         //SLAM.TrackMonocularPolcam(im,imPolcam,tframe,vec_n_keypoints_diff);
-        SLAM.TrackMonocularPolcam(imCam0,imCam1,tframe);
+        // SLAM.TrackMonocularPolcam(imCam0,imCam1,tframe);
+
+        Sophus::SE3f Tcw = SLAM.TrackMonocularPolcam(imCam0,imCam1,tframe);
+        Sophus::SE3f Twc = Tcw.inverse();
+
+        // std::cout<<tframe<<" "<<Tcw.translation()<<std::endl;
+
+        double tx = Twc.translation().x();
+        double ty = Twc.translation().y();
+        double tz = Twc.translation().z();
+        Eigen::Quaternionf q = Twc.unit_quaternion();
+
+        trajectory.push_back({
+            tframe,
+            tx, ty, tz,
+            q.x(), q.y(), q.z(), q.w()
+        });
 
         // vec_N_Polcam.push_back(std::make_pair(SLAM.mpTracker->mCurrentFrame.mTimeStamp, SLAM.mpTracker->mCurrentFrame.N_Cam1));
 
@@ -385,7 +486,10 @@ int main(int argc, char **argv)
     // Save camera trajectory
     // SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
     //SLAM.SaveTrajectoryTUM("KeyFrameTrajectory.txt");
-    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[5]));
+
+    // SLAM.SaveKeyFrameTrajectoryTUM(string(argv[5]));
+    SaveKeypointsForAllFramesClayder(string(argv[6]), SLAM.mpTracker->matchedKeypointsPerFrame);
+    SaveTrajectoryForAllFramesClayder(string(argv[5]), trajectory);
 
     return 0;
 }

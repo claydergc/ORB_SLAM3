@@ -56,7 +56,7 @@ class System;
 class Settings;
 
 class Tracking
-{  
+{
 
 public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -180,6 +180,8 @@ public:
 
     bool mbWriteStats;
 
+    std::vector<std::pair<double, uint16_t>> matchedKeypointsPerFrame;
+
 #ifdef REGISTER_TIMES
     void LocalMapStats2File();
     void TrackStats2File();
@@ -278,12 +280,12 @@ protected:
     KeyFrame* mpReferenceKF;
     std::vector<KeyFrame*> mvpLocalKeyFrames;
     std::vector<MapPoint*> mvpLocalMapPoints;
-    
+
     //std::vector<MapPoint*> mvpLocalMapPoints;//added by claydergc
-    
+
     // System
     System* mpSystem;
-    
+
     //Drawers
     Viewer* mpViewer;
     FrameDrawer* mpFrameDrawer;
