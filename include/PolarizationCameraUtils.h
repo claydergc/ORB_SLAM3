@@ -20,8 +20,7 @@
 #include <sys/stat.h>
 
 
-namespace ORB_SLAM3
-{
+// namespace ORB_SLAM3 {
 
 class PolarizationCameraUtils
 {
@@ -72,12 +71,10 @@ public:
                                           const cv::Mat& I_45,
                                           const cv::Mat& I_90,
                                           const cv::Mat& I_135,
-                                          double pol_angle,
-                                          int new_height,
-                                          int new_width);
+                                          double pol_angle);
 
 }; // class PolarizationCameraUtils
 
-} // namespace ORB_SLAM3
+// } // namespace ORB_SLAM3
 
 #endif // POLARIZATION_CAMERA_UTILS_H

@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace ORB_SLAM3 {
+// namespace ORB_SLAM3 {
 
 std::array<cv::Mat,4> PolarizationCameraUtils::demosaicPolarizationImageParallel(const cv::Mat& input_img) {
 
@@ -74,9 +74,7 @@ cv::Mat PolarizationCameraUtils::computePolarizationAngleImageParallel(const cv:
                                       const cv::Mat& I_45,
                                       const cv::Mat& I_90,
                                       const cv::Mat& I_135,
-                                      double pol_angle,
-                                      int new_height,
-                                      int new_width)
+                                      double pol_angle)
 {
 
     // Convert input to float [0,1]
@@ -136,9 +134,9 @@ cv::Mat PolarizationCameraUtils::computePolarizationAngleImageParallel(const cv:
 
     for (auto& th : threads) th.join();
 
-    cv::resize(I_pol_angle, I_pol_angle, cv::Size(new_width, new_height));
+    // cv::resize(I_pol_angle, I_pol_angle, cv::Size(new_width, new_height));
 
     return I_pol_angle;
 }
 
-}
+// }
