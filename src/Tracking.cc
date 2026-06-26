@@ -2690,13 +2690,13 @@ void Tracking::CreateInitialMapMonocular()
 
     // pKFini->ComputeBoWNormalcam(); //added by claydergc
     // pKFcur->ComputeBoWNormalcam(); //added by claydergc
-    pKFini->ComputeBoWCam(0);
-    pKFcur->ComputeBoWCam(0);
+    // pKFini->ComputeBoWCam(0);
+    // pKFcur->ComputeBoWCam(0);
 
     // pKFini->ComputeBoWPolcam(); //added by claydergc
     // pKFcur->ComputeBoWPolcam(); //added by claydergc
-    pKFini->ComputeBoWCam(1);
-    pKFcur->ComputeBoWCam(1);
+    // pKFini->ComputeBoWCam(1);
+    // pKFcur->ComputeBoWCam(1);
 
     // Insert KFs in the map
     mpAtlas->AddKeyFrame(pKFini);
@@ -2885,8 +2885,8 @@ bool Tracking::TrackReferenceKeyFrame()
     mCurrentFrame.ComputeBoW();
     // mCurrentFrame.ComputeBoWNormalcam(); //added by claydergc
     // mCurrentFrame.ComputeBoWPolcam(); //added by claydergc
-    mCurrentFrame.ComputeBoWCam(0);
-    mCurrentFrame.ComputeBoWCam(1);
+    // mCurrentFrame.ComputeBoWCam(0);
+    //mCurrentFrame.ComputeBoWCam(1);
 
     // We perform first an ORB matching with the reference keyframe
     // If enough matches are found we setup a PnP solver

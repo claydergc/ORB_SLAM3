@@ -267,6 +267,7 @@ public:
 
     // KeyPoint functions
     std::vector<size_t> GetFeaturesInArea(const float &x, const float  &y, const float  &r, const bool bRight = false) const;
+    std::vector<size_t> GetFeaturesInAreaCam(const uint8_t &cam, const float &x, const float &y, const float &r, const bool bRight=false) const; //added by clayder
     bool UnprojectStereo(int i, Eigen::Vector3f &x3D);
 
     // Image

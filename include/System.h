@@ -199,6 +199,8 @@ public:
 
   float GetImageScale();
 
+  void setPolcamMode(Constants::ePolcamMode mode); //added by claydergc
+
 #ifdef REGISTER_TIMES
   void InsertRectTime(double &time);
   void InsertResizeTime(double &time);

@@ -72,6 +72,8 @@ public:
     void RequestFinish();
     bool isFinished();
 
+    void setPolcamMode(Constants::ePolcamMode mode); //added by claydergc
+
     int KeyframesInQueue(){
         unique_lock<std::mutex> lock(mMutexNewKFs);
         return mlNewKeyFrames.size();
@@ -137,8 +139,6 @@ protected:
     bool CheckNewKeyFrames();
     void ProcessNewKeyFrame();
     void CreateNewMapPoints();
-    void CreateNewMapPointsMonoAndPolcam(); //added by claydergc
-    void CreateNewMapPointsMonoAndPolcam2(); //added by claydergc
     void CreateNewMapPointsAllCams(bool cam0, bool cam1, bool cam2, bool cam3); //added by claydergc
 
     void MapPointCulling();

@@ -155,10 +155,12 @@ void KeyFrame::ComputeBoWCam(uint8_t camIdx)
     {
         if(mBowVecCam1.empty() || mFeatVecCam1.empty())
         {
-            vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam1);
-            // Feature vector associate features with nodes in the 4th level (from leaves up)
-            // We assume the vocabulary tree has 6 levels, change the 4 otherwise
-            mpORBvocabulary->transform(vCurrentDesc,mBowVecCam1,mFeatVecCam1,4);
+            //if(!mDescriptorsCam1.empty()) {
+                vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam1);
+                // Feature vector associate features with nodes in the 4th level (from leaves up)
+                // We assume the vocabulary tree has 6 levels, change the 4 otherwise
+                mpORBvocabulary->transform(vCurrentDesc,mBowVecCam1,mFeatVecCam1,4);
+                //}
         }
     }
 }
@@ -759,6 +761,56 @@ void KeyFrame::EraseConnection(KeyFrame* pKF)
 
 
 vector<size_t> KeyFrame::GetFeaturesInArea(const float &x, const float &y, const float &r, const bool bRight) const
+{
+    vector<size_t> vIndices;
+    vIndices.reserve(N);
+
+    //std::cout<<"N: "<<N<<std::endl;
+    //std::cout<<"mvKeysUn size: "<<mvKeysUn.size()<<std::endl;
+
+    float factorX = r;
+    float factorY = r;
+
+    const int nMinCellX = max(0,(int)floor((x-mnMinX-factorX)*mfGridElementWidthInv));
+    if(nMinCellX>=mnGridCols)
+        return vIndices;
+
+    const int nMaxCellX = min((int)mnGridCols-1,(int)ceil((x-mnMinX+factorX)*mfGridElementWidthInv));
+    if(nMaxCellX<0)
+        return vIndices;
+
+    const int nMinCellY = max(0,(int)floor((y-mnMinY-factorY)*mfGridElementHeightInv));
+    if(nMinCellY>=mnGridRows)
+        return vIndices;
+
+    const int nMaxCellY = min((int)mnGridRows-1,(int)ceil((y-mnMinY+factorY)*mfGridElementHeightInv));
+    if(nMaxCellY<0)
+        return vIndices;
+
+    for(int ix = nMinCellX; ix<=nMaxCellX; ix++)
+    {
+        for(int iy = nMinCellY; iy<=nMaxCellY; iy++)
+        {
+            const vector<size_t> vCell = (!bRight) ? mGrid[ix][iy] : mGridRight[ix][iy];
+            for(size_t j=0, jend=vCell.size(); j<jend; j++)
+            {
+                const cv::KeyPoint &kpUn = (NLeft == -1) ? mvKeysUn[vCell[j]]
+                                                         : (!bRight) ? mvKeys[vCell[j]]
+                                                                     : mvKeysRight[vCell[j]];
+                const float distx = kpUn.pt.x-x;
+                const float disty = kpUn.pt.y-y;
+
+                if(fabs(distx)<r && fabs(disty)<r)
+                    vIndices.push_back(vCell[j]);
+            }
+        }
+    }
+
+    return vIndices;
+}
+
+//added by clayder
+vector<size_t> KeyFrame::GetFeaturesInAreaCam(const uint8_t &cam, const float &x, const float &y, const float &r, const bool bRight) const
 {
     vector<size_t> vIndices;
     vIndices.reserve(N);

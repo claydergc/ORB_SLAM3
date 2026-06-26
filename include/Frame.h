@@ -75,8 +75,6 @@ public:
     void ExtractORBPolcamGrid(const cv::Mat &polcam0, const cv::Mat &polcam1, const cv::Mat &polcam2, const cv::Mat &polcam3, const int x0, const int x1);
     void computeFeatureOverlap(const std::vector<cv::KeyPoint>& kptsA, const std::vector<cv::KeyPoint>& kptsB, std::vector<cv::KeyPoint>& kptsC, const cv::Mat& mDescriptorsPolcam, std::vector<cv::Mat>& mDescriptorsDiff, double distance_thresh);
     void ExtractORBPolcam(int flag, const cv::Mat &im, const int x0, const int x1);
-    void ComputeBoWNormalcam(); //added by claydergc
-    void ComputeBoWPolcam(); //added by claydergc
     void ComputeBoWCam(uint8_t camIdx); //added by claydergc
     vector<size_t> GetFeaturesInAreaCam(const uint8_t cam, const float &x, const float  &y, const float  &r, const int minLevel=-1, const int maxLevel=-1, const bool bRight = false) const;
 
@@ -372,13 +370,8 @@ protected:
 
     // Assign keypoints to the grid for speed up feature matching (called in the constructor).
     void AssignFeaturesToGrid();
-
     void UndistortKeyPointsCam(uint8_t camIdx); //added by claydergc
-    void UndistortKeyPointsNormalcam(); //added by claydergc
-    void UndistortKeyPointsPolcam();   //added by claydergc
     void AssignFeaturesToGridCam(uint8_t camIdx); //added by claydergc
-    void AssignFeaturesToGridNormalcam(); //added by claydergc
-    void AssignFeaturesToGridPolcam();   //added by claydergc
 
     bool mbIsSet;
 

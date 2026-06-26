@@ -989,6 +989,13 @@ void System::SaveTrajectoryEuRoC(const string &filename, Map* pMap)
     cout << endl << "End of saving trajectory to " << filename << " ..." << endl;
 }
 
+
+void System::setPolcamMode(Constants::ePolcamMode mode)
+{
+    mPolcamMode = mode;
+    mpLocalMapper->setPolcamMode(mode);
+}
+
 /*void System::SaveTrajectoryEuRoC(const string &filename)
 {
 

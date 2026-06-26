@@ -7,7 +7,7 @@ namespace ORB_SLAM3 {
 
         public:
         enum ePolcamMode {
-            POLCAM0000 = 0,
+            POLCAM0 = 0,
             POLCAM01 = 1,
             POLCAM02 = 2,
             POLCAM03 = 3,
