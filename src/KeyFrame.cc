@@ -65,13 +65,28 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
     mnId=nNextId++;
 
     mGrid.resize(mnGridCols);
+    mGridCam0.resize(mnGridCols);
+    mGridCam1.resize(mnGridCols);
+    mGridCam2.resize(mnGridCols);
+    mGridCam3.resize(mnGridCols);
+
     if(F.Nleft != -1)  mGridRight.resize(mnGridCols);
     for(int i=0; i<mnGridCols;i++)
     {
         mGrid[i].resize(mnGridRows);
-        if(F.Nleft != -1) mGridRight[i].resize(mnGridRows);
+        mGridCam0[i].resize(mnGridRows);
+        mGridCam1[i].resize(mnGridRows);
+        mGridCam2[i].resize(mnGridRows);
+        mGridCam3[i].resize(mnGridRows);
+        if(F.Nleft != -1){
+            mGridRight[i].resize(mnGridRows);
+        }
         for(int j=0; j<mnGridRows; j++){
             mGrid[i][j] = F.mGrid[i][j];
+            mGridCam0[i][j] = F.mGridCam0[i][j];
+            mGridCam1[i][j] = F.mGridCam1[i][j];
+            mGridCam2[i][j] = F.mGridCam2[i][j];
+            mGridCam3[i][j] = F.mGridCam3[i][j];
             if(F.Nleft != -1){
                 mGridRight[i][j] = F.mGridRight[i][j];
             }
@@ -114,28 +129,6 @@ void KeyFrame::ComputeBoW()
         // Feature vector associate features with nodes in the 4th level (from leaves up)
         // We assume the vocabulary tree has 6 levels, change the 4 otherwise
         mpORBvocabulary->transform(vCurrentDesc,mBowVec,mFeatVec,4);
-    }
-}
-
-void KeyFrame::ComputeBoWNormalcam()
-{
-    if(mBowVecCam0.empty() || mFeatVecCam0.empty())
-    {
-        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam0);
-        // Feature vector associate features with nodes in the 4th level (from leaves up)
-        // We assume the vocabulary tree has 6 levels, change the 4 otherwise
-        mpORBvocabulary->transform(vCurrentDesc,mBowVecCam0,mFeatVecCam0,4);
-    }
-}
-
-void KeyFrame::ComputeBoWPolcam()
-{
-    if(mBowVecCam1.empty() || mFeatVecCam1.empty())
-    {
-        vector<cv::Mat> vCurrentDesc = Converter::toDescriptorVector(mDescriptorsCam1);
-        // Feature vector associate features with nodes in the 4th level (from leaves up)
-        // We assume the vocabulary tree has 6 levels, change the 4 otherwise
-        mpORBvocabulary->transform(vCurrentDesc,mBowVecCam1,mFeatVecCam1,4);
     }
 }
 
@@ -841,17 +834,49 @@ vector<size_t> KeyFrame::GetFeaturesInAreaCam(const uint8_t &cam, const float &x
     {
         for(int iy = nMinCellY; iy<=nMaxCellY; iy++)
         {
-            const vector<size_t> vCell = (!bRight) ? mGrid[ix][iy] : mGridRight[ix][iy];
+            //const vector<size_t> vCell = (!bRight) ? mGrid[ix][iy] : mGridRight[ix][iy];
+
+            vector<size_t> vCell;
+
+            if(cam == 0) {
+                vCell = mGridCam0[ix][iy];
+            } else if(cam == 1) {
+                vCell = mGridCam1[ix][iy];
+            } else if(cam == 2) {
+                vCell = mGridCam2[ix][iy];
+            } else if(cam == 3) {
+                vCell = mGridCam3[ix][iy];
+            }
+
             for(size_t j=0, jend=vCell.size(); j<jend; j++)
             {
-                const cv::KeyPoint &kpUn = (NLeft == -1) ? mvKeysUn[vCell[j]]
-                                                         : (!bRight) ? mvKeys[vCell[j]]
-                                                                     : mvKeysRight[vCell[j]];
+                // const cv::KeyPoint &kpUn = (NLeft == -1) ? mvKeysUn[vCell[j]]
+                //                                          : (!bRight) ? mvKeys[vCell[j]]
+                //                                                      : mvKeysRight[vCell[j]];
+                //
+
+                cv::KeyPoint kpUn;
+
+                if(cam == 0) {
+
+                    kpUn = mvKeysUnCam0[vCell[j]];
+
+                } else if(cam == 1) {
+
+                    kpUn = mvKeysUnCam1[vCell[j]];
+
+                }
+
                 const float distx = kpUn.pt.x-x;
                 const float disty = kpUn.pt.y-y;
 
-                if(fabs(distx)<r && fabs(disty)<r)
+                if(fabs(distx)<r && fabs(disty)<r) {
                     vIndices.push_back(vCell[j]);
+                    // if(cam == 0)
+                    //     vIndices.push_back(vCell[j]);
+                    // else if(cam == 1)
+                    //     vIndices.push_back(N_Cam0 + vCell[j]);
+                }
             }
         }
     }

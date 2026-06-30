@@ -220,9 +220,7 @@ public:
 
     // Bag of Words Representation
     void ComputeBoW();
-    void ComputeBoWNormalcam(); //added by claydergc
-    void ComputeBoWPolcam(); //added by claydergc
-    void ComputeBoWCam(uint8_t camIdx);
+    void ComputeBoWCam(uint8_t camIdx);  //added by claydergc
 
     // Covisibility graph functions
     void AddConnection(KeyFrame* pKF, const int &weight);
@@ -483,6 +481,11 @@ protected:
 
     // Grid over the image to speed up feature matching
     std::vector< std::vector <std::vector<size_t> > > mGrid;
+    std::vector< std::vector <std::vector<size_t> > > mGridCam0;
+    std::vector< std::vector <std::vector<size_t> > > mGridCam1;
+    std::vector< std::vector <std::vector<size_t> > > mGridCam2;
+    std::vector< std::vector <std::vector<size_t> > > mGridCam3;
+
 
     std::map<KeyFrame*,int> mConnectedKeyFrameWeights;
     std::vector<KeyFrame*> mvpOrderedConnectedKeyFrames;

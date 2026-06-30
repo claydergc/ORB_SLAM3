@@ -94,6 +94,11 @@ public:
                              const bool bOnlyStereo,
                              const bool bCoarse = false);
 
+  int SearchForTriangulationInEachCam(KeyFrame *pKF1, KeyFrame *pKF2,
+                             std::vector<pair<size_t, size_t>> &vMatchedPairs,
+                             const bool bOnlyStereo,
+                             const bool bCoarse = false);
+
   int SearchForTriangulationCam(uint8_t camIdx, KeyFrame *pKF1, KeyFrame *pKF2,
                                 vector<pair<size_t, size_t>> &vMatchedPairs,
                                 const bool bOnlyStereo, const bool bCoarse = false);

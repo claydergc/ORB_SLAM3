@@ -428,12 +428,12 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     //ExtractORB(0,imGray,0,1000);
     //ExtractORB(0,imPolarized,0,1000);
 
-    thread threadMono(&Frame::ExtractORBPolcam,this,0,imGray,0,1000);
+    // thread threadMono(&Frame::ExtractORBPolcam,this,0,imGray,0,1000);
     // thread threadPolcam(&Frame::ExtractORBPolcam,this,1,imPolarized,0,1000);
-    // thread threadMono(&Frame::ExtractORBPolcam,this,0,imGray,0,0);
-    // thread threadPolcam(&Frame::ExtractORBPolcam,this,1,imPolarized,0,0);
+    thread threadMono(&Frame::ExtractORBPolcam,this,0,imGray,0,0);
+    thread threadPolcam(&Frame::ExtractORBPolcam,this,1,imPolarized,0,0);
     threadMono.join();
-    // threadPolcam.join();
+    threadPolcam.join();
 
     // if(!imPolarized.empty())
     // {
@@ -448,33 +448,35 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
 #endif
 
 
-    // mvKeysCam0 = mvKeys;
-    // mDescriptorsCam0 = mDescriptors;
+    mvKeysCam0 = mvKeys;
+    mDescriptorsCam0 = mDescriptors;
 
 
     // if(!imPolarized.empty()) {
         //added by claydergc
-    //std::vector<cv::Mat> mDescriptorsCam1Vec;
+    std::vector<cv::Mat> mDescriptorsCam1Vec;
     //computeFeatureOverlap(mvKeys, mvKeysPolcam, mvKeysPolcamNonOverlapped, mDescriptorsPolcam, mDescriptorsPolcamNonOverlappedVec, 4.0);
-    //computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 3.0);
+    // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 3.0);
+    // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 1.0);
+    computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 0.0); //When threshold is zero there is a lot of more features.
     //std::cout<<"mvKeysPolcamNonOverlapped: "<<mvKeysPolcamNonOverlapped.size()<<std::endl;
     // mvKeysCam1 = mvKeysCam1Overlapped; //added to try what happen. It didnt work. I dont know why
     // mDescriptorsCam1 = mDescriptorsCam1Overlapped; //added to try what happen. It didnt work. I dont know why
 
 
     //Join mvKeys and mvKeysPolcamNonOverlapped
-    // std::vector<cv::KeyPoint> mvKeysJoined;
-    // mvKeysJoined = mvKeys;
-    // mvKeysJoined.insert(mvKeysJoined.end(), mvKeysCam1.begin(), mvKeysCam1.end());
-    // mvKeys = mvKeysJoined;
+    std::vector<cv::KeyPoint> mvKeysJoined;
+    mvKeysJoined = mvKeys;
+    mvKeysJoined.insert(mvKeysJoined.end(), mvKeysCam1.begin(), mvKeysCam1.end());
+    mvKeys = mvKeysJoined;
 
     //std::cout<<"mDescriptors: "<<mDescriptors.size()<<" "<<"mDescriptorsDiff: "<<mDescriptorsDiff.size()<<std::endl;
 
     //Join mDescriptors and mDescriptorsNonOverlapped
-    // cv::vconcat(mDescriptorsCam1Vec, mDescriptorsCam1);
+    cv::vconcat(mDescriptorsCam1Vec, mDescriptorsCam1);
     // Put all descriptors (mDescriptors, mDescriptorsCam1) in the same matrix mDescriptors.
     // This is to make it possible for ComputeDistinctiveDescriptors() tu run correctly
-    // cv::vconcat(mDescriptors, mDescriptorsCam1, mDescriptors);
+    cv::vconcat(mDescriptors, mDescriptorsCam1, mDescriptors);
 
     // cv::vconcat(mDescriptors, mDescriptorsCam1, mDescriptors);  //added to try what happen. . It didnt work. I dont know why
     //std::cout<<"mDescriptors: "<<mDescriptors.size()<<std::endl;
@@ -482,11 +484,11 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     // }
 
     // N = mvKeys.size();
-    // N_Cam0 = mvKeysCam0.size();
-    // N_Cam1 = mvKeysCam1.size();
-    // N = N_Cam0 + N_Cam1;
+    N_Cam0 = mvKeysCam0.size();
+    N_Cam1 = mvKeysCam1.size();
+    N = N_Cam0 + N_Cam1;
     // N = N_Cam0;
-    N = mvKeys.size();
+    // N = mvKeys.size();
 
     // std::cout<<"N_Cam0: "<<N_Cam0<<" N_Cam1: "<<N_Cam1<<" N: "<<N<<std::endl;
 
@@ -990,14 +992,97 @@ vector<size_t> Frame::GetFeaturesInArea(const float &x, const float  &y, const f
     return vIndices;
 }
 
+// vector<size_t> Frame::GetFeaturesInAreaCam(const uint8_t cam, const float &x, const float  &y, const float  &r, const int minLevel, const int maxLevel, const bool bRight) const
+// {
+//     vector<size_t> vIndices;
+
+//     if(cam==0)
+//         vIndices.reserve(N_Cam0);
+//     else
+//         vIndices.reserve(N_Cam1);
+
+//     float factorX = r;
+//     float factorY = r;
+
+//     const int nMinCellX = max(0,(int)floor((x-mnMinX-factorX)*mfGridElementWidthInv));
+//     if(nMinCellX>=FRAME_GRID_COLS)
+//     {
+//         return vIndices;
+//     }
+
+//     const int nMaxCellX = min((int)FRAME_GRID_COLS-1,(int)ceil((x-mnMinX+factorX)*mfGridElementWidthInv));
+//     if(nMaxCellX<0)
+//     {
+//         return vIndices;
+//     }
+
+//     const int nMinCellY = max(0,(int)floor((y-mnMinY-factorY)*mfGridElementHeightInv));
+//     if(nMinCellY>=FRAME_GRID_ROWS)
+//     {
+//         return vIndices;
+//     }
+
+//     const int nMaxCellY = min((int)FRAME_GRID_ROWS-1,(int)ceil((y-mnMinY+factorY)*mfGridElementHeightInv));
+//     if(nMaxCellY<0)
+//     {
+//         return vIndices;
+//     }
+
+//     const bool bCheckLevels = (minLevel>0) || (maxLevel>=0);
+
+//     for(int ix = nMinCellX; ix<=nMaxCellX; ix++)
+//     {
+//         for(int iy = nMinCellY; iy<=nMaxCellY; iy++)
+//         {
+//             vector<size_t> vCell;
+
+//             if(cam==0)
+//                 vCell = mGridCam0[ix][iy];
+//             else
+//                 vCell = mGridCam1[ix][iy];
+
+//             if(vCell.empty())
+//                 continue;
+
+//             for(size_t j=0, jend=vCell.size(); j<jend; j++)
+//             {
+
+//                 // if vCell[j]<N_Cam0 -> cam=0, vCell[j], continue
+//                 // if vCell[j]>=N_Cam0 -> cam=1, vCell[j], continue
+
+//                 cv::KeyPoint kpUn;
+
+//                 if(cam==0)
+//                     kpUn = mvKeysUnCam0[vCell[j]];
+//                 else
+//                     kpUn = mvKeysUnCam1[vCell[j]];
+
+//                 if(bCheckLevels)
+//                 {
+//                     if(kpUn.octave<minLevel)
+//                         continue;
+//                     if(maxLevel>=0)
+//                         if(kpUn.octave>maxLevel)
+//                             continue;
+//                 }
+
+//                 const float distx = kpUn.pt.x-x;
+//                 const float disty = kpUn.pt.y-y;
+
+//                 if(fabs(distx)<factorX && fabs(disty)<factorY)
+//                     vIndices.push_back(vCell[j]);
+//             }
+//         }
+//     }
+
+//     return vIndices;
+// }
+//
 vector<size_t> Frame::GetFeaturesInAreaCam(const uint8_t cam, const float &x, const float  &y, const float  &r, const int minLevel, const int maxLevel, const bool bRight) const
 {
     vector<size_t> vIndices;
 
-    if(cam==0)
-        vIndices.reserve(N_Cam0);
-    else
-        vIndices.reserve(N_Cam1);
+    vIndices.reserve(N);
 
     float factorX = r;
     float factorY = r;
@@ -1034,22 +1119,27 @@ vector<size_t> Frame::GetFeaturesInAreaCam(const uint8_t cam, const float &x, co
         {
             vector<size_t> vCell;
 
-            if(cam==0)
-                vCell = mGridCam0[ix][iy];
-            else
-                vCell = mGridCam1[ix][iy];
+            vCell = mGrid[ix][iy];
 
             if(vCell.empty())
                 continue;
 
             for(size_t j=0, jend=vCell.size(); j<jend; j++)
             {
-                cv::KeyPoint kpUn;
 
-                if(cam==0)
-                    kpUn = mvKeysUnCam0[vCell[j]];
-                else
-                    kpUn = mvKeysUnCam1[vCell[j]];
+                // if vCell[j]<N_Cam0 -> cam=0, vCell[j], continue
+                // if vCell[j]>=N_Cam0 -> cam=1, vCell[j], continue
+                //
+                if(cam==0) {
+                    if(vCell[j]>=N_Cam0)
+                        continue;
+                }
+                else if(cam==1) {
+                    if(vCell[j] < N_Cam0)
+                        continue;
+                }
+
+                const cv::KeyPoint &kpUn = mvKeysUn[vCell[j]];
 
                 if(bCheckLevels)
                 {
@@ -1718,7 +1808,7 @@ void Frame::UndistortKeyPointsCam(uint8_t camIdx)
 }
 
 //added by claydergc
-void Frame::AssignFeaturesToGridCam(uint8_t camIdx)
+void Frame::AssignFeaturesToGridCam(uint8_t camIdx) //Review this!!!!
 {
     // Fill matrix with points
     const int nCells = FRAME_GRID_COLS*FRAME_GRID_ROWS;

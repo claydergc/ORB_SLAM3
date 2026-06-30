@@ -67,7 +67,7 @@ Thirdparty/g2o/lib/
 Vocabulary/ORBvoc.txt
 build/
 
-results/
+results/*
 
 lib/
 

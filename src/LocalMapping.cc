@@ -113,12 +113,12 @@ void LocalMapping::Run() {
       // if(mPolcamMode==Constants::POLCAM0)
           // CreateNewMapPointsAllCams(true, false, false, false);
       // else if(mPolcamMode==Constants::POLCAM01)
-      //     CreateNewMapPointsAllCams(true, true, false, false);
+          // CreateNewMapPointsAllCams(true, true, false, false); // This does not work yet
 
       mbAbortBA = false;
 
       if (!CheckNewKeyFrames()) {
-        // Find more matches in neighbor keyframes and fuse point duplications
+        // Find more matches in neighbor keyframes and fuse point duplications. Map point fusion
         SearchInNeighbors();
       }
 
@@ -334,7 +334,7 @@ void LocalMapping::ProcessNewKeyFrame() {
   //mpCurrentKeyFrame->ComputeBoWNormalcam(); //added by claydergc
   //mpCurrentKeyFrame->ComputeBoWPolcam(); //added by claydergc
   // mpCurrentKeyFrame->ComputeBoWCam(0);
-  //mpCurrentKeyFrame->ComputeBoWCam(1);
+  // mpCurrentKeyFrame->ComputeBoWCam(1);
 
   // Associate MapPoints to the new keyframe and update normal and descriptor
   const vector<MapPoint *> vpMapPointMatches =
@@ -481,7 +481,10 @@ void LocalMapping::CreateNewMapPoints() {
     bool bCoarse = mbInertial && mpTracker->mState == Tracking::RECENTLY_LOST &&
                    mpCurrentKeyFrame->GetMap()->GetIniertialBA2();
 
-    matcher.SearchForTriangulation(mpCurrentKeyFrame, pKF2, vMatchedIndices,
+    // matcher.SearchForTriangulation(mpCurrentKeyFrame, pKF2, vMatchedIndices,
+    //                                false, bCoarse);
+
+    matcher.SearchForTriangulationInEachCam(mpCurrentKeyFrame, pKF2, vMatchedIndices,
                                    false, bCoarse);
 
     Sophus::SE3<float> sophTcw2 = pKF2->GetPose();

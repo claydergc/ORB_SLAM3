@@ -202,15 +202,27 @@ int main(int argc, char **argv)
     {
         // Read image from file
 
-        // I0 = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
-        // I45 = cv::imread(string(argv[4])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // I90 = cv::imread(string(argv[5])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
-        // I135 = cv::imread(string(argv[6])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        I0 = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
+        I45 = cv::imread(string(argv[4])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        I90 = cv::imread(string(argv[5])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
+        I135 = cv::imread(string(argv[6])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         I = cv::imread(string(argv[7])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
         imCam0 = I;
+        imCam1 = I45;
+        // imCam1 = I;
+        //
+        // I and I90 work best at Yandiwanba
+        // imCam0 = I;
+        // imCam1 = I90;
+        // With I0 and I45, it fails sometimes
+        // imCam1 = I0;
         // imCam1 = I45;
-        imCam1 = I;
+
+        // Works well at Yandiwanba
+        // imCam0 = I90;
+        // imCam1 = I135;
+
 
         double tframe = vTimestamps[ni];
 

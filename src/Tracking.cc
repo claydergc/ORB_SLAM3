@@ -2090,7 +2090,9 @@ void Tracking::Track()
                     std::cout<<"mCurrentFrame.mvpMapPoints.size() before: "<<n_mappoints<<std::endl;*/
 
                     Verbose::PrintMess("TRACK: Track with motion model", Verbose::VERBOSITY_DEBUG);
+
                     bOK = TrackWithMotionModel();
+                    // std::cout<<"TrackWithMotionModel: "<<bOK<<std::endl;
 
                     /*n_mappoints = 0;
 
@@ -2198,6 +2200,7 @@ void Tracking::Track()
                     if(mbVelocity)
                     {
                         bOK = TrackWithMotionModel();
+                        // std::cout<<"TrackWithMotionModel: "<<bOK<<std::endl;
                     }
                     else
                     {
@@ -2273,7 +2276,7 @@ void Tracking::Track()
             if(bOK)
             {
                 bOK = TrackLocalMap();
-
+                // std::cout<<"TrackLocalMap: "<<bOK<<std::endl;
             }
             if(!bOK)
                 cout << "Fail to track local map!" << endl;
@@ -2886,7 +2889,7 @@ bool Tracking::TrackReferenceKeyFrame()
     // mCurrentFrame.ComputeBoWNormalcam(); //added by claydergc
     // mCurrentFrame.ComputeBoWPolcam(); //added by claydergc
     // mCurrentFrame.ComputeBoWCam(0);
-    //mCurrentFrame.ComputeBoWCam(1);
+    // mCurrentFrame.ComputeBoWCam(1);
 
     // We perform first an ORB matching with the reference keyframe
     // If enough matches are found we setup a PnP solver
