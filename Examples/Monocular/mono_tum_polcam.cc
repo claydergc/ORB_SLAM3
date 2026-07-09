@@ -265,6 +265,11 @@ int main(int argc, char **argv)
 
         // clahe->apply(im,im);
         // clahe->apply(imPolcam,imPolcam);
+        //
+
+
+        // std::cout<<(argv[3]+vstrImageFilenames[ni])<<std::endl;
+        // std::cout<<(argv[4]+vstrImageFilenames[ni])<<std::endl;
 
         if(imCam0.empty())
         {

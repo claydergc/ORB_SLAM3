@@ -1,15 +1,17 @@
 import os
 import subprocess
 
-executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam"
+executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam2"
 vocabulary = "/home/ros-noetic/src/ORB_SLAM3_polcam/Vocabulary/ORBvoc.txt"
 settings = (
-    "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/TRIO50S_1224x1024.yaml"
+    # "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/TRIO50S_1224x1024.yaml"
+    "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/TRIO50S_1224x1024_2.yaml"
 )
 
-base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0830/"
+# base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0830/"
 # base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0839/"
-# base_path = "/home/ros-noetic/datasets/Polcam02/Yandiwanba/20251015/1725/"
+# base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0835/"
+base_path = "/home/ros-noetic/datasets/Polcam02/Yandiwanba/20251015/1725/"
 resultsBaseFolder = "/home/ros-noetic/src/ORB_SLAM3_polcam/results/"
 
 # Extract location and datetime from base_path
@@ -46,8 +48,9 @@ print(f"Combinations: {combinations}")
 print()
 
 
-# combinations.append(("I135", "I45"))
-# combinations.append(("I135", "I90"))
+# combinations.append(("I", "I45"))
+# combinations.append(("I", "I90"))
+# combinations.append(("I", "I135"))
 
 # Track failed runs that couldn't be recovered
 permanently_failed_runs = []
@@ -82,14 +85,19 @@ for combo_idx, (cam0_angle, cam1_angle) in enumerate(combinations):
             else:
                 print(f"    Retry {retry_count}/{max_retries - 1}", end=" ... ")
 
-            trajectoryFile = os.path.join(
+            keyFramesTrajectoryFile = os.path.join(
                 trajectoryFileFolder,
-                str(iteration_num).zfill(5) + "_KeyFrameTrajectory.txt",
+                str(iteration_num).zfill(5) + "_KeyFramesTrajectory.txt",
             )
 
-            keyPointsFile = os.path.join(
+            framesTrajectoryFile = os.path.join(
                 trajectoryFileFolder,
-                str(iteration_num).zfill(5) + "_KeyFrameKeypointsNumber.txt",
+                str(iteration_num).zfill(5) + "_FramesTrajectory.txt",
+            )
+
+            framesKeyPointsFile = os.path.join(
+                trajectoryFileFolder,
+                str(iteration_num).zfill(5) + "_FramesKeypointsNumber.txt",
             )
 
             program = [
@@ -98,8 +106,9 @@ for combo_idx, (cam0_angle, cam1_angle) in enumerate(combinations):
                 settings,
                 imgsCam0,  # imgs cam0
                 imgsCam1,  # imgs cam1
-                trajectoryFile,  # output trajectory file
-                keyPointsFile,
+                keyFramesTrajectoryFile,  # keyframes trajectory file
+                framesTrajectoryFile,  # frames trajectory file
+                framesKeyPointsFile,
             ]
 
             # Run your C++ program and capture both stdout and stderr
@@ -134,7 +143,7 @@ for combo_idx, (cam0_angle, cam1_angle) in enumerate(combinations):
                                 "combination": f"{cam0_angle}{cam1_angle}",
                                 "iteration": iteration_num,
                                 "error_type": "X Window System Error (unrecoverable)",
-                                "trajectory_file": trajectoryFile,
+                                "trajectory_file": framesTrajectoryFile,
                                 "retries_attempted": retry_count,
                             }
                         )
@@ -150,7 +159,7 @@ for combo_idx, (cam0_angle, cam1_angle) in enumerate(combinations):
                             "combination": f"{cam0_angle}{cam1_angle}",
                             "iteration": iteration_num,
                             "error_type": f"Exit code {prog_proc.returncode}",
-                            "trajectory_file": trajectoryFile,
+                            "trajectory_file": framesTrajectoryFile,
                             "error_msg": error_msg[:100],
                             "retries_attempted": 0,
                         }

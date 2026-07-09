@@ -803,13 +803,92 @@ vector<size_t> KeyFrame::GetFeaturesInArea(const float &x, const float &y, const
 }
 
 //added by clayder
+// vector<size_t> KeyFrame::GetFeaturesInAreaCam(const uint8_t &cam, const float &x, const float &y, const float &r, const bool bRight) const
+// {
+//     vector<size_t> vIndices;
+//     vIndices.reserve(N);
+
+//     //std::cout<<"N: "<<N<<std::endl;
+//     //std::cout<<"mvKeysUn size: "<<mvKeysUn.size()<<std::endl;
+
+//     float factorX = r;
+//     float factorY = r;
+
+//     const int nMinCellX = max(0,(int)floor((x-mnMinX-factorX)*mfGridElementWidthInv));
+//     if(nMinCellX>=mnGridCols)
+//         return vIndices;
+
+//     const int nMaxCellX = min((int)mnGridCols-1,(int)ceil((x-mnMinX+factorX)*mfGridElementWidthInv));
+//     if(nMaxCellX<0)
+//         return vIndices;
+
+//     const int nMinCellY = max(0,(int)floor((y-mnMinY-factorY)*mfGridElementHeightInv));
+//     if(nMinCellY>=mnGridRows)
+//         return vIndices;
+
+//     const int nMaxCellY = min((int)mnGridRows-1,(int)ceil((y-mnMinY+factorY)*mfGridElementHeightInv));
+//     if(nMaxCellY<0)
+//         return vIndices;
+
+//     for(int ix = nMinCellX; ix<=nMaxCellX; ix++)
+//     {
+//         for(int iy = nMinCellY; iy<=nMaxCellY; iy++)
+//         {
+//             //const vector<size_t> vCell = (!bRight) ? mGrid[ix][iy] : mGridRight[ix][iy];
+
+//             vector<size_t> vCell;
+
+//             if(cam == 0) {
+//                 vCell = mGridCam0[ix][iy];
+//             } else if(cam == 1) {
+//                 vCell = mGridCam1[ix][iy];
+//             } else if(cam == 2) {
+//                 vCell = mGridCam2[ix][iy];
+//             } else if(cam == 3) {
+//                 vCell = mGridCam3[ix][iy];
+//             }
+
+//             for(size_t j=0, jend=vCell.size(); j<jend; j++)
+//             {
+//                 // const cv::KeyPoint &kpUn = (NLeft == -1) ? mvKeysUn[vCell[j]]
+//                 //                                          : (!bRight) ? mvKeys[vCell[j]]
+//                 //                                                      : mvKeysRight[vCell[j]];
+//                 //
+
+//                 cv::KeyPoint kpUn;
+
+//                 if(cam == 0) {
+
+//                     kpUn = mvKeysUnCam0[vCell[j]];
+
+//                 } else if(cam == 1) {
+
+//                     kpUn = mvKeysUnCam1[vCell[j]];
+
+//                 }
+
+//                 const float distx = kpUn.pt.x-x;
+//                 const float disty = kpUn.pt.y-y;
+
+//                 if(fabs(distx)<r && fabs(disty)<r) {
+//                     vIndices.push_back(vCell[j]);
+//                     // if(cam == 0)
+//                     //     vIndices.push_back(vCell[j]);
+//                     // else if(cam == 1)
+//                     //     vIndices.push_back(N_Cam0 + vCell[j]);
+//                 }
+//             }
+//         }
+//     }
+
+//     return vIndices;
+// }
+
+//added by claydergc
 vector<size_t> KeyFrame::GetFeaturesInAreaCam(const uint8_t &cam, const float &x, const float &y, const float &r, const bool bRight) const
 {
     vector<size_t> vIndices;
     vIndices.reserve(N);
-
-    //std::cout<<"N: "<<N<<std::endl;
-    //std::cout<<"mvKeysUn size: "<<mvKeysUn.size()<<std::endl;
 
     float factorX = r;
     float factorY = r;
@@ -836,17 +915,8 @@ vector<size_t> KeyFrame::GetFeaturesInAreaCam(const uint8_t &cam, const float &x
         {
             //const vector<size_t> vCell = (!bRight) ? mGrid[ix][iy] : mGridRight[ix][iy];
 
-            vector<size_t> vCell;
+            const vector<size_t> vCell = mGrid[ix][iy];
 
-            if(cam == 0) {
-                vCell = mGridCam0[ix][iy];
-            } else if(cam == 1) {
-                vCell = mGridCam1[ix][iy];
-            } else if(cam == 2) {
-                vCell = mGridCam2[ix][iy];
-            } else if(cam == 3) {
-                vCell = mGridCam3[ix][iy];
-            }
 
             for(size_t j=0, jend=vCell.size(); j<jend; j++)
             {
@@ -855,27 +925,22 @@ vector<size_t> KeyFrame::GetFeaturesInAreaCam(const uint8_t &cam, const float &x
                 //                                                      : mvKeysRight[vCell[j]];
                 //
 
-                cv::KeyPoint kpUn;
-
-                if(cam == 0) {
-
-                    kpUn = mvKeysUnCam0[vCell[j]];
-
-                } else if(cam == 1) {
-
-                    kpUn = mvKeysUnCam1[vCell[j]];
-
+                if(cam==0) {
+                    if(vCell[j]>=N_Cam0)
+                        continue;
                 }
+                else if(cam==1) {
+                    if(vCell[j] < N_Cam0)
+                        continue;
+                }
+
+                const cv::KeyPoint &kpUn = mvKeysUn[vCell[j]];
 
                 const float distx = kpUn.pt.x-x;
                 const float disty = kpUn.pt.y-y;
 
                 if(fabs(distx)<r && fabs(disty)<r) {
                     vIndices.push_back(vCell[j]);
-                    // if(cam == 0)
-                    //     vIndices.push_back(vCell[j]);
-                    // else if(cam == 1)
-                    //     vIndices.push_back(N_Cam0 + vCell[j]);
                 }
             }
         }
@@ -883,6 +948,7 @@ vector<size_t> KeyFrame::GetFeaturesInAreaCam(const uint8_t &cam, const float &x
 
     return vIndices;
 }
+
 
 bool KeyFrame::IsInImage(const float &x, const float &y) const
 {

@@ -332,7 +332,8 @@ Frame::Frame(const cv::Mat &imGray, const double &timeStamp, ORBextractor* extra
     // mDescriptorsCam0 = mDescriptors;
 
     N = mvKeys.size();
-    // N_Cam0 = N;
+    N_Cam0 = N; //N_Cam0 need to be initilalized always because the SearchByProjection function are based on them
+    N_Cam1 = N + 1; //N_Cam1 need to be initilalized always because the SearchByProjection function are based on them
 
     if(mvKeys.empty())
         return;
@@ -456,9 +457,10 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
         //added by claydergc
     std::vector<cv::Mat> mDescriptorsCam1Vec;
     //computeFeatureOverlap(mvKeys, mvKeysPolcam, mvKeysPolcamNonOverlapped, mDescriptorsPolcam, mDescriptorsPolcamNonOverlappedVec, 4.0);
-    // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 3.0);
+    computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 3.0);
+    // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 2.0);
     // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 1.0);
-    computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 0.0); //When threshold is zero there is a lot of more features.
+    // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 0.0); //When threshold is zero there is a lot of more features.
     //std::cout<<"mvKeysPolcamNonOverlapped: "<<mvKeysPolcamNonOverlapped.size()<<std::endl;
     // mvKeysCam1 = mvKeysCam1Overlapped; //added to try what happen. It didnt work. I dont know why
     // mDescriptorsCam1 = mDescriptorsCam1Overlapped; //added to try what happen. It didnt work. I dont know why

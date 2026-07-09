@@ -47,6 +47,7 @@ ORBmatcher::ORBmatcher(float nnratio, bool checkOri)
     //myMatches = std::vector<cv::DMatch>(2001);
     }
 
+//This SearchByProjection was modified by claydergc to only match its corresponding features
 int ORBmatcher::SearchByProjection(Frame &F,
                                    const vector<MapPoint *> &vpMapPoints,
                                    const float th, const bool bFarPoints,
@@ -682,8 +683,11 @@ int ORBmatcher::SearchForInitialization(Frame &F1, Frame &F2,
     if (level1 > 0)
       continue;
 
-    vector<size_t> vIndices2 = F2.GetFeaturesInArea(
-        vbPrevMatched[i1].x, vbPrevMatched[i1].y, windowSize, level1, level1);
+    const uint8_t cam = (i1 < F1.N_Cam0) ? 0 : 1;
+    vector<size_t> vIndices2 = F2.GetFeaturesInAreaCam(cam, vbPrevMatched[i1].x, vbPrevMatched[i1].y, windowSize, level1, level1);
+
+    // vector<size_t> vIndices2 = F2.GetFeaturesInArea(
+    //     vbPrevMatched[i1].x, vbPrevMatched[i1].y, windowSize, level1, level1);
 
     if (vIndices2.empty())
       continue;
@@ -1962,8 +1966,16 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints,
     // Search in a radius
     const float radius = th * pKF->mvScaleFactors[nPredictedLevel];
 
+    //added by claydergc
+    KeyFrame* pRefKF = pMP->GetReferenceKeyFrame();
+    int idxpMP = std::get<0>(pMP->GetIndexInKeyFrame(pRefKF));
+    const uint8_t cam = (idxpMP < pRefKF->N_Cam0) ? 0 : 1;
+
+    // const vector<size_t> vIndices =
+    //     pKF->GetFeaturesInArea(uv(0), uv(1), radius, bRight);
+
     const vector<size_t> vIndices =
-        pKF->GetFeaturesInArea(uv(0), uv(1), radius, bRight);
+        pKF->GetFeaturesInAreaCam(cam, uv(0), uv(1), radius, bRight);
 
     if (vIndices.empty()) {
       count_notidx++;

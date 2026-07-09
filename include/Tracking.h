@@ -181,6 +181,7 @@ public:
     bool mbWriteStats;
 
     std::vector<std::pair<double, uint16_t>> matchedKeypointsPerFrame;
+    std::vector<std::pair<double, uint8_t>> isNewKeyFrameVector;
 
 #ifdef REGISTER_TIMES
     void LocalMapStats2File();

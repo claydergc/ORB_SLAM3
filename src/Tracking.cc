@@ -1675,8 +1675,11 @@ Sophus::SE3f Tracking::GrabImageMonocularPolcam(const cv::Mat &im, const cv::Mat
 
     if (mSensor == System::MONOCULAR)
     {
-        if(mState==NOT_INITIALIZED || mState==NO_IMAGES_YET ||(lastID - initID) < mMaxFrames)
+        if(mState==NOT_INITIALIZED || mState==NO_IMAGES_YET ||(lastID - initID) < mMaxFrames) {
             mCurrentFrame = Frame(mImGray,timestamp,mpIniORBextractor,mpORBVocabulary,mpCamera,mDistCoef,mbf,mThDepth);
+            // std::cout<<"mCurrentFrame: "<<mCurrentFrame.N<<" "<<mCurrentFrame.N_Cam0<<" "<<mCurrentFrame.N_Cam1<<std::endl;
+            // mCurrentFrame = Frame(mImGray,imPolcam,timestamp,mpORBextractorLeft,mpORBextractorPolcam,mpORBVocabulary,mpCamera,mDistCoef,mbf,mThDepth);
+        }
         else
             mCurrentFrame = Frame(mImGray,imPolcam,timestamp,mpORBextractorLeft,mpORBextractorPolcam,mpORBVocabulary,mpCamera,mDistCoef,mbf,mThDepth);
             //mCurrentFrame = Frame(mImGray,imPolcam,timestamp,vec_n_keypoints_diff,mpORBextractorLeft,mpORBextractorPolcam,mpORBVocabulary,mpCamera,mDistCoef,mbf,mThDepth);
@@ -2399,8 +2402,13 @@ void Tracking::Track()
             // Check if we need to insert a new keyframe
             // if(bNeedKF && bOK)
             if(bNeedKF && (bOK || (mInsertKFsLost && mState==RECENTLY_LOST &&
-                                   (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD))))
+                                   (mSensor == System::IMU_MONOCULAR || mSensor == System::IMU_STEREO || mSensor == System::IMU_RGBD)))) {
                 CreateNewKeyFrame();
+                isNewKeyFrameVector.push_back(std::make_pair(mCurrentFrame.mTimeStamp, 1));
+            }
+            else {
+                isNewKeyFrameVector.push_back(std::make_pair(mCurrentFrame.mTimeStamp, 0));
+            }
 
 #ifdef REGISTER_TIMES
             std::chrono::steady_clock::time_point time_EndNewKF = std::chrono::steady_clock::now();

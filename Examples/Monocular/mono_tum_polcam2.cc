@@ -98,7 +98,7 @@ void SaveTrajectoryForAllFramesClayder(const string &filename, std::vector<PoseS
     f.close();
 }
 
-void SaveKeypointsForAllFramesClayder(const string &filename, std::vector<std::pair<double, uint16_t>> matchedKeypointsPerFrame)
+void SaveKeypointsForAllFramesClayder(const string &filename, std::vector<std::pair<double, uint16_t>> matchedKeypointsPerFrame, std::vector<std::pair<double, uint8_t>> isNewKeyFrameVector)
 {
     cout << endl << "Saving Clayder keypoints trajectory to " << filename << " ..." << endl;
 
@@ -109,15 +109,29 @@ void SaveKeypointsForAllFramesClayder(const string &filename, std::vector<std::p
 
     // CSV header
     // f << "ts (ns),tx (m),ty (m),tz (m),qx,qy,qz,qw\n";
+    //
+    std::cout<<matchedKeypointsPerFrame.size()<<' '<<isNewKeyFrameVector.size()<<std::endl;
 
     for (uint32_t i = 0; i < matchedKeypointsPerFrame.size(); i++)
     {
         double t = matchedKeypointsPerFrame[i].first;
+        double t2 = isNewKeyFrameVector[i+1].first;
+
+        // std::cout<<t<<' '<<t2<<std::endl;
+
         uint16_t numKeypointsPerFrame = matchedKeypointsPerFrame[i].second;
+        uint8_t isNewKeyFrame = isNewKeyFrameVector[i+1].second;
         long long ts_ns = static_cast<long long>(std::round(t * 1e9));
+        // long long ts_ns2 = static_cast<long long>(std::round(t2 * 1e9));
+
+        // std::cout<<ts_ns<<' '<<ts_ns2<<std::endl;
+
+        // if(ts_ns==ts_ns2) {
 
         f << std::fixed << std::setprecision(9) << ts_ns << ','
-          << numKeypointsPerFrame << '\n';
+        << numKeypointsPerFrame
+        << ',' << (uint16_t)(isNewKeyFrame) << '\n';
+        // }
     }
 
     f.close();
@@ -151,7 +165,8 @@ int main(int argc, char **argv)
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     // ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, ORB_SLAM3::Constants::POLCAM01, true);
-    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, ORB_SLAM3::Constants::POLCAM0, true);
+    // ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, ORB_SLAM3::Constants::POLCAM0, true);
+    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, ORB_SLAM3::Constants::POLCAM0, false);
     float imageScale = SLAM.GetImageScale();
 
     // Vector for tracking time statistics
@@ -202,14 +217,17 @@ int main(int argc, char **argv)
     {
         // Read image from file
 
-        I0 = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
-        I45 = cv::imread(string(argv[4])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        I90 = cv::imread(string(argv[5])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
-        I135 = cv::imread(string(argv[6])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        I = cv::imread(string(argv[7])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        // I0 = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
+        // I45 = cv::imread(string(argv[4])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        // I90 = cv::imread(string(argv[5])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
+        // I135 = cv::imread(string(argv[6])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        // I = cv::imread(string(argv[7])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
-        imCam0 = I;
-        imCam1 = I45;
+        imCam0 = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        imCam1 = cv::imread(string(argv[4])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+
+        // imCam0 = I;
+        // imCam1 = I45;
         // imCam1 = I;
         //
         // I and I90 work best at Yandiwanba
@@ -395,10 +413,14 @@ int main(int argc, char **argv)
     // SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
     //SLAM.SaveTrajectoryTUM("KeyFrameTrajectory.txt");
 
-    // SLAM.SaveKeyFrameTrajectoryTUM(string(argv[5]));
+    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[5]));
 
-    SaveTrajectoryForAllFramesClayder(string(argv[8]), trajectory);
-    SaveKeypointsForAllFramesClayder(string(argv[9]), SLAM.mpTracker->matchedKeypointsPerFrame);
+
+    // SaveTrajectoryForAllFramesClayder(string(argv[8]), trajectory);
+    // SaveKeypointsForAllFramesClayder(string(argv[9]), SLAM.mpTracker->matchedKeypointsPerFrame);
+    //
+    SaveTrajectoryForAllFramesClayder(string(argv[6]), trajectory);
+    SaveKeypointsForAllFramesClayder(string(argv[7]), SLAM.mpTracker->matchedKeypointsPerFrame, SLAM.mpTracker->isNewKeyFrameVector);
 
     return 0;
 }
