@@ -456,7 +456,7 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     // if(!imPolarized.empty()) {
         //added by claydergc
     std::vector<cv::Mat> mDescriptorsCam1Vec;
-    //computeFeatureOverlap(mvKeys, mvKeysPolcam, mvKeysPolcamNonOverlapped, mDescriptorsPolcam, mDescriptorsPolcamNonOverlappedVec, 4.0);
+    // computeFeatureOverlap(mvKeys, mvKeysPolcam, mvKeysPolcamNonOverlapped, mDescriptorsPolcam, mDescriptorsPolcamNonOverlappedVec, 4.0);
     computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 3.0);
     // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 2.0);
     // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 1.0);

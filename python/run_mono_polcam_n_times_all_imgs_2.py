@@ -3,6 +3,7 @@ import subprocess
 
 # executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam2"
 executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam3"
+# executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam4"
 vocabulary = "/home/ros-noetic/src/ORB_SLAM3_polcam/Vocabulary/ORBvoc.txt"
 settings = (
     "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/TRIO50S_1224x1024.yaml"
@@ -25,6 +26,9 @@ time = path_parts[-1]  # 0839
 # Create parent folder name: first letter of location + date + time
 location_initial = location[0].lower()  # 'k' from KelvinGrove
 parent_folder_name = f"{location_initial}_{date}_{time}_3pxKptsOverlap"
+# parent_folder_name = f"{location_initial}_{date}_{time}_2pxKptsOverlap"
+# parent_folder_name = f"{location_initial}_{date}_{time}_1pxKptsOverlap"
+# parent_folder_name = f"{location_initial}_{date}_{time}_0pxKptsOverlap"
 resultsFolder = os.path.join(resultsBaseFolder, parent_folder_name)
 
 # Create the parent directory if it doesn't exist
@@ -60,39 +64,54 @@ combinations = []
 # I45I90 - I0I45, I0I90, I0I135, I45I0, I45I135, I90I0, I90I45, I90I135, I135I0, I135I45, I135I90
 # II90 - II0, II45, II135
 
-# combinations.append(("I45I90", "I0I45"))
-# combinations.append(("I45I90", "I0I90"))
-# combinations.append(("I45I90", "I0I135"))
-# combinations.append(("I45I90", "I45I0"))
-# combinations.append(("I45I90", "I45I135"))
-# combinations.append(("I45I90", "I90I0"))
-# combinations.append(("I45I90", "I90I45"))
-# combinations.append(("I45I90", "I90I135"))
-# combinations.append(("I45I90", "I135I0"))
-# combinations.append(("I45I90", "I135I45"))
-# combinations.append(("I45I90", "I135I90"))
-# combinations.append(("II90", "II0"))
-# combinations.append(("II90", "II45"))
-# combinations.append(("II90", "II135"))
+# combinations.append(("I45","I90","I0","I45"))
+# combinations.append(("I45","I90","I0","I90"))
+# combinations.append(("I45","I90","I0","I135"))
+# combinations.append(("I45","I90","I45","I0"))
+# combinations.append(("I45","I90","I45","I135"))
+# combinations.append(("I45","I90","I90","I0"))
+# combinations.append(("I45","I90","I90","I45"))
+# combinations.append(("I45","I90","I90","I135"))
+# combinations.append(("I45","I90","I135","I0"))
+# combinations.append(("I45","I90","I135","I45"))
+# combinations.append(("I45","I90","I135","I90"))
+# combinations.append(("I","I90","I","I0"))
+# combinations.append(("I","I90","I","I45"))
+# combinations.append(("I","I90","I","I135"))
+
+combinations.append(("I155","I90","I90","I45"))
+combinations.append(("I155","I90","I0","I90"))
+combinations.append(("I155","I90","I0","I135"))
+combinations.append(("I155","I90","I45","I0"))
+combinations.append(("I155","I90","I45","I135"))
+combinations.append(("I155","I90","I90","I0"))
+combinations.append(("I155","I90","I90","I45"))
+combinations.append(("I155","I90","I90","I135"))
+combinations.append(("I155","I90","I135","I0"))
+combinations.append(("I155","I90","I135","I45"))
+combinations.append(("I155","I90","I135","I90"))
+
 
 # Track failed runs that couldn't be recovered
 permanently_failed_runs = []
 max_retries = 5  # Maximum number of retries per iteration
 
 # Run each combination 10 times
-for combo_idx, (cam0_angle, cam1_angle) in enumerate(combinations):
+for combo_idx, (cam0_angle, cam1_angle, cam2_angle, cam3_angle) in enumerate(combinations):
     imgsCam0 = base_path + f"polcam{cam0_angle}_1224x1024/"
     imgsCam1 = base_path + f"polcam{cam1_angle}_1224x1024/"
+    imgsCam2 = base_path + f"polcam{cam2_angle}_1224x1024/"
+    imgsCam3 = base_path + f"polcam{cam3_angle}_1224x1024/"
 
     # Create folder for this combination
-    combo_folder_name = f"{cam0_angle}{cam1_angle}_1224x1024"
+    combo_folder_name = f"{cam0_angle}{cam1_angle}{cam2_angle}{cam3_angle}_1224x1024"
     trajectoryFileFolder = os.path.join(resultsFolder, combo_folder_name)
 
     # Create the directory if it doesn't exist
     os.makedirs(trajectoryFileFolder, exist_ok=True)
 
     print(
-        f"\nCombination {combo_idx + 1}/{len(combinations)}: {cam0_angle} + {cam1_angle}"
+        f"\nCombination {combo_idx + 1}/{len(combinations)}: {cam0_angle} + {cam1_angle} + {cam2_angle} + {cam3_angle}"
     )
     print(f"Output folder: {trajectoryFileFolder}")
 
@@ -129,6 +148,8 @@ for combo_idx, (cam0_angle, cam1_angle) in enumerate(combinations):
                 settings,
                 imgsCam0,  # imgs cam0
                 imgsCam1,  # imgs cam1
+                imgsCam2,  # imgs cam0
+                imgsCam3,  # imgs cam1
                 keyFramesTrajectoryFile,  # keyframes trajectory file
                 framesTrajectoryFile,  # frames trajectory file
                 framesKeyPointsFile,
