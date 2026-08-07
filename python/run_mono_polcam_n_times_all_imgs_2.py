@@ -1,8 +1,8 @@
 import os
 import subprocess
 
-# executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam2"
-executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam3"
+executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam2"
+# executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam3"
 # executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam4"
 vocabulary = "/home/ros-noetic/src/ORB_SLAM3_polcam/Vocabulary/ORBvoc.txt"
 settings = (
@@ -12,9 +12,11 @@ settings = (
 
 # base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0830/"
 # base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0839/"
-base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0835/"
+# base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0835/"
+base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260803/0830/"
 # base_path = "/home/ros-noetic/datasets/Polcam02/Yandiwanba/20251015/1725/"
-resultsBaseFolder = "/home/ros-noetic/src/ORB_SLAM3_polcam/results/"
+# resultsBaseFolder = "/home/ros-noetic/src/ORB_SLAM3_polcam/results/"
+resultsBaseFolder = "/home/ros-noetic/DATA/ClayderEvaluation/orbslam3_polcam_tmp_results/"
 
 # Extract location and datetime from base_path
 # Format: .../Location/YYYYMMDD/HHMM/
@@ -79,18 +81,20 @@ combinations = []
 # combinations.append(("I","I90","I","I45"))
 # combinations.append(("I","I90","I","I135"))
 
-combinations.append(("I155","I90","I90","I45"))
-combinations.append(("I155","I90","I0","I90"))
-combinations.append(("I155","I90","I0","I135"))
-combinations.append(("I155","I90","I45","I0"))
-combinations.append(("I155","I90","I45","I135"))
-combinations.append(("I155","I90","I90","I0"))
-combinations.append(("I155","I90","I90","I45"))
-combinations.append(("I155","I90","I90","I135"))
-combinations.append(("I155","I90","I135","I0"))
-combinations.append(("I155","I90","I135","I45"))
-combinations.append(("I155","I90","I135","I90"))
+# combinations.append(("I155","I90","I90","I45"))
+# combinations.append(("I155","I90","I0","I90"))
+# combinations.append(("I155","I90","I0","I135"))
+# combinations.append(("I155","I90","I45","I0"))
+# combinations.append(("I155","I90","I45","I135"))
+# combinations.append(("I155","I90","I90","I0"))
+# combinations.append(("I155","I90","I90","I45"))
+# combinations.append(("I155","I90","I90","I135"))
+# combinations.append(("I155","I90","I135","I0"))
+# combinations.append(("I155","I90","I135","I45"))
+# combinations.append(("I155","I90","I135","I90"))
+# 
 
+combinations.append(("I155","I90","I135","I90"))
 
 # Track failed runs that couldn't be recovered
 permanently_failed_runs = []

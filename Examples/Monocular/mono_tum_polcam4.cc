@@ -30,6 +30,7 @@
 #include<opencv2/core/core.hpp>
 
 #include<System.h>
+#include <string>
 
 using namespace std;
 
@@ -156,7 +157,7 @@ int main(int argc, char **argv)
     string strFile = string(argv[3])+"/polcamI/rgb.txt";
 
 
-    string strFileCam0 = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0835/polcamI45_1224x1024/rgb.txt";
+    string strFileCam0 = "/home/ros-noetic/DATA/datasets/Polcam02/KelvinGrove/20260128/0835/polcamI45_1224x1024/rgb.txt";
 
 
     LoadImages(strFileCam0, vstrImageFilenames, vTimestamps);
@@ -194,16 +195,21 @@ int main(int argc, char **argv)
     cv::Mat Itheta0;
     cv::Mat Itheta1;
 
-    int target_theta0_zone1_3;
-    int target_theta1_zone1_3;
+    int target_theta0_zone1;
+    int target_theta1_zone1;
     int target_theta0_zone2;
     int target_theta1_zone2;
+    int target_theta0_zone3;
+    int target_theta1_zone3;
     int current_theta0;
     int current_theta1;
-    int theta0_step;
-    int theta1_step;
+    int theta0_zone2_step;
+    int theta1_zone2_step;
+    int theta0_zone3_step;
+    int theta1_zone3_step;
     uint fps = 20;
     uint t_step = (int)(1.0) * fps ;
+    const int Iangle = -1;
 
     cv::Mat imAux; //= cv::Mat::zeros(480, 640, CV_8U);
     int mState;
@@ -222,25 +228,90 @@ int main(int argc, char **argv)
 
     // std::cout<<nImages<<std::endl;
 
-    target_theta0_zone1_3 = std::stoi(argv[7]);
-    target_theta1_zone1_3 = std::stoi(argv[8]);
-    target_theta0_zone2 = std::stoi(argv[9]);
-    target_theta1_zone2 = std::stoi(argv[10]);
-    current_theta0 = target_theta0_zone1_3;
-    current_theta1 = target_theta1_zone1_3;
+    string target_theta0_zone1_suffix = std::string(argv[8]).substr(1);
+    string target_theta1_zone1_suffix = std::string(argv[9]).substr(1);
+    string target_theta0_zone2_suffix = std::string(argv[10]).substr(1);
+    string target_theta1_zone2_suffix = std::string(argv[11]).substr(1);
+    string target_theta0_zone3_suffix = std::string(argv[12]).substr(1);
+    string target_theta1_zone3_suffix = std::string(argv[13]).substr(1);
 
-    theta0_step = abs(current_theta0 - target_theta0_zone2)/9;
-    theta1_step = abs(current_theta1 - target_theta1_zone2)/9;
 
-    if(theta0_step<10)
-        theta0_step = 5;
-    else if(theta0_step>10)
-        theta0_step = 10;
 
-    if(theta1_step>5 && theta1_step<10)
-        theta1_step = 5;
-    else if(theta1_step>10)
-        theta1_step = 10;
+    if(target_theta0_zone1_suffix.empty())
+        target_theta0_zone1_suffix = std::to_string(Iangle);
+    if(target_theta1_zone1_suffix.empty())
+        target_theta1_zone1_suffix = std::to_string(Iangle);
+    if(target_theta0_zone2_suffix.empty())
+        target_theta0_zone2_suffix = std::to_string(Iangle);
+    if(target_theta1_zone2_suffix.empty())
+        target_theta1_zone2_suffix = std::to_string(Iangle);
+    if(target_theta0_zone3_suffix.empty())
+        target_theta0_zone3_suffix = std::to_string(Iangle);
+    if(target_theta1_zone3_suffix.empty())
+        target_theta1_zone3_suffix = std::to_string(Iangle);
+
+    // std::cout<<"Hello"<<std::endl;
+
+    target_theta0_zone1 = std::stoi(target_theta0_zone1_suffix);
+    target_theta1_zone1 = std::stoi(target_theta1_zone1_suffix);
+    target_theta0_zone2 = std::stoi(target_theta0_zone2_suffix);
+    target_theta1_zone2 = std::stoi(target_theta1_zone2_suffix);
+    target_theta0_zone3 = std::stoi(target_theta0_zone3_suffix);
+    target_theta1_zone3 = std::stoi(target_theta1_zone3_suffix);
+
+    current_theta0 = target_theta0_zone1;
+    current_theta1 = target_theta1_zone1;
+
+
+    theta0_zone2_step = abs(target_theta0_zone1 - target_theta0_zone2)/9;
+    theta1_zone2_step = abs(target_theta1_zone1 - target_theta1_zone2)/9;
+    theta0_zone3_step = abs(target_theta0_zone2 - target_theta0_zone3)/9;
+    theta1_zone3_step = abs(target_theta1_zone2 - target_theta1_zone3)/9;
+
+    if(target_theta0_zone2==Iangle)
+        theta0_zone2_step = abs(target_theta0_zone1 - 60)/9;
+    if(target_theta1_zone2==Iangle)
+        theta1_zone2_step = abs(target_theta1_zone1 - 60)/9;
+    if(target_theta0_zone3==Iangle) {
+        // std::cout<<"HELLO"<<std::endl;
+        theta0_zone3_step = abs(target_theta0_zone2 - 60)/9;
+        // std::cout<<theta0_zone3_step<<std::endl;
+    }
+    if(target_theta1_zone3==Iangle) {
+        // std::cout<<"HELLO"<<std::endl;
+        theta1_zone3_step = abs(target_theta1_zone2 - 60)/9;
+        // std::cout<<theta1_zone3_step<<std::endl;
+    }
+
+
+    if(theta0_zone2_step<10)
+        theta0_zone2_step = 5;
+    else if(theta0_zone2_step>10)
+        theta0_zone2_step = 10;
+
+    if(theta1_zone2_step<10)
+        theta1_zone2_step = 5;
+    else if(theta1_zone2_step>10)
+        theta1_zone2_step = 10;
+
+    if(theta0_zone3_step<10)
+        theta0_zone3_step = 5;
+    else if(theta0_zone3_step>10)
+        theta0_zone3_step = 10;
+
+    if(theta1_zone3_step<10)
+        theta1_zone3_step = 5;
+    else if(theta1_zone3_step>10)
+        theta1_zone3_step = 10;
+
+    //
+    // std::cout<<target_theta0_zone1<<" "<<target_theta1_zone1<<" "<<target_theta0_zone2<<" "<<target_theta1_zone2<<" "<<target_theta0_zone3<<" "<<target_theta1_zone3<<std::endl;
+    // std::cout<<theta0_zone2_step<<" "<<theta1_zone2_step<<" "<<theta0_zone3_step<<" "<<theta1_zone3_step<<std::endl;
+
+    // return 0;
+    //
+    bool theta0IsI = false;
+    bool theta1IsI = false;
 
     for(int ni=0; ni<nImages && !g_signal_received; ni++)
     //for(int ni=0; ni<1410 && !g_signal_received; ni++)
@@ -250,7 +321,7 @@ int main(int argc, char **argv)
         I45 = cv::imread(string(argv[4])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         I90 = cv::imread(string(argv[5])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
         I135 = cv::imread(string(argv[6])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        // I = cv::imread(string(argv[7])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        I = cv::imread(string(argv[7])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
         double tframe = vTimestamps[ni];
 
@@ -262,46 +333,52 @@ int main(int argc, char **argv)
             // imCam0 = I45;
             // imCam1 = I90;
             //
-            if(target_theta0_zone1_3==0)
+            if(target_theta0_zone1==0)
                 imCam0 = I0;
-            else if(target_theta0_zone1_3==45)
+            else if(target_theta0_zone1==45)
                 imCam0 = I45;
-            else if(target_theta0_zone1_3==90)
+            else if(target_theta0_zone1==90)
                 imCam0 = I90;
-            else if(target_theta0_zone1_3==135 || target_theta0_zone1_3==-45)
+            else if(target_theta0_zone1==135 || target_theta0_zone1==-45)
                 imCam0 = I135;
+            else if(target_theta0_zone1==Iangle)
+                imCam0 = I;
 
-            if(target_theta1_zone1_3==0)
+            if(target_theta1_zone1==0)
                 imCam1 = I0;
-            else if(target_theta1_zone1_3==45)
+            else if(target_theta1_zone1==45)
                 imCam1 = I45;
-            else if(target_theta1_zone1_3==90)
+            else if(target_theta1_zone1==90)
                 imCam1 = I90;
-            else if(target_theta1_zone1_3==135 || target_theta1_zone1_3==-45)
+            else if(target_theta1_zone1==135 || target_theta1_zone1==-45)
                 imCam1 = I135;
+            else if(target_theta1_zone1==Iangle)
+                imCam1 = I;
         }
         else if(ni>1144 && ni<=1568) { //zone 2
         // else if(ni>1144) {
 
             if(target_theta0_zone2>current_theta0) {
                 if(imCounter%t_step==0 && current_theta0!=target_theta0_zone2)
-                    current_theta0 = current_theta0 + theta0_step;
+                    current_theta0 = current_theta0 + theta0_zone2_step;
             }
             else if(target_theta0_zone2<current_theta0) {
                 if(imCounter%t_step==0 && current_theta0!=target_theta0_zone2)
-                    current_theta0 = current_theta0 - theta0_step;
+                    current_theta0 = current_theta0 - theta0_zone2_step;
             }
 
             if(target_theta1_zone2>current_theta1) {
                 if(imCounter%t_step==0 && current_theta1!=target_theta1_zone2)
-                    current_theta1 = current_theta1  + theta1_step;
+                    current_theta1 = current_theta1  + theta1_zone2_step;
             }
             else if(target_theta1_zone2<current_theta1) {
                 if(imCounter%t_step==0 && current_theta1!=target_theta1_zone2)
-                    current_theta1 = current_theta1 - theta1_step;
+                    current_theta1 = current_theta1 - theta1_zone2_step;
             }
 
-            if(current_theta0==0)
+            if(current_theta0==60 && target_theta0_zone2==Iangle)
+                imCam0 = I;
+            else if(current_theta0==0)
                 imCam0 = I0;
             else if(current_theta0==45)
                 imCam0 = I45;
@@ -314,7 +391,9 @@ int main(int argc, char **argv)
                 imCam0 = Itheta0;
             }
 
-            if(current_theta1==0)
+            if(current_theta1==60 && target_theta1_zone2==Iangle)
+                imCam0 = I;
+            else if(current_theta1==0)
                 imCam1 = I0;
             else if(current_theta1==45)
                 imCam1 = I45;
@@ -341,25 +420,66 @@ int main(int argc, char **argv)
             // imCam0 = I0;
         }
         else if(ni>1568) { //zone 3
-            if(target_theta0_zone1_3>current_theta0) {
-                if(imCounter%t_step==0 && current_theta0!=target_theta0_zone1_3)
-                    current_theta0 = current_theta0 + theta0_step;
+
+            if(target_theta0_zone3==Iangle) {
+                if(60>current_theta0) {
+
+                    // std::cout<<"Hello1"<<std::endl;
+
+                    // std::cout<<theta0IsI<<" "<<current_theta0<<" "<<abs(current_theta0-60)<<std::endl;
+
+                    if(!theta0IsI && imCounter%t_step==0 && abs(current_theta0-60)>=5) {
+                        // std::cout<<"Hello1"<<std::endl;
+                        current_theta0 = current_theta0 + theta0_zone3_step;
+                    }
+                }
+                else if(60<current_theta0) {
+
+                    // std::cout<<"Hello2"<<std::endl;
+
+                    if(!theta0IsI && imCounter%t_step==0 && abs(current_theta0-60)>=5)
+                        current_theta0 = current_theta0 - theta0_zone3_step;
+                }
             }
-            else if(target_theta0_zone1_3 <current_theta0) {
-                if(imCounter%t_step==0 && current_theta0!=target_theta0_zone1_3)
-                    current_theta0 = current_theta0 - theta0_step;
+            else if(target_theta0_zone3>current_theta0) {
+                if(imCounter%t_step==0 && current_theta0!=target_theta0_zone3)
+                    current_theta0 = current_theta0 + theta0_zone3_step;
+            }
+            else if(target_theta0_zone3 <current_theta0) {
+                if(imCounter%t_step==0 && current_theta0!=target_theta0_zone3)
+                    current_theta0 = current_theta0 - theta0_zone3_step;
             }
 
-            if(target_theta1_zone1_3>current_theta1) {
-                if(imCounter%t_step==0 && current_theta1!=target_theta1_zone1_3)
-                    current_theta1 = current_theta1  + theta1_step;
+            if(target_theta1_zone3==Iangle) {
+                if(60>current_theta1) {
+
+                    // std::cout<<"Hello3"<<std::endl;
+                    if(!theta1IsI && imCounter%t_step==0 && abs(current_theta1-60)>=5)
+                        current_theta1 = current_theta1 + theta1_zone3_step;
+                }
+                else if(60<current_theta1) {
+
+                    // std::cout<<"Hello4"<<std::endl;
+
+                    if(!theta1IsI && imCounter%t_step==0 && abs(current_theta1-60)>=5)
+                        current_theta1 = current_theta1 - theta1_zone3_step;
+                }
             }
-            else if(target_theta1_zone1_3<current_theta1) {
-                if(imCounter%t_step==0 && current_theta1!=target_theta1_zone1_3)
-                    current_theta1 = current_theta1 - theta1_step;
+            else if(target_theta1_zone3>current_theta1) {
+                if(imCounter%t_step==0 && current_theta1!=target_theta1_zone3)
+                    current_theta1 = current_theta1  + theta1_zone3_step;
+            }
+            else if(target_theta1_zone3<current_theta1) {
+                if(imCounter%t_step==0 && current_theta1!=target_theta1_zone3)
+                    current_theta1 = current_theta1 - theta1_zone3_step;
             }
 
-            if(current_theta0==0)
+
+            if(abs(current_theta0-60)<=5 && target_theta0_zone3==Iangle) {
+                imCam0 = I;
+                theta0IsI = true;
+            }
+            else if(current_theta0==0)
                 imCam0 = I0;
             else if(current_theta0==45)
                 imCam0 = I45;
@@ -372,7 +492,11 @@ int main(int argc, char **argv)
                 imCam0 = Itheta0;
             }
 
-            if(current_theta1==0)
+            if(current_theta1==60 && target_theta1_zone3==Iangle) {
+                imCam1 = I;
+                theta1IsI = true;
+            }
+            else if(current_theta1==0)
                 imCam1 = I0;
             else if(current_theta1==45)
                 imCam1 = I45;
@@ -393,26 +517,6 @@ int main(int argc, char **argv)
             imCounter++;
         }
 
-        //
-        // imCam0 = I45;
-        // imCam1 = I90;
-
-        // imCam1 = I90;
-
-        // if (current_pol_angle<5*M_PI/180.0) {
-        //     imCam0 = I0;
-        // }
-
-
-        //im(mask) = 0;
-        //imPolcam(mask) = 0;
-
-        // clahe->apply(im,im);
-        // clahe->apply(imPolcam,imPolcam);
-        //
-
-        // std::cout<<I.empty()<<std::endl;
-        // std::cout<<imCam0.empty()<<std::endl;
 
         if(imCam0.empty() || imCam1.empty())
         {
@@ -574,9 +678,9 @@ int main(int argc, char **argv)
     //SLAM.SaveTrajectoryTUM("KeyFrameTrajectory.txt");
 
 
-    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[11]));
-    SaveTrajectoryForAllFramesClayder(string(argv[12]), trajectory);
-    SaveKeypointsForAllFramesClayder(string(argv[13]), SLAM.mpTracker->matchedKeypointsPerFrame, SLAM.mpTracker->isNewKeyFrameVector);
+    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[14]));
+    SaveTrajectoryForAllFramesClayder(string(argv[15]), trajectory);
+    SaveKeypointsForAllFramesClayder(string(argv[16]), SLAM.mpTracker->matchedKeypointsPerFrame, SLAM.mpTracker->isNewKeyFrameVector);
 
     // SLAM.SaveKeyFrameTrajectoryTUM(string(argv[8]));
     // SaveTrajectoryForAllFramesClayder(string(argv[9]), trajectory);

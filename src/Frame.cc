@@ -467,18 +467,21 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
 
 
     //Join mvKeys and mvKeysPolcamNonOverlapped
-    std::vector<cv::KeyPoint> mvKeysJoined;
-    mvKeysJoined = mvKeys;
-    mvKeysJoined.insert(mvKeysJoined.end(), mvKeysCam1.begin(), mvKeysCam1.end());
-    mvKeys = mvKeysJoined;
+    if(!mDescriptorsCam1Vec.empty()) {
+        std::vector<cv::KeyPoint> mvKeysJoined;
+        mvKeysJoined = mvKeys;
+        mvKeysJoined.insert(mvKeysJoined.end(), mvKeysCam1.begin(), mvKeysCam1.end());
+        mvKeys = mvKeysJoined;
 
-    //std::cout<<"mDescriptors: "<<mDescriptors.size()<<" "<<"mDescriptorsDiff: "<<mDescriptorsDiff.size()<<std::endl;
+        //std::cout<<"mDescriptors: "<<mDescriptors.size()<<" "<<"mDescriptorsDiff: "<<mDescriptorsDiff.size()<<std::endl;
 
-    //Join mDescriptors and mDescriptorsNonOverlapped
-    cv::vconcat(mDescriptorsCam1Vec, mDescriptorsCam1);
-    // Put all descriptors (mDescriptors, mDescriptorsCam1) in the same matrix mDescriptors.
-    // This is to make it possible for ComputeDistinctiveDescriptors() tu run correctly
-    cv::vconcat(mDescriptors, mDescriptorsCam1, mDescriptors);
+        //Join mDescriptors and mDescriptorsNonOverlapped
+
+        cv::vconcat(mDescriptorsCam1Vec, mDescriptorsCam1);
+        // Put all descriptors (mDescriptors, mDescriptorsCam1) in the same matrix mDescriptors.
+        // This is to make it possible for ComputeDistinctiveDescriptors() tu run correctly
+        cv::vconcat(mDescriptors, mDescriptorsCam1, mDescriptors);
+    }
 
     // cv::vconcat(mDescriptors, mDescriptorsCam1, mDescriptors);  //added to try what happen. . It didnt work. I dont know why
     //std::cout<<"mDescriptors: "<<mDescriptors.size()<<std::endl;

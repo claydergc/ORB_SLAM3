@@ -1,8 +1,8 @@
 import os
 import subprocess
 
-# executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam2"
-executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam3"
+executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam2"
+# executable = "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam3"
 vocabulary = "/home/ros-noetic/src/ORB_SLAM3_polcam/Vocabulary/ORBvoc.txt"
 settings = (
     "/home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/TRIO50S_1224x1024.yaml"
@@ -11,9 +11,14 @@ settings = (
 
 # base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0830/"
 # base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0839/"
-base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0835/"
+# base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0835/"
+# base_path = "/home/ros-noetic/DATA/datasets/Polcam02/KelvinGrove/20260803/0830/"
+base_path = "/home/ros-noetic/DATA/datasets/Polcam02/KelvinGrove/20260803/0837/"
+
 # base_path = "/home/ros-noetic/datasets/Polcam02/Yandiwanba/20251015/1725/"
-resultsBaseFolder = "/home/ros-noetic/src/ORB_SLAM3_polcam/results/"
+# resultsBaseFolder = "/home/ros-noetic/src/ORB_SLAM3_polcam/results/"
+resultsBaseFolder = "/home/ros-noetic/DATA/ClayderEvaluation/orbslam3_polcam_tmp_results/"
+
 
 # Extract location and datetime from base_path
 # Format: .../Location/YYYYMMDD/HHMM/
@@ -74,6 +79,9 @@ combinations = []
 # combinations.append(("II90", "II0"))
 # combinations.append(("II90", "II45"))
 # combinations.append(("II90", "II135"))
+#
+# combinations.append(("I75", "I120"))
+combinations.append(("I105", "I45"))
 
 # Track failed runs that couldn't be recovered
 permanently_failed_runs = []

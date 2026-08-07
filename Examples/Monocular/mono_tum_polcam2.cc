@@ -153,7 +153,7 @@ int main(int argc, char **argv)
     // Retrieve paths to images
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
-    string strFile = string(argv[3])+"/polcamI/rgb.txt";
+    string strFile = string(argv[3])+"/polcamI_1224x1024/rgb.txt";
 
 
     string strFileCam0 = string(argv[3])+"/rgb.txt";

@@ -12,9 +12,10 @@ settings = (
 
 # base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0830/"
 # base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0839/"
-base_path = "/home/ros-noetic/datasets/Polcam02/KelvinGrove/20260128/0835/"
+base_path = "/home/ros-noetic/DATA/datasets/Polcam02/KelvinGrove/20260128/0835/"
 # base_path = "/home/ros-noetic/datasets/Polcam02/Yandiwanba/20251015/1725/"
-resultsBaseFolder = "/home/ros-noetic/src/ORB_SLAM3_polcam/results/"
+# resultsBaseFolder = "/home/ros-noetic/src/ORB_SLAM3_polcam/results/"
+resultsBaseFolder = "/home/ros-noetic/DATA/ClayderEvaluation/orbslam3_polcam_tmp_results/"
 
 # Extract location and datetime from base_path
 # Format: .../Location/YYYYMMDD/HHMM/
@@ -25,7 +26,8 @@ time = path_parts[-1]  # 0839
 
 # Create parent folder name: first letter of location + date + time
 location_initial = location[0].lower()  # 'k' from KelvinGrove
-parent_folder_name = f"{location_initial}_{date}_{time}_3pxKptsOverlap_4tokens"
+# parent_folder_name = f"{location_initial}_{date}_{time}_3pxKptsOverlap_4tokens"
+parent_folder_name = f"{location_initial}_{date}_{time}_3pxKptsOverlap_6tokens"
 # parent_folder_name = f"{location_initial}_{date}_{time}_2pxKptsOverlap"
 # parent_folder_name = f"{location_initial}_{date}_{time}_1pxKptsOverlap"
 # parent_folder_name = f"{location_initial}_{date}_{time}_0pxKptsOverlap"
@@ -64,20 +66,23 @@ combinations = []
 # I45I90 - I0I45, I0I90, I0I135, I45I0, I45I135, I90I0, I90I45, I90I135, I135I0, I135I45, I135I90
 # II90 - II0, II45, II135
 
-combinations.append(("45","90","0","45"))
-combinations.append(("45","90","0","90"))
-combinations.append(("45","90","0","135"))
-combinations.append(("45","90","45","0"))
-combinations.append(("45","90","45","135"))
-combinations.append(("45","90","90","0"))
-combinations.append(("45","90","90","45"))
-combinations.append(("45","90","90","135"))
-combinations.append(("45","90","135","0"))
-combinations.append(("45","90","135","45"))
-combinations.append(("45","90","135","90"))
+# combinations.append(("45","90","0","45"))
+# combinations.append(("45","90","0","90"))
+# combinations.append(("45","90","0","135"))
+# combinations.append(("45","90","45","0"))
+# combinations.append(("45","90","45","135"))
+# combinations.append(("45","90","90","0"))
+# combinations.append(("45","90","90","45"))
+# combinations.append(("45","90","90","135"))
+# combinations.append(("45","90","135","0"))
+# combinations.append(("45","90","135","45"))
+# combinations.append(("45","90","135","90"))
 # combinations.append(("I","90","I","0"))
 # combinations.append(("I","90","I","45"))
 # combinations.append(("I","90","I","135"))
+#
+# combinations.append(("45","90","90","0"))
+# combinations.append(("45","90","-45","45"))
 
 # combinations.append(("I155","I90","I90","I45"))
 # combinations.append(("I155","I90","I0","I90"))
@@ -92,6 +97,9 @@ combinations.append(("45","90","135","90"))
 # combinations.append(("I155","I90","I135","I90"))
 #
 # combinations.append(("45","90","-45","45"))
+#
+#
+combinations.append(("I45","I90","I-45","I45","I","I"))
 
 # cam0_angle = "45"
 # cam1_angle = "90"
@@ -114,7 +122,7 @@ permanently_failed_runs = []
 max_retries = 5  # Maximum number of retries per iteration
 
 # Run each combination 10 times
-for combo_idx, (cam0_angle, cam1_angle, cam2_angle, cam3_angle) in enumerate(combinations):
+for combo_idx, (cam0_angle, cam1_angle, cam2_angle, cam3_angle, cam4_angle, cam5_angle) in enumerate(combinations):
 # for count in range(1):
     # imgsCam0 = base_path + f"polcam{cam0_angle}_1224x1024/"
     # imgsCam1 = base_path + f"polcam{cam1_angle}_1224x1024/"
@@ -125,16 +133,18 @@ for combo_idx, (cam0_angle, cam1_angle, cam2_angle, cam3_angle) in enumerate(com
     I45 = base_path + "polcamI45_1224x1024/"
     I90 = base_path + "polcamI90_1224x1024/"
     I135 = base_path + "polcamI135_1224x1024/"
+    I = base_path + "polcamI135_1224x1024/"
 
     # Create folder for this combination
-    combo_folder_name = f"I{cam0_angle}I{cam1_angle}I{cam2_angle}I{cam3_angle}I{cam0_angle}I{cam1_angle}_1224x1024"
+    # combo_folder_name = f"I{cam0_angle}I{cam1_angle}I{cam2_angle}I{cam3_angle}I{cam4_angle}I{cam5_angle}_1224x1024"
+    combo_folder_name = f"{cam0_angle}{cam1_angle}{cam2_angle}{cam3_angle}{cam4_angle}{cam5_angle}_1224x1024"
     trajectoryFileFolder = os.path.join(resultsFolder, combo_folder_name)
 
     # Create the directory if it doesn't exist
     os.makedirs(trajectoryFileFolder, exist_ok=True)
 
     print(
-        f"\nCombination {combo_idx + 1}/{len(combinations)}: {cam0_angle} + {cam1_angle} + {cam2_angle} + {cam3_angle}"
+        f"\nCombination {combo_idx + 1}/{len(combinations)}: {cam0_angle} + {cam1_angle} + {cam2_angle} + {cam3_angle} + {cam4_angle} + {cam5_angle}"
     )
     # print(
     #     f"\nCombination {count + 1}/{len(combinations)}: {cam0_angle} + {cam1_angle} + {cam2_angle} + {cam3_angle}"
@@ -176,10 +186,13 @@ for combo_idx, (cam0_angle, cam1_angle, cam2_angle, cam3_angle) in enumerate(com
                 I45,  # imgs cam1
                 I90,  # imgs cam0
                 I135,  # imgs cam1
+                I,
                 cam0_angle,
                 cam1_angle,
                 cam2_angle,
                 cam3_angle,
+                cam4_angle,
+                cam5_angle,
                 keyFramesTrajectoryFile,  # keyframes trajectory file
                 framesTrajectoryFile,  # frames trajectory file
                 framesKeyPointsFile,

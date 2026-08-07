@@ -73,6 +73,13 @@ public:
                                           const cv::Mat& I_135,
                                           double pol_angle);
 
+    static std::vector<cv::Mat> computeItheta0Itheta1(const cv::Mat& I_0,
+                                          const cv::Mat& I_45,
+                                          const cv::Mat& I_90,
+                                          const cv::Mat& I_135,
+                                          double theta0,
+                                          double theta1);
+
 }; // class PolarizationCameraUtils
 
 // } // namespace ORB_SLAM3
