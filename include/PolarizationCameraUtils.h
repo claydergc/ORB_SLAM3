@@ -73,12 +73,17 @@ public:
                                           const cv::Mat& I_135,
                                           double pol_angle);
 
-    static std::vector<cv::Mat> computeItheta0Itheta1(const cv::Mat& I_0,
+    static std::vector<cv::Mat> computeItheta0Itheta1AoLPDoLP(const cv::Mat& I_0,
                                           const cv::Mat& I_45,
                                           const cv::Mat& I_90,
                                           const cv::Mat& I_135,
                                           double theta0,
                                           double theta1);
+
+    static cv::Mat makeBottomHalfMask(const cv::Size& size);
+    // static std::vector<double> computeAoLPCircularStats(const cv::Mat& aolp);
+    static std::vector<double> computeAoLPCircularStats(const cv::Mat& aolp,
+                                                        const cv::Mat& mask);
 
 }; // class PolarizationCameraUtils
 

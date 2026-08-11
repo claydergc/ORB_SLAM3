@@ -163,6 +163,10 @@ add_executable(mono_tum_polcam4
         Examples/Monocular/mono_tum_polcam4.cc)
 target_link_libraries(mono_tum_polcam4 ${PROJECT_NAME})
 
+add_executable(mono_tum_polcam_auto_aolp
+        Examples/Monocular/mono_tum_polcam_auto_aolp.cc)
+target_link_libraries(mono_tum_polcam_auto_aolp ${PROJECT_NAME})
+
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/Calibration)
 if(realsense2_FOUND)

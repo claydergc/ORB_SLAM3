@@ -147,7 +147,9 @@ cv::Mat PolarizationCameraUtils::computePolarizationAngleImageParallel(const cv:
     return Itheta;
 }
 
-std::vector<cv::Mat> PolarizationCameraUtils::computeItheta0Itheta1(const cv::Mat& I0,
+
+
+std::vector<cv::Mat> PolarizationCameraUtils::computeItheta0Itheta1AoLPDoLP(const cv::Mat& I0,
                                       const cv::Mat& I45,
                                       const cv::Mat& I90,
                                       const cv::Mat& I135,
@@ -165,6 +167,8 @@ std::vector<cv::Mat> PolarizationCameraUtils::computeItheta0Itheta1(const cv::Ma
     // Prepare HSV output
     cv::Mat Itheta0(I0.rows, I0.cols, CV_8UC1);
     cv::Mat Itheta1(I0.rows, I0.cols, CV_8UC1);
+    cv::Mat AoLP(I0.rows, I0.cols, CV_8UC1);
+    cv::Mat DoLP(I0.rows, I0.cols, CV_8UC1);
     double Ipixeltheta0;
     double Ipixeltheta1;
 
@@ -191,6 +195,8 @@ std::vector<cv::Mat> PolarizationCameraUtils::computeItheta0Itheta1(const cv::Ma
 
             uchar* Itheta0_row = Itheta0.ptr<uchar>(i);
             uchar* Itheta1_row = Itheta1.ptr<uchar>(i);
+            uchar* AoLP_row = AoLP.ptr<uchar>(i);
+            uchar* DoLP_row = DoLP.ptr<uchar>(i);
 
             for (int j = 0; j < I0.cols; ++j) {
                 double S0 = (I0_ptr[j] + I45_ptr[j] + I90_ptr[j] + I135_ptr[j]) / 2.0;
@@ -198,20 +204,24 @@ std::vector<cv::Mat> PolarizationCameraUtils::computeItheta0Itheta1(const cv::Ma
                 double S2 = I45_ptr[j] - I135_ptr[j];
 
                 // AoLP
-                // double aolp = std::atan2(S2, S1)/2.0;
+                double aolp = std::atan2(S2, S1)/2.0;
+                if (aolp < 0) aolp += M_PI;
+                uchar AoLP_uint8 = static_cast<uchar>(aolp * 180.0/M_PI);
+                if (AoLP_uint8 == 180) AoLP_uint8 = 0;
 
-                // if (aolp < 0) aolp += M_PI;
+                AoLP_row[j] = AoLP_uint8;
 
-                // if (abs(aolp-M_PI)<0.025) aolp = M_PI-0.02;
+                // DoLP
+                double dolp = std::sqrt(S1*S1 + S2*S2);
+                dolp = (S0 != 0.0) ? dolp/S0 : 0.0;
+                if (std::isnan(dolp) || std::isinf(dolp)) dolp = 0.0;
+                uchar DoLP_uint8 = static_cast<uchar>(std::min(dolp*255.0, 255.0));
+                DoLP_row[j] = DoLP_uint8;
 
                 // I = 0.5*(S0+S1*cos(2*pol_angle)+S2*sin(2*pol_angle)*cos(aolp)); //wrong equation
                 Ipixeltheta0 = 0.5*(S0+S1*costheta0+S2*sintheta0);
-
-                // I_pol_angle_row[j] = static_cast<uchar>(std::min(I*255.0, 255.0));
                 Itheta0_row[j] = static_cast<uchar>(std::min(Ipixeltheta0, 255.0));
-
                 Ipixeltheta1 = 0.5*(S0+S1*costheta1+S2*sintheta1);
-
                 Itheta1_row[j] = static_cast<uchar>(std::min(Ipixeltheta1, 255.0));
 
             }
@@ -234,9 +244,55 @@ std::vector<cv::Mat> PolarizationCameraUtils::computeItheta0Itheta1(const cv::Ma
 
     // cv::resize(I_pol_angle, I_pol_angle, cv::Size(new_width, new_height));
 
-    std::vector<cv::Mat> Itheta = {Itheta0, Itheta1};
+    std::vector<cv::Mat> Itheta = {Itheta0, Itheta1, AoLP, DoLP};
 
     return Itheta;
 }
 
+cv::Mat PolarizationCameraUtils::makeBottomHalfMask(const cv::Size& size) {
+    cv::Mat mask = cv::Mat::zeros(size, CV_8U);
+    mask(cv::Rect(0, size.height / 2, size.width, size.height - size.height / 2)) = 255;
+    return mask;
+}
+
+std::vector<double> PolarizationCameraUtils::computeAoLPCircularStats(const cv::Mat& aolp,
+                                                                       const cv::Mat& mask) {
+    cv::Mat aolp_64f;
+    aolp.convertTo(aolp_64f, CV_64F);
+
+    bool useMask = !mask.empty();
+    if (useMask) {
+        CV_Assert(mask.size() == aolp.size());
+        CV_Assert(mask.type() == CV_8U);
+    }
+
+    double sin_sum = 0.0, cos_sum = 0.0, n = 0.0;
+
+    for (int r = 0; r < aolp_64f.rows; ++r) {
+        const double* row = aolp_64f.ptr<double>(r);
+        const uchar* maskRow = useMask ? mask.ptr<uchar>(r) : nullptr;
+
+        for (int c = 0; c < aolp_64f.cols; ++c) {
+            if (useMask && maskRow[c] == 0) continue;
+
+            double theta_rad = row[c] * CV_PI / 180.0;
+            double two_theta = 2.0 * theta_rad;
+            sin_sum += std::sin(two_theta);
+            cos_sum += std::cos(two_theta);
+            n += 1.0;
+        }
+    }
+
+    double mean_phi = std::atan2(sin_sum, cos_sum);       // (-pi, pi]
+    double mean_theta = 0.5 * (mean_phi * 180.0 / CV_PI);  // (-90, 90]
+
+    // wrap into [0, 180)
+    mean_theta = std::fmod(mean_theta, 180.0);
+    if (mean_theta < 0) mean_theta += 180.0;
+
+    double R = std::sqrt(sin_sum * sin_sum + cos_sum * cos_sum) / n;
+    double circ_std = 0.5 * (std::sqrt(-2.0 * std::log(R)) * 180.0 / CV_PI);
+
+    return {mean_theta, circ_std};
+}
 // }
