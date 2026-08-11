@@ -184,11 +184,7 @@ int main(int argc, char **argv)
     cv::Mat AoLP;
     cv::Mat DoLP;
 
-    cv::Mat I0;
-    cv::Mat I45;
-    cv::Mat I90;
-    cv::Mat I135;
-    cv::Mat I;
+    cv::Mat polcam_img;
     cv::Mat Itheta0;
     cv::Mat Itheta1;
 
@@ -223,39 +219,52 @@ int main(int argc, char **argv)
 
     uint16_t imCounter = 0;
 
-
-
     for(int ni=0; ni<nImages && !g_signal_received; ni++)
     //for(int ni=0; ni<1410 && !g_signal_received; ni++)
     {
         // Read image from file
-        I0 = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
-        I45 = cv::imread(string(argv[4])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
-        I90 = cv::imread(string(argv[5])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
-        I135 = cv::imread(string(argv[6])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        // I0 = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
+        // I45 = cv::imread(string(argv[4])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        // I90 = cv::imread(string(argv[5])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE); //Work best in 0830!!!
+        // I135 = cv::imread(string(argv[6])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         // I = cv::imread(string(argv[7])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
+        //
+        polcam_img = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
         double tframe = vTimestamps[ni];
 
-
         auto start = std::chrono::steady_clock::now();
 
-        std::vector<cv::Mat> polcamI = PolarizationCameraUtils::computeItheta0Itheta1AoLPDoLP(I0, I45, I90, I135, 155*M_PI/180.0, 100*M_PI/180.0);
+        std::array<double, 2> aolp_stats = PolarizationCameraUtils::demosaicPolImageAndComputeStats(polcam_img, 31*M_PI/180.0, 110*M_PI/180.0, imCam0, imCam1);
 
-        imCam0 = polcamI[0];
-        imCam1 = polcamI[1];
-        AoLP = polcamI[2];
-        DoLP = polcamI[3];
-
-        // std::vector<double> aolp_stats = PolarizationCameraUtils::computeAoLPCircularStats(AoLP);
-
-        // bottom-half only
-        cv::Mat bottomMask = PolarizationCameraUtils::makeBottomHalfMask(AoLP.size());
-        auto aolp_stats = PolarizationCameraUtils::computeAoLPCircularStats(AoLP, bottomMask);
+        // imCam0 = Itheta[0];
+        // imCam1 = Itheta[1];
 
         auto end = std::chrono::steady_clock::now();
         auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         std::cout << "Elapsed time: " << elapsed_ms.count() << " ms" << std::endl;
+
+        cv::imwrite("I31_pol_angle.tiff", imCam0);
+
+        cv::imwrite("I110_pol_angle.tiff", imCam1);
+
+        std::cout << "AoLP stats: " << aolp_stats[0] << " " << (int)(aolp_stats[0] - 3*aolp_stats[1])%180 << std::endl;
+        // auto start = std::chrono::steady_clock::now();
+
+        // std::vector<cv::Mat> polcamI = PolarizationCameraUtils::computeItheta0Itheta1AoLPDoLP(I0, I45, I90, I135, 155*M_PI/180.0, 100*M_PI/180.0);
+
+        // imCam0 = polcamI[0];
+        // imCam1 = polcamI[1];
+        // AoLP = polcamI[2];
+        // DoLP = polcamI[3];
+
+        // // bottom-half only
+        // cv::Mat bottomMask = PolarizationCameraUtils::makeBottomHalfMask(AoLP.size());
+        // auto aolp_stats = PolarizationCameraUtils::computeAoLPCircularStats(AoLP, bottomMask);
+
+        // auto end = std::chrono::steady_clock::now();
+        // auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        // std::cout << "Elapsed time: " << elapsed_ms.count() << " ms" << std::endl;
 
         // std::cout << "AoLP stats: " << aolp_stats[0] << " " << (int)(aolp_stats[0] + 3*aolp_stats[1])%180 << std::endl;
 
@@ -466,9 +475,9 @@ int main(int argc, char **argv)
     //SLAM.SaveTrajectoryTUM("KeyFrameTrajectory.txt");
 
 
-    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[7]));
-    SaveTrajectoryForAllFramesClayder(string(argv[8]), trajectory);
-    SaveKeypointsForAllFramesClayder(string(argv[9]), SLAM.mpTracker->matchedKeypointsPerFrame, SLAM.mpTracker->isNewKeyFrameVector);
+    SLAM.SaveKeyFrameTrajectoryTUM(string(argv[4]));
+    SaveTrajectoryForAllFramesClayder(string(argv[5]), trajectory);
+    SaveKeypointsForAllFramesClayder(string(argv[6]), SLAM.mpTracker->matchedKeypointsPerFrame, SLAM.mpTracker->isNewKeyFrameVector);
 
     // SLAM.SaveKeyFrameTrajectoryTUM(string(argv[8]));
     // SaveTrajectoryForAllFramesClayder(string(argv[9]), trajectory);

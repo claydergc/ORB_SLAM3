@@ -151,17 +151,17 @@ add_executable(mono_tum_polcam
         Examples/Monocular/mono_tum_polcam.cc)
 target_link_libraries(mono_tum_polcam ${PROJECT_NAME})
 
-add_executable(mono_tum_polcam2
-        Examples/Monocular/mono_tum_polcam2.cc)
-target_link_libraries(mono_tum_polcam2 ${PROJECT_NAME})
+#add_executable(mono_tum_polcam2
+#        Examples/Monocular/mono_tum_polcam2.cc)
+#target_link_libraries(mono_tum_polcam2 ${PROJECT_NAME})
 
-add_executable(mono_tum_polcam3
-        Examples/Monocular/mono_tum_polcam3.cc)
-target_link_libraries(mono_tum_polcam3 ${PROJECT_NAME})
+#add_executable(mono_tum_polcam3
+#        Examples/Monocular/mono_tum_polcam3.cc)
+#target_link_libraries(mono_tum_polcam3 ${PROJECT_NAME})
 
-add_executable(mono_tum_polcam4
-        Examples/Monocular/mono_tum_polcam4.cc)
-target_link_libraries(mono_tum_polcam4 ${PROJECT_NAME})
+#add_executable(mono_tum_polcam4
+#        Examples/Monocular/mono_tum_polcam4.cc)
+#target_link_libraries(mono_tum_polcam4 ${PROJECT_NAME})
 
 add_executable(mono_tum_polcam_auto_aolp
         Examples/Monocular/mono_tum_polcam_auto_aolp.cc)

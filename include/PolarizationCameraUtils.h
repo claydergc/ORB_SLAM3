@@ -57,7 +57,7 @@ public:
      * @param ch135      Output channel at 135°.
      */
 
-    static std::array<cv::Mat,4> demosaicPolarizationImageParallel(const cv::Mat& input_img);
+    static std::array<double,2> demosaicPolImageAndComputeStats(const cv::Mat& polcam_img, double theta0, double theta1, cv::Mat& Itheta0, cv::Mat& Itheta1);
 
     /**
      * Returns a single polarization channel extracted from a raw mosaic.
