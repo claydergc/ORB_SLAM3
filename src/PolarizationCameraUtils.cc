@@ -145,21 +145,21 @@ std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
     double mean_phi = std::atan2(sin_sum, cos_sum);       // (-pi, pi]
     double mean_theta = 0.5 * (mean_phi * 180.0 / CV_PI);  // (-90, 90]
         // wrap into [0, 180)
-    mean_theta = std::fmod(mean_theta, 180.0);
-    if (mean_theta < 0) mean_theta += 180.0;
+    // mean_theta = std::fmod(mean_theta, 180.0);
+    // if (mean_theta < 0) mean_theta += 180.0;
 
     double R = std::sqrt(sin_sum * sin_sum + cos_sum * cos_sum) / (double)(n);
     double circ_std = 0.5 * (std::sqrt(-2.0 * std::log(R)) * 180.0 / CV_PI);
 
-    if( (int)(theta0*180.0/M_PI) == 0) { Itheta0 = I0Mat; std::cout<<"theta0=0"<<std::endl; }
-    else if( (int)(theta0*180.0/M_PI) == 45) { Itheta0 = I45Mat; std::cout<<"theta0=45"<<std::endl; }
-    else if( (int)(theta0*180.0/M_PI) == 90) { Itheta0 = I90Mat; std::cout<<"theta0=90"<<std::endl; }
-    else if( (int)(theta0*180.0/M_PI) == 135) { Itheta0 = I135Mat; std::cout<<"theta0=135"<<std::endl; }
+    if( (int)(theta0*180.0/M_PI) == 0) { Itheta0 = I0Mat; }
+    else if( (int)(theta0*180.0/M_PI) == 45) { Itheta0 = I45Mat; }
+    else if( (int)(theta0*180.0/M_PI) == 90) { Itheta0 = I90Mat; }
+    else if( (int)(theta0*180.0/M_PI) == 135) { Itheta0 = I135Mat; }
 
-    if( (int)(theta1*180.0/M_PI) == 0) { Itheta1 = I0Mat; std::cout<<"theta1=0"<<std::endl; }
-    else if( (int)(theta1*180.0/M_PI) == 45) { Itheta1 = I45Mat; std::cout<<"theta1=45"<<std::endl; }
-    else if( (int)(theta1*180.0/M_PI) == 90) { Itheta1 = I90Mat; std::cout<<"theta1=90"<<std::endl; }
-    else if( (int)(theta1*180.0/M_PI) == 135) { Itheta1 = I135Mat; std::cout<<"theta1=135"<<std::endl; }
+    if( (int)(theta1*180.0/M_PI) == 0) { Itheta1 = I0Mat; }
+    else if( (int)(theta1*180.0/M_PI) == 45) { Itheta1 = I45Mat; }
+    else if( (int)(theta1*180.0/M_PI) == 90) { Itheta1 = I90Mat; }
+    else if( (int)(theta1*180.0/M_PI) == 135) { Itheta1 = I135Mat; }
 
     return {mean_theta, circ_std};
 }

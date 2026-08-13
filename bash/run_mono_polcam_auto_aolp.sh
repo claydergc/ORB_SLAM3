@@ -30,12 +30,12 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/ros-noetic/Pangolin-0.9.2/build
 /home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/mono_tum_polcam_auto_aolp  \
 /home/ros-noetic/src/ORB_SLAM3_polcam/Vocabulary/ORBvoc.txt \
 /home/ros-noetic/src/ORB_SLAM3_polcam/Examples/Monocular/TRIO50S_1224x1024.yaml \
-/home/ros-noetic/DATA/datasets/Polcam02/KelvinGrove/20260128/0839/polcam \
+/home/ros-noetic/DATA/datasets/Polcam02/KelvinGrove/20260803/0821/polcam \
 KeyFrameTrajectory.txt \
 FrameTrajectory.txt \
 FrameKeypointsNumber.txt
 
-
+# /home/ros-noetic/DATA/datasets/Polcam02/KelvinGrove/20260128/0835/polcam \
 
 
 

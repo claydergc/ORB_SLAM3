@@ -163,8 +163,8 @@ int main(int argc, char **argv)
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     // ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, ORB_SLAM3::Constants::POLCAM01, true);
-    // ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, ORB_SLAM3::Constants::POLCAM0, true);
-    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, ORB_SLAM3::Constants::POLCAM0, false);
+    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, ORB_SLAM3::Constants::POLCAM0, true);
+    // ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::MONOCULAR, ORB_SLAM3::Constants::POLCAM0, false);
     float imageScale = SLAM.GetImageScale();
 
     // Vector for tracking time statistics
@@ -188,18 +188,6 @@ int main(int argc, char **argv)
     cv::Mat Itheta0;
     cv::Mat Itheta1;
 
-    int target_theta0_zone1;
-    int target_theta1_zone1;
-    int target_theta0_zone2;
-    int target_theta1_zone2;
-    int target_theta0_zone3;
-    int target_theta1_zone3;
-    int current_theta0;
-    int current_theta1;
-    int theta0_zone2_step;
-    int theta1_zone2_step;
-    int theta0_zone3_step;
-    int theta1_zone3_step;
     uint fps = 20;
     uint t_step = (int)(1.0) * fps ;
     const int Iangle = -1;
@@ -219,11 +207,27 @@ int main(int argc, char **argv)
 
     uint16_t imCounter = 0;
 
-    int curr_theta_mean = 0;
-    int prev_theta_mean = 0;
+    int theta_mean_curr = 0;
+    int theta_mean_prev = -999;
+
+    uint16_t theta0_curr = 0;
+    uint16_t theta0_prev = 0;
+    uint16_t theta0_target = 0;
+    uint16_t theta1_curr = 0;
+    uint16_t theta1_prev = 0;
+
+    double theta_3std_left;
+    double theta_3std_right;
+
+    bool left = false;
+    bool right = false;
+
+
+    const uint8_t MIN_THETA_SHIFT = 1; //degrees
 
     // for(int ni=0; ni<nImages && !g_signal_received; ni++)
-    for(int ni=23; ni<nImages && !g_signal_received; ni++)
+    for(int ni=19; ni<nImages && !g_signal_received; ni++)
+    // for(int ni=23; ni<nImages && !g_signal_received; ni++)
     //for(int ni=0; ni<1410 && !g_signal_received; ni++)
     {
         // Read image from file
@@ -245,98 +249,57 @@ int main(int argc, char **argv)
 
         polcam_img = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
+        std::array<double, 2> aolp_stats = PolarizationCameraUtils::demosaicPolImageAndComputeStats(polcam_img, (double)(theta0_curr)*M_PI/180.0, (double)(theta1_curr)*M_PI/180.0, Itheta0, Itheta1);
+
+        theta_mean_curr = aolp_stats[0];
+
+        if(std::abs(theta_mean_curr-theta_mean_prev)>=MIN_THETA_SHIFT) { //IT DOES NOT HAVE TO CHANGE ALWAYS, CHANGE ONLY WHEN THERE IS A SIGNIFICANT DIFF IN ANGLES
+
+            double theta_mean_circ = std::fmod(theta_mean_curr, 180.0);
+            if (theta_mean_circ < 0) theta_mean_circ += 180.0;
+
+            theta_3std_left = theta_mean_circ-2.3*aolp_stats[1];
+            theta_3std_right = theta_mean_circ+2.3*aolp_stats[1];
+
+            theta_3std_left = std::fmod(theta_3std_left, 180.0);
+            if (theta_3std_left < 0) theta_3std_left += 180.0;
+            theta_3std_right = std::fmod(theta_3std_right, 180.0);
+            if (theta_3std_right < 0) theta_3std_right += 180.0;
+
+            if(theta_mean_curr>0) {//skewed to right
+                theta0_curr = theta_3std_left;
+            } else if(theta_mean_curr<0) {//skewed to left
+
+                theta0_target = theta_3std_right;
+
+                // theta0_curr = theta_3std_right;
+                if(std::abs(theta0_target-theta0_curr)>5)
+                    theta0_curr = (theta0_curr + 2) % 180;
+                else
+                    theta0_curr = theta_3std_right;
+            }
+
+            theta1_curr = (theta_mean_curr + 90) % 180;
+
+            // std::cout<<"curr_theta_mean: "<<curr_theta_mean<<" prev_theta_mean: "<<prev_theta_mean<<std::endl;
+            std::cout<<"theta_mean: "<<theta_mean_curr<<" theta0: "<<(int)(theta0_curr)<<" theta1: "<<(int)(theta1_curr)<<std::endl;
+        }
+
+        // std::cout<<"curr_theta_mean: "<<curr_theta_mean<<" prev_theta_mean: "<<prev_theta_mean<<std::endl;
+
+        imCam0 = Itheta0;
+        imCam1 = Itheta1;
+
+
+        theta_mean_prev = theta_mean_curr;
+        theta0_prev = theta0_curr;
+        theta1_prev = theta1_curr;
+
+
+
+        // std::cout<<"theta0: "<<(int)(theta0)<<" theta1: "<<(int)(theta1)<<std::endl;
+
         double tframe = vTimestamps[ni];
-
-        // auto start = std::chrono::steady_clock::now();
-
-        std::array<double, 2> aolp_stats = PolarizationCameraUtils::demosaicPolImageAndComputeStats(polcam_img, 31*M_PI/180.0, 110*M_PI/180.0, imCam0, imCam1);
-
-        // imCam0 = Itheta[0];
-        // imCam1 = Itheta[1];
-
-        // auto end = std::chrono::steady_clock::now();
-        // auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        std::cout << "Elapsed time: " << elapsed_ms.count() << " ms" << std::endl;
-
-        // cv::imwrite("I31_pol_angle.tiff", imCam0);
-
-        // cv::imwrite("I110_pol_angle.tiff", imCam1);
-
-        double theta_mean = aolp_stats[0];
-        double theta_3std_left = theta_mean-2.3*aolp_stats[1];
-        double theta_3std_right = theta_mean+2.3*aolp_stats[1];
-
-        theta_3std_left = std::fmod(theta_3std_left, 180.0);
-        if (theta_3std_left < 0) theta_3std_left += 180.0;
-        theta_3std_right = std::fmod(theta_3std_right, 180.0);
-        if (theta_3std_right < 0) theta_3std_right += 180.0;
-
-        // std::cout << "AoLP stats: " << theta_mean << " " << theta_3std_left << std::endl;
-        // auto start = std::chrono::steady_clock::now();
-
-        // std::vector<cv::Mat> polcamI = PolarizationCameraUtils::computeItheta0Itheta1AoLPDoLP(I0, I45, I90, I135, 155*M_PI/180.0, 100*M_PI/180.0);
-
-        // imCam0 = polcamI[0];
-        // imCam1 = polcamI[1];
-        // AoLP = polcamI[2];
-        // DoLP = polcamI[3];
-
-        // // bottom-half only
-        // cv::Mat bottomMask = PolarizationCameraUtils::makeBottomHalfMask(AoLP.size());
-        // auto aolp_stats = PolarizationCameraUtils::computeAoLPCircularStats(AoLP, bottomMask);
-
-        // auto end = std::chrono::steady_clock::now();
-        // auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        // std::cout << "Elapsed time: " << elapsed_ms.count() << " ms" << std::endl;
-
-        // std::cout << "AoLP stats: " << aolp_stats[0] << " " << (int)(aolp_stats[0] + 3*aolp_stats[1])%180 << std::endl;
-
-
-        // cv::imwrite("I155_pol_angle_0.tiff", imCam0);
-        // cv::imwrite("I00_pol_angle_0.tiff", imCam1);
-
-        // cv::Mat saturation(AoLP.size(), CV_8UC1, cv::Scalar(255));
-
-        // std::vector<cv::Mat> hsv_channels = { AoLP, saturation, DoLP };
-        // cv::Mat hsv_img;
-        // cv::merge(hsv_channels, hsv_img);
-
-        // cv::Mat bgr_img;
-        // cv::cvtColor(hsv_img, bgr_img, cv::COLOR_HSV2BGR);
-
-        // cv::imwrite("hsv_img.tiff", bgr_img);
-
-        break;
-
-        // if(ni>200) {
-        // if (ni>=0 && ni<=1144) {
-
-        // }
-        // else if(ni>1144 && ni<=1568) { //zone 2
-
-        //     if(target_theta0_zone2>current_theta0) {
-        //         if(imCounter%t_step==0 && current_theta0!=target_theta0_zone2)
-        //             current_theta0 = current_theta0 + theta0_zone2_step;
-        //     }
-
-        //     if(imCounter%t_step==0) {
-        //         imCounter = 0;
-        //         // std::cout<<current_theta0<<" "<<current_theta1<<std::endl;
-        //     }
-
-        //     imCounter++;
-        //     // imCam0 = I0;
-        // }
-        // else if(ni>1568) { //zone 3
-
-        //     if(imCounter%t_step==0) {
-        //         imCounter = 0;
-        //         // std::cout<<current_theta0<<" "<<current_theta1<<std::endl;
-        //     }
-
-        //     imCounter++;
-        // }
-
 
         if(imCam0.empty() || imCam1.empty())
         {
@@ -374,47 +337,6 @@ int main(int argc, char **argv)
 #else
         std::chrono::monotonic_clock::time_point t1 = std::chrono::monotonic_clock::now();
 #endif
-
-        //double alpha = 1.8; // contrast control (1.0 = no change)
-        //int beta = 20;      // brightness control (0 = no change)
-
-        // Apply transformation
-        //im.convertTo(im, -1, alpha, beta);
-        // Pass the image to the SLAM system
-        //SLAM.TrackMonocular(im,tframe);
-        //SLAM.TrackMonocularPolcam(im,imPolcam,tframe,vec_n_keypoints_diff);
-        // SLAM.TrackMonocularPolcam(imCam0,imCam1,tframe);
-        //
-
-
-
-        // if(ni>536) {
-
-        //     // if(imCounter%100==0 && current_pol_angle>5*M_PI/180.0) {
-        //     if(imCounter%60==0 && current_pol_angle>5*M_PI/180.0) {
-
-        //         imCounter = 0;
-        //         Itheta = PolarizationCameraUtils::computePolarizationAngleImageParallel(I0, I45, I90, I135, current_pol_angle);
-
-        //         //if(current_pol_angle>5*M_PI/180.0)
-        //         current_pol_angle = current_pol_angle - 10.0*M_PI/180.0;
-        //         std::cout<<current_pol_angle*180.0/M_PI<<std::endl;
-
-        //         imCam0 = Itheta;
-        //     }
-
-        //     imCounter++;
-        // }
-
-        // if (current_pol_angle<5*M_PI/180.0) {
-        //     imCam0 = I0;
-        // }
-
-
-        // if(ni>400) {
-
-        //     SLAM.setPolcamMode(ORB_SLAM3::Constants::POLCAM0);
-        // }
 
         Sophus::SE3f Tcw = SLAM.TrackMonocularPolcam(imCam0,imCam1,tframe);
         // Sophus::SE3f Tcw = SLAM.TrackMonocular(imCam0,tframe);
