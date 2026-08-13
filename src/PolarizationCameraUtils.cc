@@ -35,7 +35,8 @@ std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
     double sintheta1 = sin(2.0*theta1);
 
     // double sin_sum = 0.0, cos_sum = 0.0;
-    uint32_t n = inner_cols*inner_rows;
+    uint16_t half_rows = 1024/2;
+
 
     const unsigned int num_threads = std::max(1u, std::thread::hardware_concurrency());
     // std::cout<<num_threads<<" threads"<<std::endl;
@@ -44,9 +45,11 @@ std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
 
     std::vector<double> partial_sin(num_threads, 0.0);
     std::vector<double> partial_cos(num_threads, 0.0);
+    std::vector<uint16_t> partial_n(num_threads, 0);
 
     auto worker = [&](int start_row, int end_row, int tid) {
         double local_sin = 0.0, local_cos = 0.0;
+        uint16_t local_n = 0;
         for (int i = start_row; i < end_row; ++i) {
             int y = 2 * i;
             const uchar* row0 = polcam_img.ptr<uchar>(y);
@@ -81,13 +84,13 @@ std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
                 if (aolp < 0) aolp += M_PI;
                 // uchar AoLP_uint8 = static_cast<uchar>(aolp * 180.0/M_PI);
                 // if (AoLP_uint8 == 180) AoLP_uint8 = 0;
-
                 // AoLP_row[j] = AoLP_uint8;
 
                 // DoLP
                 double dolp = std::sqrt(S1*S1 + S2*S2);
                 dolp = (S0 != 0.0) ? dolp/S0 : 0.0;
                 if (std::isnan(dolp) || std::isinf(dolp)) dolp = 0.0;
+                // if (dolp > 1.0) std::cout << "dolp overflow: " << dolp << " at (" << i << "," << j << ")\n";
                 uchar DoLP_uint8 = static_cast<uchar>(std::min(dolp*255.0, 255.0));
                 // DoLP_row[j] = DoLP_uint8;
 
@@ -100,14 +103,20 @@ std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
                 // double two_theta = 2.0 * theta_rad;
                 // sin_sum += std::sin(two_theta);
                 // cos_sum += std::cos(two_theta);
-                double theta_rad = aolp;
-                double two_theta = 2.0 * theta_rad;
-                local_sin += std::sin(two_theta);
-                local_cos += std::cos(two_theta);
+                //
+                if(DoLP_uint8!=0 && i>=half_rows) {
+                    double theta_rad = aolp;
+                    // double theta_rad = AoLP_uint8 * CV_PI / 180.0;
+                    double two_theta = 2.0 * theta_rad;
+                    local_sin += std::sin(two_theta);
+                    local_cos += std::cos(two_theta);
+                    ++local_n;
+                }
             }
         }
         partial_sin[tid] = local_sin;
         partial_cos[tid] = local_cos;
+        partial_n[tid] = local_n;
     };
 
     // Divide rows among threads
@@ -127,6 +136,11 @@ std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
 
     double sin_sum = std::accumulate(partial_sin.begin(), partial_sin.end(), 0.0);
     double cos_sum = std::accumulate(partial_cos.begin(), partial_cos.end(), 0.0);
+    uint32_t n = std::accumulate(partial_n.begin(), partial_n.end(), 0);
+
+    // std::cout<<"sin_sum "<<sin_sum<<std::endl;
+    // std::cout<<"cos_sum "<<cos_sum<<std::endl;
+    // std::cout<<"n: "<<n<<std::endl;
 
     double mean_phi = std::atan2(sin_sum, cos_sum);       // (-pi, pi]
     double mean_theta = 0.5 * (mean_phi * 180.0 / CV_PI);  // (-90, 90]
@@ -256,33 +270,51 @@ cv::Mat PolarizationCameraUtils::makeBottomHalfMask(const cv::Size& size) {
     return mask;
 }
 
-std::vector<double> PolarizationCameraUtils::computeAoLPCircularStats(const cv::Mat& aolp,
-                                                                       const cv::Mat& mask) {
+std::vector<double> PolarizationCameraUtils::computeAoLPCircularStats(const cv::Mat& aolp) {
+
+    cv::Mat hsv_img;
+    cv::cvtColor(aolp, hsv_img, cv::COLOR_BGR2HSV);
+
+    std::vector<cv::Mat> hsv_channels;
+    cv::split(hsv_img, hsv_channels);
+
+    cv::Mat hue = hsv_channels[0]; // H is channel 0
+    cv::Mat saturation = hsv_channels[1]; // H is channel 0
+    cv::Mat value = hsv_channels[2]; // V is channel 0
+
     cv::Mat aolp_64f;
-    aolp.convertTo(aolp_64f, CV_64F);
+    hue.convertTo(aolp_64f, CV_64F);
 
-    bool useMask = !mask.empty();
-    if (useMask) {
-        CV_Assert(mask.size() == aolp.size());
-        CV_Assert(mask.type() == CV_8U);
-    }
+    // bool useMask = !mask.empty();
+    // if (useMask) {
+    //     CV_Assert(mask.size() == hue.size());
+    //     CV_Assert(mask.type() == CV_8U);
+    // }
 
-    double sin_sum = 0.0, cos_sum = 0.0, n = 0.0;
+    double sin_sum = 0.0, cos_sum = 0.0;
+    uint32_t n = 0;
 
     for (int r = 0; r < aolp_64f.rows; ++r) {
         const double* row = aolp_64f.ptr<double>(r);
-        const uchar* maskRow = useMask ? mask.ptr<uchar>(r) : nullptr;
+        // const uchar* maskRow = useMask ? mask.ptr<uchar>(r) : nullptr;
+
 
         for (int c = 0; c < aolp_64f.cols; ++c) {
-            if (useMask && maskRow[c] == 0) continue;
+            // if (useMask && maskRow[c] == 0) continue;
 
-            double theta_rad = row[c] * CV_PI / 180.0;
-            double two_theta = 2.0 * theta_rad;
-            sin_sum += std::sin(two_theta);
-            cos_sum += std::cos(two_theta);
-            n += 1.0;
+            if(value.at<uchar>(r,c)!=0) {
+                double theta_rad = row[c] * CV_PI / 180.0;
+                double two_theta = 2.0 * theta_rad;
+                sin_sum += std::sin(two_theta);
+                cos_sum += std::cos(two_theta);
+                ++n;
+            }
         }
     }
+
+    std::cout<<"sin_sum: "<<sin_sum<<std::endl;
+    std::cout<<"cos_sum: "<<cos_sum<<std::endl;
+    // std::cout<<n<<std::endl;
 
     double mean_phi = std::atan2(sin_sum, cos_sum);       // (-pi, pi]
     double mean_theta = 0.5 * (mean_phi * 180.0 / CV_PI);  // (-90, 90]
@@ -291,7 +323,7 @@ std::vector<double> PolarizationCameraUtils::computeAoLPCircularStats(const cv::
     mean_theta = std::fmod(mean_theta, 180.0);
     if (mean_theta < 0) mean_theta += 180.0;
 
-    double R = std::sqrt(sin_sum * sin_sum + cos_sum * cos_sum) / n;
+    double R = std::sqrt(sin_sum * sin_sum + cos_sum * cos_sum) / (double)(n);
     double circ_std = 0.5 * (std::sqrt(-2.0 * std::log(R)) * 180.0 / CV_PI);
 
     return {mean_theta, circ_std};

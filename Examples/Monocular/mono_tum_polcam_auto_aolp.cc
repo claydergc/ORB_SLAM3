@@ -219,7 +219,11 @@ int main(int argc, char **argv)
 
     uint16_t imCounter = 0;
 
-    for(int ni=0; ni<nImages && !g_signal_received; ni++)
+    int curr_theta_mean = 0;
+    int prev_theta_mean = 0;
+
+    // for(int ni=0; ni<nImages && !g_signal_received; ni++)
+    for(int ni=23; ni<nImages && !g_signal_received; ni++)
     //for(int ni=0; ni<1410 && !g_signal_received; ni++)
     {
         // Read image from file
@@ -229,26 +233,45 @@ int main(int argc, char **argv)
         // I135 = cv::imread(string(argv[6])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         // I = cv::imread(string(argv[7])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
         //
+        //
+        // polcam_img = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni]);
+
+        // std::vector<double> aolp_stats = PolarizationCameraUtils::computeAoLPCircularStats(polcam_img);
+
+        // double theta_mean = aolp_stats[0];
+        // double theta_3std = 3*aolp_stats[1];
+
+        // std::cout << "AoLP stats: " << theta_mean << " " << theta_3std << std::endl;
+
         polcam_img = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
         double tframe = vTimestamps[ni];
 
-        auto start = std::chrono::steady_clock::now();
+        // auto start = std::chrono::steady_clock::now();
 
         std::array<double, 2> aolp_stats = PolarizationCameraUtils::demosaicPolImageAndComputeStats(polcam_img, 31*M_PI/180.0, 110*M_PI/180.0, imCam0, imCam1);
 
         // imCam0 = Itheta[0];
         // imCam1 = Itheta[1];
 
-        auto end = std::chrono::steady_clock::now();
-        auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        // auto end = std::chrono::steady_clock::now();
+        // auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         std::cout << "Elapsed time: " << elapsed_ms.count() << " ms" << std::endl;
 
-        cv::imwrite("I31_pol_angle.tiff", imCam0);
+        // cv::imwrite("I31_pol_angle.tiff", imCam0);
 
-        cv::imwrite("I110_pol_angle.tiff", imCam1);
+        // cv::imwrite("I110_pol_angle.tiff", imCam1);
 
-        std::cout << "AoLP stats: " << aolp_stats[0] << " " << (int)(aolp_stats[0] - 3*aolp_stats[1])%180 << std::endl;
+        double theta_mean = aolp_stats[0];
+        double theta_3std_left = theta_mean-2.3*aolp_stats[1];
+        double theta_3std_right = theta_mean+2.3*aolp_stats[1];
+
+        theta_3std_left = std::fmod(theta_3std_left, 180.0);
+        if (theta_3std_left < 0) theta_3std_left += 180.0;
+        theta_3std_right = std::fmod(theta_3std_right, 180.0);
+        if (theta_3std_right < 0) theta_3std_right += 180.0;
+
+        // std::cout << "AoLP stats: " << theta_mean << " " << theta_3std_left << std::endl;
         // auto start = std::chrono::steady_clock::now();
 
         // std::vector<cv::Mat> polcamI = PolarizationCameraUtils::computeItheta0Itheta1AoLPDoLP(I0, I45, I90, I135, 155*M_PI/180.0, 100*M_PI/180.0);

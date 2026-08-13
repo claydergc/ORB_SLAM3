@@ -82,8 +82,7 @@ public:
 
     static cv::Mat makeBottomHalfMask(const cv::Size& size);
     // static std::vector<double> computeAoLPCircularStats(const cv::Mat& aolp);
-    static std::vector<double> computeAoLPCircularStats(const cv::Mat& aolp,
-                                                        const cv::Mat& mask);
+    static std::vector<double> computeAoLPCircularStats(const cv::Mat& aolp);
 
 }; // class PolarizationCameraUtils
 
