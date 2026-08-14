@@ -9,7 +9,7 @@
 
 // namespace ORB_SLAM3 {
 
-std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(const cv::Mat& polcam_img, double theta0, double theta1, cv::Mat& Itheta0, cv::Mat& Itheta1) {
+std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(const cv::Mat& polcam_img, double theta0, double theta1, cv::Mat& Itheta0, cv::Mat& Itheta1) {
 
     assert(input_img.type() == CV_8UC1);
 
@@ -45,10 +45,11 @@ std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
 
     std::vector<double> partial_sin(num_threads, 0.0);
     std::vector<double> partial_cos(num_threads, 0.0);
+    std::vector<double> partial_dolp(num_threads, 0.0);
     std::vector<uint16_t> partial_n(num_threads, 0);
 
     auto worker = [&](int start_row, int end_row, int tid) {
-        double local_sin = 0.0, local_cos = 0.0;
+        double local_sin = 0.0, local_cos = 0.0, local_dolp = 0.0;
         uint16_t local_n = 0;
         for (int i = start_row; i < end_row; ++i) {
             int y = 2 * i;
@@ -110,12 +111,14 @@ std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
                     double two_theta = 2.0 * theta_rad;
                     local_sin += std::sin(two_theta);
                     local_cos += std::cos(two_theta);
+                    local_dolp += dolp;
                     ++local_n;
                 }
             }
         }
         partial_sin[tid] = local_sin;
         partial_cos[tid] = local_cos;
+        partial_dolp[tid] = local_dolp;
         partial_n[tid] = local_n;
     };
 
@@ -137,19 +140,21 @@ std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
     double sin_sum = std::accumulate(partial_sin.begin(), partial_sin.end(), 0.0);
     double cos_sum = std::accumulate(partial_cos.begin(), partial_cos.end(), 0.0);
     uint32_t n = std::accumulate(partial_n.begin(), partial_n.end(), 0);
+    double dolp_sum = std::accumulate(partial_dolp.begin(), partial_dolp.end(), 0.0);
+    double dolp_mean = dolp_sum / (double)(n);
 
     // std::cout<<"sin_sum "<<sin_sum<<std::endl;
     // std::cout<<"cos_sum "<<cos_sum<<std::endl;
     // std::cout<<"n: "<<n<<std::endl;
 
-    double mean_phi = std::atan2(sin_sum, cos_sum);       // (-pi, pi]
-    double mean_theta = 0.5 * (mean_phi * 180.0 / CV_PI);  // (-90, 90]
+    double phi_mean = std::atan2(sin_sum, cos_sum);       // (-pi, pi]
+    double aolp_mean = 0.5 * (phi_mean * 180.0 / CV_PI);  // (-90, 90]
         // wrap into [0, 180)
     // mean_theta = std::fmod(mean_theta, 180.0);
     // if (mean_theta < 0) mean_theta += 180.0;
 
     double R = std::sqrt(sin_sum * sin_sum + cos_sum * cos_sum) / (double)(n);
-    double circ_std = 0.5 * (std::sqrt(-2.0 * std::log(R)) * 180.0 / CV_PI);
+    double aolp_std = 0.5 * (std::sqrt(-2.0 * std::log(R)) * 180.0 / CV_PI);
 
     if( (int)(theta0*180.0/M_PI) == 0) { Itheta0 = I0Mat; }
     else if( (int)(theta0*180.0/M_PI) == 45) { Itheta0 = I45Mat; }
@@ -161,7 +166,7 @@ std::array<double,2> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
     else if( (int)(theta1*180.0/M_PI) == 90) { Itheta1 = I90Mat; }
     else if( (int)(theta1*180.0/M_PI) == 135) { Itheta1 = I135Mat; }
 
-    return {mean_theta, circ_std};
+    return {aolp_mean, aolp_std, dolp_mean};
 }
 
 std::vector<cv::Mat> PolarizationCameraUtils::computeItheta0Itheta1AoLPDoLP(const cv::Mat& I0,
