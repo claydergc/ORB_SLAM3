@@ -138,36 +138,6 @@ void SaveKeypointsForAllFramesClayder(const string &filename, std::vector<std::p
     f.close();
 }
 
-// double computeWeight(double DoLP_mean, double DoLP_min = 0.26, double DoLP_max = 0.38) {
-// double computeWeight(double DoLP_mean, double DoLP_min = 0.25, double DoLP_max = 0.385) {
-// double computeWeight(double DoLP_mean, double DoLP_min = 0.22, double DoLP_max = 0.4) { //this works on 0835
-double computeWeight(double DoLP_mean, double DoLP_min = 0.25, double DoLP_max = 0.42) {
-// double computeWeight(double DoLP_mean, double DoLP_min = 0.27, double DoLP_max = 0.4) {
-    double t = (DoLP_mean - DoLP_min) / (DoLP_max - DoLP_min);
-    if (t < 0.0) t = 0.0;
-    if (t > 1.0) t = 1.0;
-    return t;
-}
-
-inline double clampVal(double x, double lo, double hi) {
-    if (x < lo) return lo;
-    if (x > hi) return hi;
-    return x;
-}
-
-// double f(double AoLP_mean, double AoLP_3stddev, double AoLP_max = M_PI / 2.0) {
-//     double v = clampVal(std::abs(AoLP_mean) / AoLP_max, 0.0, 1.0);
-//     double g = 1.0 - v;
-//     return (1.0 - g) * AoLP_mean + g * AoLP_3stddev;
-// }
-//
-double f(double AoLP_mean, double AoLP_3stddev, double p, double AoLP_max = M_PI / 2.0) {
-    double v = clampVal(std::abs(AoLP_mean) / AoLP_max, 0.0, 1.0);
-    double v_p = std::pow(v, p);
-    double g = 1.0 - v_p;
-    return (1.0 - g) * AoLP_mean + g * AoLP_3stddev;
-}
-
 int computeSmoothAngleTransition(int theta_curr, int theta_target, int max_theta_diff) {
     int diff = theta_target - theta_curr;
 
@@ -229,98 +199,177 @@ int main(int argc, char **argv)
 
     uint16_t imCounter = 0;
 
-    double aolp_mean_curr = 0;
-    double aolp_mean_prev = -999;
-    double aolp_std = 0;
+    int aolp_mean_curr = 0;
+    int aolp_mean_prev = -999;
+    int aolp_std = 0;
     double dolp_mean = 0;
 
-    // int theta0_curr = 155;
-    double theta0_curr = 900 * M_PI / 180.0;
+    int theta0_curr = 155;
+    int theta0_prev = 0;
     // uint16_t theta0_target = 0;
-    // int theta1_curr = 98;
-    double theta1_curr = 900 * M_PI / 180.0;
+    int theta1_curr = 98;
+    int theta1_prev = 0;
 
     double theta_3std_left;
     double theta_3std_right;
 
     const uint FPS = 20;
-    // const uint T_STEP = (uint)(1.0) * FPS ;
-    const uint T_STEP = 0.5 * FPS ;
-    // const uint8_t THETA_SHIFT_MIN = 5; //degrees
-    const double THETA_SHIFT_MIN = 1.0*M_PI/180.0; //degrees
-    // const double THETA_SHIFT_MIN = 3*M_PI/180.0; //degrees
-    // const double DOLP_MIN = 0.21;
-    // const double DOLP_MIN = 0.22; works for 0835
-    const double DOLP_MIN = 0.22;
-    // const double DOLP_MIN = 0.25; works for 0821
-    // const double DOLP_MIN = 0.27;
+    const uint T_STEP = (uint)(2.0) * FPS ;
+    const int Iangle = -1;
+    const uint8_t THETA_SHIFT_MIN = 5; //degrees
+    const double DOLP_MIN = 0.21;
+    // const int THETA_MIN = -22; //degrees
+    // const int THETA_MAX = 22; //degrees
+    const int THETA_MIN = -40; //degrees
+    const int THETA_MAX = 40; //degrees
 
 
-    double theta0_curr_aux = 0;
-    double theta1_curr_aux = 0;
+    int theta0_curr_aux = 0;
+    int theta1_curr_aux = 0;
+    int theta0_target = 0;
+    int theta1_target = 0;
 
-    for(int ni=0; ni<nImages && !g_signal_received; ni++)
-    // for(int ni=19; ni<nImages && !g_signal_received; ni++)
+
+    // for(int ni=0; ni<nImages && !g_signal_received; ni++)
+    for(int ni=19; ni<nImages && !g_signal_received; ni++)
     // for(int ni=23; ni<nImages && !g_signal_received; ni++)
     //for(int ni=0; ni<1410 && !g_signal_received; ni++)
     {
         // Read image from file
         polcam_img = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],cv::IMREAD_GRAYSCALE);
 
-        std::array<double, 3> aolp_dolp_stats = PolarizationCameraUtils::demosaicPolImageAndComputeStats(polcam_img, theta0_curr, theta1_curr, Itheta0, Itheta1);
-        // std::array<double, 3> aolp_dolp_stats = PolarizationCameraUtils::demosaicPolImageAndComputeStats(polcam_img, 45*M_PI/180.0, 155*M_PI/180.0, Itheta0, Itheta1);
+        // std::array<double, 3> aolp_dolp_stats = PolarizationCameraUtils::demosaicPolImageAndComputeStats(polcam_img, (double)(theta0_curr)*M_PI/180.0, (double)(theta1_curr)*M_PI/180.0, Itheta0, Itheta1);
+        std::array<double, 3> aolp_dolp_stats = PolarizationCameraUtils::demosaicPolImageAndComputeStats(polcam_img, 45*M_PI/180.0, 155*M_PI/180.0, Itheta0, Itheta1);
 
         aolp_mean_curr = aolp_dolp_stats[0];
         aolp_std = aolp_dolp_stats[1];
         dolp_mean = aolp_dolp_stats[2];
+
+        // if(ni%T_STEP==0) //each T_STEP seconds
+            // std::cout<<"dolp_mean: "<<dolp_mean<<std::endl;
+            //
+            //
+
+
+        // if(ni==19) {
+        //     theta0_curr_aux = theta_3std_left;
+        //     theta1_curr_aux = aolp_mean_curr + 90;
+
+        //     std::cout<<"theta0_curr_aux: "<<theta0_curr_aux<<" theta1_curr_aux: "<<theta1_curr_aux<<std::endl;
+        // }
 
         if(dolp_mean>DOLP_MIN) {
             if(ni%T_STEP==0) { //each T_STEP seconds
 
                 // theta_3std_left = aolp_mean_curr-2.3*aolp_std;
                 // theta_3std_right = aolp_mean_curr+2.3*aolp_std;
-                // theta_3std_left = aolp_mean_curr-2.4*aolp_std;
-                // theta_3std_right = aolp_mean_curr+2.4*aolp_std;
-                //
                 theta_3std_left = aolp_mean_curr-2.3*aolp_std;
                 theta_3std_right = aolp_mean_curr+2.3*aolp_std;
 
 
-                double aolp_mean_diff = aolp_mean_curr-aolp_mean_prev;
+                // std::cout<<"theta0_curr_aux: "<<theta0_curr_aux<<" theta1_curr_aux: "<<theta1_curr_aux<<std::endl;
+
+                if(aolp_mean_curr>-8 && aolp_mean_curr<8){
+                    theta0_curr_aux = theta_3std_left;
+                    // theta0_curr_aux = theta_3std_right;
+                    theta1_curr_aux = aolp_mean_curr + 90;
+
+                    // add smooth transition to this
+                }
+                else if(aolp_mean_curr<THETA_MIN || aolp_mean_curr>THETA_MAX) {
+                    theta0_curr_aux = aolp_mean_curr;
+                    theta1_curr_aux = aolp_mean_curr + 90;
+                }
+
+
+                int aolp_mean_diff = aolp_mean_curr-aolp_mean_prev;
 
                 if(std::abs(aolp_mean_diff)>=THETA_SHIFT_MIN) {
                 // if(std::abs(aolp_mean_curr-aolp_mean_prev)>=THETA_SHIFT_MIN) {
 
-                    //theta0_curr_aux = theta_3std_left;
-                    // theta0_curr_aux = theta_3std_right;
-                    // double w = computeWeight(dolp_mean);
-                    // w = w * w * (3.0 - 2.0 * w);
-                    // w = (std::exp(6 * w) - 1.0) / (std::exp(6) - 1.0);
-                    // theta0_curr_aux = f(aolp_mean_curr, theta_3std_right, 0.3);
-                    theta0_curr_aux = f(aolp_mean_curr, theta_3std_right, 0.4);
+                    // if(aolp_mean_curr>THETA_MIN && aolp_mean_curr<THETA_MAX) {
 
-                    // theta0_curr_aux = (1.0 - w) * aolp_mean_curr + w * theta_3std_right;
-                    // double a0 = aolp_mean_curr * M_PI / 180.0;
-                    // double a1 = theta_3std_right * M_PI / 180.0;
-                    // double x = (1.0 - w) * std::cos(2.0*a0) + w * std::cos(2.0*a1);
-                    // double y = (1.0 - w) * std::sin(2.0*a0) + w * std::sin(2.0*a1);
-                    // theta0_curr_aux = 0.5 * std::atan2(y, x) * 180.0 / M_PI; // degrees, in (-90,90]
-                    // theta1_curr_aux = aolp_mean_curr + 90;
-                    theta1_curr_aux = aolp_mean_curr + (M_PI/2.0);
+                        // std::cout<<"Turning - aolp_mean_curr: "<<aolp_mean_curr<<std::endl;
+
+                        // if(aolp_mean_curr>0) {//skewed to right
+                            // theta0_aux = theta_3std_left;
+                        // } else if(aolp_mean_curr<0) {//skewed to left
+                        //     theta0_aux = theta_3std_right;
+                        // }
+
+                        // theta0_aux = theta_3std_left;
+                        // theta1_aux = aolp_mean_curr + 90;
+
+                        // std::cout<<"-22<aolp<22"<<" theta0_aux: "<<theta0_aux<<" theta1_aux: "<<theta1_aux<<std::endl;
+                        // std::cout<<"-22<aolp<22 aolp_mean_curr: "<<aolp_mean_curr<<" theta_3std_left: "<<theta_3std_left<<" theta_3std_right: "<<theta_3std_right<<std::endl;
+                    // }
+                    // else {
+
+                    // if(aolp_mean_curr>8) {
+                    //     theta0_curr_aux = theta_3std_right;
+                    //     theta1_curr_aux = aolp_mean_curr + 90;
+                    // }
+                    // else if(aolp_mean_curr>-8) {
+                    //     theta0_curr_aux = theta_3std_left;
+                    //     theta1_curr_aux = aolp_mean_curr + 90;
+                    // }
+
+                        theta0_target = aolp_mean_curr;
+                        theta1_target = aolp_mean_curr + 90;
+
+                        // int diff = theta0_target - theta0_curr_aux;
+
+                        std::cout<<"theta0_curr_aux: "<<theta0_curr_aux<<" theta0_target: "<<theta0_target<<std::endl;
+
+                        // if (abs(diff)>=10)
+                        //     theta0_curr_aux = (diff<0)?theta0_curr_aux-10:theta0_curr_aux+10;
+                        // else
+                        //     theta0_curr_aux = theta0_target;
+                        //
+                        theta0_curr_aux = computeSmoothAngleTransition(theta0_curr_aux, theta0_target, 10);
+
+                        theta1_curr_aux = aolp_mean_curr + 90;
+
+                        // std::cout<<"theta0_curr_aux: "<<theta0_curr_aux<<" theta1_curr_aux: "<<theta1_curr_aux<<std::endl;
+
+                        // std::cout<<"else theta0_target: "<<theta0_target<<" theta1_target: "<<theta1_target<<std::endl;
+                        // std::cout<<"else aolp_mean_curr: "<<aolp_mean_curr<<" theta_3std_left: "<<theta_3std_left<<" theta_3std_right: "<<theta_3std_right<<std::endl;
+                    // }
                 }
+                // else {
+                //     theta0_curr_aux = theta_3std_left;
+                //     theta1_curr_aux = aolp_mean_curr + 90;
+                // }
+
 
                 theta0_curr = theta0_curr_aux;
                 theta1_curr = theta1_curr_aux;
 
-                // std::cout<<vstrImageFilenames[ni]<<": theta0: "<<theta0_curr * 180.0 / M_PI<<" theta1: "<<theta1_curr * 180.0 / M_PI<<std::endl;
-                std::cout<<"dolp_mean: "<<dolp_mean<<" aolp_mean: "<<aolp_mean_curr * 180.0 / M_PI<<" theta_3std_right: "<<theta_3std_right * 180.0 / M_PI<<" theta0: "<<theta0_curr * 180.0 / M_PI<<" theta1: "<<theta1_curr * 180.0 / M_PI<<std::endl;
+
+                // std::cout<<"std::abs(aolp_mean_curr-aolp_mean_prev): "<<std::abs(aolp_mean_curr-aolp_mean_prev)<<std::endl;
+                std::cout<<"theta0_curr_aux: "<<theta0_curr_aux<<" theta1_curr_aux: "<<theta1_curr_aux<<std::endl;
+
+
+                // else {
+                //     theta0_curr_aux = aolp_mean_curr;;
+                //     theta1_curr_aux = aolp_mean_curr + 90;
+
+                //     std::cout<<"theta0_curr_aux: "<<theta0_curr_aux<<" theta1_curr_aux: "<<theta1_curr_aux<<std::endl;
+                // }
+
+                // std::cout<<"Turning - aolp_mean_curr: "<<aolp_mean_curr<<std::endl;
 
                 aolp_mean_prev = aolp_mean_curr;
+                theta0_prev = theta0_curr;
+                theta1_prev = theta1_curr;
             }
         }
 
         imCam0 = Itheta0;
         imCam1 = Itheta1;
+
+
+        // std::cout<<"theta0: "<<(int)(theta0)<<" theta1: "<<(int)(theta1)<<std::endl;
 
         double tframe = vTimestamps[ni];
 

@@ -148,13 +148,15 @@ std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
     // std::cout<<"n: "<<n<<std::endl;
 
     double phi_mean = std::atan2(sin_sum, cos_sum);       // (-pi, pi]
-    double aolp_mean = 0.5 * (phi_mean * 180.0 / CV_PI);  // (-90, 90]
+    // double aolp_mean = 0.5 * (phi_mean * 180.0 / CV_PI);  // (-90, 90]
+    double aolp_mean = 0.5 * phi_mean;  // (-90, 90]
         // wrap into [0, 180)
     // mean_theta = std::fmod(mean_theta, 180.0);
     // if (mean_theta < 0) mean_theta += 180.0;
 
     double R = std::sqrt(sin_sum * sin_sum + cos_sum * cos_sum) / (double)(n);
-    double aolp_std = 0.5 * (std::sqrt(-2.0 * std::log(R)) * 180.0 / CV_PI);
+    // double aolp_std = 0.5 * (std::sqrt(-2.0 * std::log(R)) * 180.0 / CV_PI);
+    double aolp_std = 0.5 * std::sqrt(-2.0 * std::log(R));
 
     if( (int)(theta0*180.0/M_PI) == 0) { Itheta0 = I0Mat; }
     else if( (int)(theta0*180.0/M_PI) == 45) { Itheta0 = I45Mat; }
