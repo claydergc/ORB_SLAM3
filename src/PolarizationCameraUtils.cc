@@ -9,7 +9,7 @@
 
 // namespace ORB_SLAM3 {
 
-std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(const cv::Mat& polcam_img, double theta0, double theta1, cv::Mat& Itheta0, cv::Mat& Itheta1) {
+std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(const cv::Mat& polcam_img, double theta0, double theta1, cv::Mat& Itheta0, cv::Mat& Itheta1, bool returnI) {
 
     assert(input_img.type() == CV_8UC1);
 
@@ -20,6 +20,12 @@ std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
     cv::Mat I45Mat(inner_rows, inner_cols, CV_8UC1);
     cv::Mat I90Mat(inner_rows, inner_cols, CV_8UC1);
     cv::Mat I135Mat(inner_rows, inner_cols, CV_8UC1);
+    cv::Mat IMat(inner_rows, inner_cols, CV_8UC1);
+
+    double minVal = 0, maxVal = 511;
+    double scale = 255.0 / (maxVal - minVal);
+    double shift = -minVal * scale;
+
 
     // Prepare HSV output
     Itheta0 = cv::Mat(inner_rows, inner_cols, CV_8UC1);
@@ -58,6 +64,7 @@ std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
             uchar* I45_row = I45Mat.ptr<uchar>(i);
             uchar* I90_row = I90Mat.ptr<uchar>(i);
             uchar* I135_row = I135Mat.ptr<uchar>(i);
+            uchar* I_row = IMat.ptr<uchar>(i);
 
             uchar* Itheta0_row = Itheta0.ptr<uchar>(i);
             uchar* Itheta1_row = Itheta1.ptr<uchar>(i);
@@ -77,6 +84,9 @@ std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
                 double S0 = (I0 + I45 + I90 + I135) / 2.0;
                 double S1 = I0 - I90;
                 double S2 = I45 - I135;
+
+                uchar I = cv::saturate_cast<uchar>(S0 * scale + shift);
+                I_row[j] = I;
 
                 // AoLP
                 double aolp = std::atan2(S2, S1)/2.0;
@@ -156,10 +166,12 @@ std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
     // double aolp_std = 0.5 * (std::sqrt(-2.0 * std::log(R)) * 180.0 / CV_PI);
     double aolp_std = 0.5 * std::sqrt(-2.0 * std::log(R));
 
-    if( (int)(theta0*180.0/M_PI) == 0) { Itheta0 = I0Mat; }
+    if( returnI ) { Itheta0 = IMat;}
+    else if( (int)(theta0*180.0/M_PI) == 0) { Itheta0 = I0Mat; }
     else if( (int)(theta0*180.0/M_PI) == 45) { Itheta0 = I45Mat; }
     else if( (int)(theta0*180.0/M_PI) == 90) { Itheta0 = I90Mat; }
     else if( (int)(theta0*180.0/M_PI) == 135) { Itheta0 = I135Mat; }
+
 
     if( (int)(theta1*180.0/M_PI) == 0) { Itheta1 = I0Mat; }
     else if( (int)(theta1*180.0/M_PI) == 45) { Itheta1 = I45Mat; }

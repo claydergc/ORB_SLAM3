@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 
     polcam_img = cv::imread("/home/ros-noetic/DATA/datasets/Polcam02/KelvinGrove/20260128/0835/polcam/1769553311606931767.tiff",cv::IMREAD_GRAYSCALE);
 
-    std::array<double, 3> aolp_dolp_stats = PolarizationCameraUtils::demosaicPolImageAndComputeStats(polcam_img, 0*M_PI/180.0, 0*M_PI/180.0, Itheta0, Itheta1);
+    std::array<double, 3> aolp_dolp_stats = PolarizationCameraUtils::demosaicPolImageAndComputeStats(polcam_img, 0*M_PI/180.0, 0*M_PI/180.0, Itheta0, Itheta1, false);
 
     aolp_mean_curr = aolp_dolp_stats[0];
     aolp_std = aolp_dolp_stats[1];
