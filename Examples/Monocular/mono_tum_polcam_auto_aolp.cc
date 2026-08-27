@@ -162,10 +162,17 @@ inline double clampVal(double x, double lo, double hi) {
 // }
 //
 double f(double AoLP_mean, double AoLP_3stddev, double p, double AoLP_max = M_PI / 2.0) {
+// double f(double AoLP_mean, double AoLP_3stddev, double p, double AoLP_max = M_PI) {
     double v = clampVal(std::abs(AoLP_mean) / AoLP_max, 0.0, 1.0);
+
+    // std::cout << "AoLP_mean: " << AoLP_mean*180.0/M_PI << " v: " << v << std::endl;
+
     double v_p = std::pow(v, p);
+    // double v_p = v*p;
     double g = 1.0 - v_p;
-    return (1.0 - g) * AoLP_mean + g * AoLP_3stddev;
+    // double g = 1.0 - v_p;
+    // return (1.0 - g) * AoLP_mean + g * AoLP_3stddev;
+    return v_p * AoLP_mean + g * AoLP_3stddev;
 }
 
 int computeSmoothAngleTransition(int theta_curr, int theta_target, int max_theta_diff) {
@@ -236,7 +243,7 @@ int main(int argc, char **argv)
 
     // int theta0_curr = 155;
     double theta0_curr = 900 * M_PI / 180.0;
-    // uint16_t theta0_target = 0;
+    double theta0_target = 0;
     // int theta1_curr = 98;
     double theta1_curr = 900 * M_PI / 180.0;
 
@@ -282,8 +289,12 @@ int main(int argc, char **argv)
                 // theta_3std_left = aolp_mean_curr-2.4*aolp_std;
                 // theta_3std_right = aolp_mean_curr+2.4*aolp_std;
                 //
-                theta_3std_left = aolp_mean_curr-2.3*aolp_std;
-                theta_3std_right = aolp_mean_curr+2.3*aolp_std;
+
+                // theta_3std_left = aolp_mean_curr-2.3*aolp_std; //sequences on 0803 were working with this value and pi/2 max in f()
+                // theta_3std_right = aolp_mean_curr+2.3*aolp_std;
+                //
+                theta_3std_left = aolp_mean_curr-3.0*aolp_std;
+                theta_3std_right = aolp_mean_curr+3.0*aolp_std;
 
 
                 double aolp_mean_diff = aolp_mean_curr-aolp_mean_prev;
@@ -296,8 +307,14 @@ int main(int argc, char **argv)
                     // double w = computeWeight(dolp_mean);
                     // w = w * w * (3.0 - 2.0 * w);
                     // w = (std::exp(6 * w) - 1.0) / (std::exp(6) - 1.0);
+                    // theta0_curr_aux = f(aolp_mean_curr, theta_3std_right, 0.25); //sequences on 0803 were working with this value and pi/2 max in f()
                     // theta0_curr_aux = f(aolp_mean_curr, theta_3std_right, 0.3);
-                    theta0_curr_aux = f(aolp_mean_curr, theta_3std_right, 0.4);
+                    // theta0_curr_aux = f(aolp_mean_curr, theta_3std_right, 0.4);
+                    // theta0_curr_aux = f(aolp_mean_curr, theta_3std_right, 0.7);
+                    theta0_curr_aux = f(aolp_mean_curr, theta_3std_right, 0.5); //all the sequences was working with this value and the exponential function
+                    // theta0_curr_aux = f(aolp_mean_curr, theta_3std_right, 1.0);
+                    // theta0_curr_aux = f(aolp_mean_curr, theta_3std_right, 1.5);
+                    // theta0_curr_aux = 90.0*M_PI/180.0;
 
                     // theta0_curr_aux = (1.0 - w) * aolp_mean_curr + w * theta_3std_right;
                     // double a0 = aolp_mean_curr * M_PI / 180.0;
@@ -313,7 +330,7 @@ int main(int argc, char **argv)
                 theta1_curr = theta1_curr_aux;
 
                 // std::cout<<vstrImageFilenames[ni]<<": theta0: "<<theta0_curr * 180.0 / M_PI<<" theta1: "<<theta1_curr * 180.0 / M_PI<<std::endl;
-                std::cout<<"dolp_mean: "<<dolp_mean<<" aolp_mean: "<<aolp_mean_curr * 180.0 / M_PI<<" theta_3std_right: "<<theta_3std_right * 180.0 / M_PI<<" theta0: "<<theta0_curr * 180.0 / M_PI<<" theta1: "<<theta1_curr * 180.0 / M_PI<<std::endl;
+                // std::cout<<"dolp_mean: "<<dolp_mean<<" aolp_mean: "<<aolp_mean_curr * 180.0 / M_PI<<" theta_3std_right: "<<theta_3std_right * 180.0 / M_PI<<" theta0: "<<theta0_curr * 180.0 / M_PI<<" theta1: "<<theta1_curr * 180.0 / M_PI<<std::endl;
 
                 aolp_mean_prev = aolp_mean_curr;
             }

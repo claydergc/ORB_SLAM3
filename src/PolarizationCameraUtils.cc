@@ -26,8 +26,6 @@ std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
     Itheta1 = cv::Mat(inner_rows, inner_cols, CV_8UC1);
     // cv::Mat AoLP(polcam_img.rows, polcam_img.cols, CV_8UC1);
     // cv::Mat DoLP(polcam_img.rows, polcam_img.cols, CV_8UC1);
-    double Ipixeltheta0;
-    double Ipixeltheta1;
 
     double costheta0 = cos(2.0*theta0);
     double sintheta0 = sin(2.0*theta0);
@@ -46,11 +44,11 @@ std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
     std::vector<double> partial_sin(num_threads, 0.0);
     std::vector<double> partial_cos(num_threads, 0.0);
     std::vector<double> partial_dolp(num_threads, 0.0);
-    std::vector<uint16_t> partial_n(num_threads, 0);
+    std::vector<uint32_t> partial_n(num_threads, 0);
 
     auto worker = [&](int start_row, int end_row, int tid) {
         double local_sin = 0.0, local_cos = 0.0, local_dolp = 0.0;
-        uint16_t local_n = 0;
+        uint32_t local_n = 0; //uint32_t to avoid overflow
         for (int i = start_row; i < end_row; ++i) {
             int y = 2 * i;
             const uchar* row0 = polcam_img.ptr<uchar>(y);
@@ -95,9 +93,9 @@ std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(co
                 uchar DoLP_uint8 = static_cast<uchar>(std::min(dolp*255.0, 255.0));
                 // DoLP_row[j] = DoLP_uint8;
 
-                Ipixeltheta0 = 0.5*(S0+S1*costheta0+S2*sintheta0);
+                double Ipixeltheta0 = 0.5*(S0+S1*costheta0+S2*sintheta0);
                 Itheta0_row[j] = static_cast<uchar>(std::min(Ipixeltheta0, 255.0));
-                Ipixeltheta1 = 0.5*(S0+S1*costheta1+S2*sintheta1);
+                double Ipixeltheta1 = 0.5*(S0+S1*costheta1+S2*sintheta1);
                 Itheta1_row[j] = static_cast<uchar>(std::min(Ipixeltheta1, 255.0));
 
                 // double theta_rad = aolp;

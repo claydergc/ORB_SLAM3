@@ -167,6 +167,11 @@ add_executable(mono_tum_polcam_auto_aolp
         Examples/Monocular/mono_tum_polcam_auto_aolp.cc)
 target_link_libraries(mono_tum_polcam_auto_aolp ${PROJECT_NAME})
 
+add_executable(mono_tum_polcam_auto_aolp_test
+        Examples/Monocular/mono_tum_polcam_auto_aolp_test.cc)
+target_link_libraries(mono_tum_polcam_auto_aolp_test ${PROJECT_NAME})
+
+
 add_executable(test_polarization_camera_utils
         Examples/Monocular/test_polarization_camera_utils.cc)
 target_link_libraries(test_polarization_camera_utils ${PROJECT_NAME})

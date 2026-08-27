@@ -457,6 +457,7 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
         //added by claydergc
     std::vector<cv::Mat> mDescriptorsCam1Vec;
     // computeFeatureOverlap(mvKeys, mvKeysPolcam, mvKeysPolcamNonOverlapped, mDescriptorsPolcam, mDescriptorsPolcamNonOverlappedVec, 4.0);
+    // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 5.0);
     computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 3.0);
     // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 2.0);
     // computeFeatureOverlap(mvKeys, mvKeysCam1Overlapped, mvKeysCam1, mDescriptorsCam1Overlapped, mDescriptorsCam1Vec, 1.0);
@@ -494,6 +495,7 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imPolarized, const double &ti
     N = N_Cam0 + N_Cam1;
     // N = N_Cam0;
     // N = mvKeys.size();
+    // std::cout << "N = " << N << std::endl;
 
     // std::cout<<"N_Cam0: "<<N_Cam0<<" N_Cam1: "<<N_Cam1<<" N: "<<N<<std::endl;
 

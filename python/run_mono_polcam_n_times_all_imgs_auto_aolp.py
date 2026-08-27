@@ -11,7 +11,13 @@ settings = (
 
 base_path = "/home/ros-noetic/DATA/datasets/Polcam02/KelvinGrove/"
 
-sessions = ["20260803/0821/", "20260803/0827/", "20260803/0836/", "20260803/0837/"]
+# sessions = ["20260803/0821/", "20260803/0827/", "20260803/0836/", "20260803/0837/"]
+# sessions = ["20260803/0821/", "20260803/0827/"]
+# sessions = ["20260803/0830/", "20260803/0832/"]
+sessions = ["20260803/0841/", "20260803/0849/"]
+# sessions = ["20260803/0830/", "20260803/0832/", "20260803/0841/", "20260803/0849/"]
+# sessions = ["20260803/0836/", "20260803/0837/"]
+#sessions = ["20260128/0830/", "20260128/0835/"]
 
 resultsBaseFolder = "/home/ros-noetic/DATA/ClayderEvaluation/orbslam3_polcam_tmp_results/"
 
