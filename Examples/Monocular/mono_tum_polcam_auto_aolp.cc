@@ -273,6 +273,8 @@ int main(int argc, char **argv)
     const double DOLP_MIN = 0.22;
     // const double DOLP_MIN = 0.25; works for 0821
     // const double DOLP_MIN = 0.27;
+    const double THETA_MAX_DIFF = 20.0*M_PI/180.0;
+    const double I_ANGLE_VALUE = 60.0*M_PI/180.0;
 
 
     double theta0_curr_aux = 0;
@@ -321,18 +323,20 @@ int main(int argc, char **argv)
                 }
             }
             else {
-                theta0_curr_aux = 60*M_PI/180.0;
+                // theta0_curr_aux = 60*M_PI/180.0;
+                theta0_curr_aux = I_ANGLE_VALUE;
                 theta1_curr_aux = aolp_mean_curr + (M_PI/2.0);
                 returnI = true;
-                std::cout<<"returnI=true"<<std::endl;
+                // std::cout<<"returnI=true"<<std::endl;
             }
 
-            if(ni!=0 && (std::abs(theta0_curr_aux-theta0_prev)>20.0*M_PI/180.0 && std::abs((theta0_curr_aux+M_PI)-theta0_prev)>20.0*M_PI/180.0) ) {
-                theta0_curr_aux = computeSmoothAngleTransition(theta0_prev, theta0_curr_aux, 20*M_PI/180.0);
-                std::cout<<"Smooth transition"<<std::endl;
+            // if(ni!=0 && (std::abs(theta0_curr_aux-theta0_prev)>20.0*M_PI/180.0 && std::abs((theta0_curr_aux+M_PI)-theta0_prev)>20.0*M_PI/180.0) ) {
+            if( ni!=0 && ( std::abs(theta0_curr_aux-theta0_prev)>THETA_MAX_DIFF && std::abs((theta0_curr_aux+M_PI)-theta0_prev)>THETA_MAX_DIFF ) ) {
+                theta0_curr_aux = computeSmoothAngleTransition(theta0_prev, theta0_curr_aux, THETA_MAX_DIFF);
+                // std::cout<<"Smooth transition"<<std::endl;
             }
 
-            std::cout<<"dolp_mean: "<<dolp_mean<<" aolp_mean: "<<aolp_mean_curr * 180.0 / M_PI<<" theta_3std_right: "<<theta_3std_right * 180.0 / M_PI<<" theta0_prev: "<<theta0_prev * 180.0 / M_PI<<" theta0: "<<theta0_curr_aux * 180.0 / M_PI<<" theta1: "<<theta1_curr_aux * 180.0 / M_PI<<std::endl;
+            // std::cout<<"dolp_mean: "<<dolp_mean<<" aolp_mean: "<<aolp_mean_curr * 180.0 / M_PI<<" theta_3std_right: "<<theta_3std_right * 180.0 / M_PI<<" theta0_prev: "<<theta0_prev * 180.0 / M_PI<<" theta0: "<<theta0_curr_aux * 180.0 / M_PI<<" theta1: "<<theta1_curr_aux * 180.0 / M_PI<<std::endl;
 
             theta0_curr = theta0_curr_aux;
             theta1_curr = theta1_curr_aux;

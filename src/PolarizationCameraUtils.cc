@@ -11,7 +11,7 @@
 
 std::array<double,3> PolarizationCameraUtils::demosaicPolImageAndComputeStats(const cv::Mat& polcam_img, double theta0, double theta1, cv::Mat& Itheta0, cv::Mat& Itheta1, bool returnI) {
 
-    assert(input_img.type() == CV_8UC1);
+    // assert(input_img.type() == CV_8UC1);
 
     const int inner_rows = 1024;
     const int inner_cols = 1224;
